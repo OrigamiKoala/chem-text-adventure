@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentid = 0;
   let isProcessing = false;
   let JSdata = null;
+  let previousdivid = 0;
 
   // load data from json and render initial prompt
   fetch('data.json')
@@ -53,8 +54,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let output = '';
     let nextdivid = currentdivid;
-
-    if (currentobj.type === 'frq') {
+    if (inputstring == "help"){
+      output = "";
+      nextdivid = currentdivid;
+    } else if (inputstring == "outline"){
+      output = "";
+    } else if (inputstring == "undo"){
+      output = JSdata[previousdivid] ? (JSdata[previousdivid].text || '') : 'Previous not found';
+      nextdivid = previousdivid;
+    } else if (currentobj.type === 'frq') {
       if (inputstring === currentobj.correct) {
         nextdivid = currentobj.next;
         const nextobj = JSdata[nextdivid];
@@ -84,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       output = 'Unrecognized answer choice';
     }
-
+    previousdivid = currentdivid;
     return [output, nextdivid];
   }
 
