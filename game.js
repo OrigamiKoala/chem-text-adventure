@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let outputtext = '';
   let currentid = 0;
+  let isProcessing = false;
   let JSdata = null;
 
   // load data from json and render initial prompt
@@ -13,8 +14,21 @@ document.addEventListener('DOMContentLoaded', () => {
     .then(response => response.json())
     .then(data => {
       JSdata = data;
-      if (JSdata && JSdata[currentid] && qtext) {
-        qtext.innerText = JSdata[currentid].text || '';
+      if (JSdata && JSdata[currentid]) {
+        const initialText = JSdata[currentid].text || '';
+        // create a rendered question div and insert it above the form
+        if (previousdiv && formElement) {
+          const initialDiv = document.createElement('div');
+          initialDiv.className = 'question';
+          initialDiv.innerText = initialText;
+          formElement.parentNode.insertBefore(initialDiv, formElement);
+          // remove the original placeholder element if present so it doesn't duplicate
+          if (qtext && qtext.parentNode) qtext.parentNode.removeChild(qtext);
+        } else if (qtext) {
+          // fallback: put text into qtext then remove it
+          qtext.innerText = initialText;
+          if (qtext.parentNode) qtext.parentNode.removeChild(qtext);
+        }
       }
     })
     .catch(error => {
@@ -79,26 +93,43 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e && typeof e.preventDefault === 'function') {
       e.preventDefault();
     }
+    if (isProcessing) return;
+    isProcessing = true;
 
     const userInput = inputField ? inputField.value : '';
-    const previoustext = qtext ? qtext.innerText : '';
-
     const [newText, nextId] = parseinput(userInput, currentid);
 
-    // add previous interaction to the previous div instead of replacing form
+    // append only the user's response to the history (do not re-insert the previous question text)
     if (previousdiv) {
       const container = document.createElement('div');
       container.className = 'container';
-      container.innerHTML = `<div class="previoustext">${previoustext}</div><div>${userInput}</div>`;
-      previousdiv.insertAfter(container, previousdiv.firstChild);
+      container.innerHTML = `<div class="response">${userInput}</div>`;
+      // insert the container just before the form so it appears in history
+      if (formElement && previousdiv === formElement.parentNode) {
+        previousdiv.insertBefore(container, formElement);
+      } else {
+        previousdiv.appendChild(container);
+      }
     }
 
-    if (qtext) qtext.innerText = newText;
+    // insert newText above the form as a question element
+    if (formElement) {
+      const newTextDiv = document.createElement('div');
+      newTextDiv.className = 'question';
+      newTextDiv.innerText = newText;
+      formElement.parentNode.insertBefore(newTextDiv, formElement);
+    }
+
     currentid = nextId;
 
-    if (inputField) {
-      inputField.value = '';
-      inputField.focus();
+    try {
+      if (inputField) {
+        inputField.value = '';
+        inputField.focus();
+      }
+    } finally {
+      // allow subsequent submissions
+      isProcessing = false;
     }
   }
 });
