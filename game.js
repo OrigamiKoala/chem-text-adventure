@@ -22,12 +22,6 @@ fetch('data.json')
     console.error('Error loading data:', error);
   });
 
-// start game
-
-function start(){
-  currentid = 1
-  showText(currentid)
-}
 
 // update
 
@@ -80,8 +74,5 @@ function updategame(e) {
   inputElement.insertAdjacentHTML('afterend', '<div class="container" id="previous"><div id="text">'+outputtext+'</div><form id="responseform"><label for="response">Response: </label><input type="text" id="response" name="response"></div>');
   previoustext = ouputtext
 }
-
-// start code
-start()
 
 
