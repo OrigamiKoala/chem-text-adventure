@@ -9,9 +9,18 @@ let currentid = 1
 
 // load data from json
 
-const JSONdata = fetch('data.json');
-
-const JSdata = JSON.parse(JSONdata);
+let JSdata; // Declare JSdata outside
+fetch('data.json')
+  .then(response => {
+    return response.json();
+  })
+  .then(data => {
+    JSdata = data; // JSdata now holds the parsed JSON object
+    start(); // Start the game ONLY when data is loaded
+  })
+  .catch(error => {
+    console.error('Error loading data:', error);
+  });
 
 // start game
 
@@ -19,6 +28,10 @@ function start(){
   currentid = 1
   showText(currentid)
 }
+
+// update
+
+inputElement.addEventListener('submit', updategame);
 
 // receiving input, returns output text
 
@@ -53,7 +66,9 @@ function parseinput(inputstring, currentdivid){
 
 // update the game
 
-function updategame(){
+function updategame(e) {
+  e.preventDefault();
+  
   qtext = document.getElementById("text")
   previousdiv = document.getElementById("previous")
   inputElement = document.getElementById("responseform")
