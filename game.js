@@ -102,8 +102,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // append only the user's response to the history (do not re-insert the previous question text)
     if (previousdiv) {
       const container = document.createElement('div');
-      container.className = 'container';
-      container.innerHTML = `<div class="response">${userInput}</div>`;
+      container.className = 'response';
+      container.innerHTML = `<div>${userInput}</div>`;
       // insert the container just before the form so it appears in history
       if (formElement && previousdiv === formElement.parentNode) {
         previousdiv.insertBefore(container, formElement);
@@ -126,6 +126,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (inputField) {
         inputField.value = '';
         inputField.focus();
+        // scroll to position input field near the bottom of the screen
+        const inputRect = inputField.getBoundingClientRect();
+        const scrollMargin = 100; // keep input 100px above bottom
+        const targetScrollTop = window.scrollY + inputRect.bottom - window.innerHeight + scrollMargin;
+        window.scrollTo({ top: targetScrollTop, behavior: 'instant' });
       }
     } finally {
       // allow subsequent submissions
