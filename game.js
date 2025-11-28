@@ -4,16 +4,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const formElement = document.getElementById('responseform');
   const inputField = document.getElementById('response');
 
-    let output = '';
-    let nextdivid = currentdivid;
-    if (inputstring == "help"){
-      // return preloaded help text (or a loading message if not ready)
-      return [helpText || 'Loading help... please wait', currentdivid];
-    } else if (inputstring == "outline"){
-      output = '';
-      console.error('Error loading help.txt:', error);
-    });
-
 
   // load data from json and render initial prompt
   fetch('data.json')
