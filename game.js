@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const inputField = document.getElementById('response');
 
   let outputtext = '';
-  let currentid = 1;
+  let currentid = 0;
   let JSdata = null;
 
   // load data from json and render initial prompt
@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const nextobj = JSdata[nextdivid];
       output = nextobj ? (nextobj.text || '') : 'Next not found';
     } else {
-      output = 'Unrecognized question type';
+      output = 'Unrecognized answer choice';
     }
 
     return [output, nextdivid];
@@ -89,8 +89,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (previousdiv) {
       const container = document.createElement('div');
       container.className = 'container';
-      container.innerHTML = `<div>${previoustext}</div><div>${userInput}</div>`;
-      previousdiv.insertBefore(container, previousdiv.firstChild);
+      container.innerHTML = `<div class="previoustext">${previoustext}</div><div>${userInput}</div>`;
+      previousdiv.insertAfter(container, previousdiv.firstChild);
     }
 
     if (qtext) qtext.innerText = newText;
