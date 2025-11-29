@@ -99,7 +99,6 @@ document.addEventListener('DOMContentLoaded', () => {
       output = 'Unrecognized answer choice';
     }
     previousdivid = currentdivid;
-    output = "<br><br>" + output;
     return [output, nextdivid];
   }
 
@@ -132,6 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const newTextDiv = document.createElement('div');
       newTextDiv.className = 'question';
       newTextDiv.innerText = newText;
+      newTextDiv.appendChild(document.createElement('br'));
       formElement.parentNode.insertBefore(newTextDiv, formElement);
     }
 
