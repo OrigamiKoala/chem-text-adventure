@@ -14,10 +14,10 @@
       "id": 1,
       "text": "<h1>Section 1: Atoms</h1>\n\n<h3>Atomic Theory</h3>\n\nA long long time ago, some ancient Greek dudes asked a very interesting question: Could you keep on slicing something into smaller pieces forever?\n\nWhat do you think?\n\n1) Yes, definitely!\n2) Uhh....no",
       "type": "mcq",
-      "next": 2,
-      "correct": 4,
-      "op1": 2,
-      "op2": null,
+      "next": null,
+      "correct": null,
+      "op1": 4,
+      "op2": 2,
       "op3": null,
       "op4": null
     },
@@ -81,9 +81,9 @@
       "text": "Good idea. Well, now what do you think? Can you forever divide something into smaller pieces?\n\n1) Definitely\n2) Nope",
       "type": "mcq",
       "next": null,
-      "correct": 4,
-      "op1": 2,
-      "op2": null,
+      "correct": null,
+      "op1": 4,
+      "op2": 2,
       "op3": null,
       "op4": null
     }
