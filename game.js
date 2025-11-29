@@ -171,7 +171,6 @@ function typeWriter(element, text, speed, callback = () => {}) {
                   element.innerHTML += char;
                   i++;
               }
-            
             // Scroll instantly to bottom so user sees new text
             scrollToBottom(false);
 
@@ -185,7 +184,7 @@ function typeWriter(element, text, speed, callback = () => {}) {
             scrollToBottom(true);
             callback();
         }
-    }
+      }
     type();
 }
 
