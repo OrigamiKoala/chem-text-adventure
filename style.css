@@ -140,7 +140,7 @@ button[type=submit]:active{transform:translateY(1px)}
 .outline{
     -webkit-appearance:none;
     appearance:none;
-    display:inline;
+    display:inline-block;
     text-align:left;
     padding:0 4px;
     margin:2px 4px;
