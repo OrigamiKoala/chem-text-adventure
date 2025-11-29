@@ -38,7 +38,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (JSoutline && JSoutline[currentid]) {
         outlineText = 'Click on a section to jump to it.<br>';
         for (const item of JSoutline) {
-          outlineText += '<button>' +item.reference_num +' ' + item.content + '</button><br>';
+          // outlineText += '<button class="outline" onclick="jumpTo('+item.div+')">' +item.reference_num +' ' + item.content + '</button><br>';
+          outlineText += '<button>Hello</button>';
         }
       }
     }).catch(error => {
