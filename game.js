@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (previousdiv && formElement) {
           const initialDiv = document.createElement('div');
           initialDiv.className = 'question';
-          initialDiv.innerText = initialText;
+          initialDiv.innerHTML = initialText;
           formElement.parentNode.insertBefore(initialDiv, formElement);
           // remove the original placeholder element if present so it doesn't duplicate
           if (qtext && qtext.parentNode) qtext.parentNode.removeChild(qtext);
@@ -139,7 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (formElement) {
       const newTextDiv = document.createElement('div');
       newTextDiv.className = 'question';
-      newTextDiv.innerText = newText;
+      newTextDiv.innerHTML = newText;
       formElement.parentNode.insertBefore(newTextDiv, formElement);
     }
 
