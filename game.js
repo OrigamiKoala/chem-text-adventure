@@ -1,13 +1,3 @@
-function jumpTo(divid) {
-  currentid = divid;
-  previousdivid = null;
-  if (formElement) {
-    formElement.scrollIntoView({ behavior: 'smooth' });
-  }
-  updategame();
-  console.log("jumpTo ran!");
-}
-
 document.addEventListener('DOMContentLoaded', () => {
   const qtext = document.getElementById('text');
   const previousdiv = document.getElementById('previous');
@@ -44,7 +34,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }).catch(error => {
       console.error('Error loading data:', error);
     });
-
+  function jumpTo(divid) {
+    currentid = divid;
+    previousdivid = null;
+    if (formElement) {
+      formElement.scrollIntoView({ behavior: 'smooth' });
+    }
+    updategame();
+    console.log("jumpTo ran!");
+  }
+  window.jumpTo = jumpTo; // expose jumpTo to global scope for button onclick
   // load data from json and render initial prompt
   fetch('data.json')
     .then(response => response.json())
@@ -85,11 +84,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-function typeWriter(element, text, speed, callback = () => {}) {
+  function typeWriter(element, text, speed, callback = () => {}) {
   console.log("typeWriter called");
   console.log(text);
   let i = 0;
-    element.innerHTML = ''; // Clear existing text
+  element.innerHTML = ''; // Clear existing text
 
     // ✅ NEW: UNCONDITIONAL STATE RESET
     if (typingTimeoutId) {
@@ -162,29 +161,29 @@ function typeWriter(element, text, speed, callback = () => {}) {
                       i = tagEnd + 1;
                       delay = 1;
                   }
-              } else {
+              }
+            } else {
                   // Append regular character
                   element.innerHTML += char;
                   i++;
-              }
+            }
             // Scroll instantly to bottom so user sees new text
             scrollToBottom(false);
 
             // Assign the ID returned by setTimeout, using the delay (1ms for tags, 'speed' for chars)
             typingTimeoutId = setTimeout(type, delay); 
-            
         } else {
             // Typing finished naturally
             currentTypingContext.finished = true; 
             typingTimeoutId = null; 
             scrollToBottom(true);
             callback();
+            console.log("Typing complete, callback executed");
         }
-      }
-      console.log('typed');
     }
-  type();
-}
+      type();
+      console.log("typeWriter finished");
+  }
 
   // receiving input, returns output text and next id
   function parseinput(inputstring, currentdivid){
