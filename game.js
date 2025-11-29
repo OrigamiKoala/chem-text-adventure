@@ -9,12 +9,18 @@ document.addEventListener('DOMContentLoaded', () => {
   let JSdata = null;
   let isProcessing = false;
   let helpText = '';
+  let outlineText = '';
 
   // preload help.txt
   fetch('help.txt')
     .then(response => response.text())
     .then(data => { helpText = data; })
     .catch(error => { console.error('Error loading help.txt:', error); });
+
+  fetch('outline.html')
+    .then(response => response.text())
+    .then(data => { outlineText = data; })
+    .catch(error => { console.error('Error loading outline:', error); });
 
   // load data from json and render initial prompt
   fetch('data.json')
@@ -64,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // return preloaded help text
       return [helpText || 'Loading help... please wait', currentdivid];
     } else if (inputstring == "outline"){
-      output = "";
+      return [outlineText || 'Loading outline... please wait', currentdivid];
     } else if (inputstring == "undo"){
       output = JSdata[previousdivid] ? (JSdata[previousdivid].text || '') : 'Previous not found';
       nextdivid = previousdivid;
