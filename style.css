@@ -34,7 +34,7 @@ body{
     flex-direction:column; /* newest at bottom (just above the form) */
     gap:12px;
     /* leave extra padding so items aren't covered by fixed form */
-    padding-bottom: calc(var(--form-height, 160px) + 32px);
+    padding-bottom: 120px;
 }
 
 .question, .response, .response .previoustext {

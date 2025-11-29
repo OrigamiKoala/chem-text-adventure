@@ -187,19 +187,8 @@ document.addEventListener('DOMContentLoaded', () => {
       newTextDiv.className = 'question';
       newTextDiv.innerHTML = newText;
       formElement.parentNode.insertBefore(newTextDiv, formElement);
-      // ensure the new question is scrolled into view just above the fixed form
-      // compute a target scroll so the bottom of the newTextDiv sits above the fixed form
-      try {
-        // ensure CSS var for form height is current
-        updateFormHeightVar();
-        // compute a target scroll so the bottom of the newTextDiv sits above the fixed form
-        const formRect = formElement.getBoundingClientRect();
-        const formHeight = formRect.height || 0;
-        const gap = 12; // px gap between question bottom and form
-        const newRect = newTextDiv.getBoundingClientRect();
-        const target = window.scrollY + newRect.bottom - (window.innerHeight - formHeight - gap);
-        window.scrollTo({ top: Math.max(0, target), behavior: 'smooth' });
-      } catch (err) { /* ignore scroll errors */ }
+      // scroll to the very bottom of the page so the form and new question are visible
+      scrollToBottom(true);
     }
 
     currentid = nextId;
