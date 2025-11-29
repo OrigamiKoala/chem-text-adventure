@@ -237,8 +237,6 @@ function typeWriter(element, text, speed, callback = () => {}) {
         
         // Return here. The user will need to press Enter/Submit *one more time* // to submit the form now that the text is complete.
         // This is standard behavior for skipping typewriter effects.
-        
-        return; 
     }
     
     // --- If we reach here, typing is either finished naturally or was just completed by the user ---
