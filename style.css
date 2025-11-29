@@ -2,3 +2,13 @@
     color: green;
     scroll-margin-bottom: 60px;
 }
+
+.outline {
+    margin: 0px;
+    margin-bottom: 0px;
+    padding: 0px;
+    text-align: left;
+    background-color: #ffffff;
+    border-style: none;
+    cursor: grab;
+}

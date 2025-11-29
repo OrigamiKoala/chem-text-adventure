@@ -24,14 +24,24 @@ document.addEventListener('DOMContentLoaded', () => {
     .then(data => {
       JSoutline = data;
       if (JSoutline && JSoutline[currentid]) {
-        for (const item of JSoutline[currentid].outline) {
-          outlineText += '-' + item + '\n';
+        outlineText = 'Click on a section to jump to it.<br>';
+        for (const item of JSoutline) {
+          outlineText += '<button class="outline" onclick="jumpTo('+item.div+')">' +item.reference_num +' ' + item.content + '</button><br>';
         }
       }
     }).catch(error => {
       console.error('Error loading data:', error);
     });
 
+  function jumpTo(divid) {
+    currentid = divid;
+    previousdivid = null;
+    if (formElement) {
+      formElement.scrollIntoView({ behavior: 'smooth' });
+    }
+    updategame();
+  }
+  window.jumpTo = jumpTo; // expose to global scope for button onclick
 
   // load data from json and render initial prompt
   fetch('data.json')
