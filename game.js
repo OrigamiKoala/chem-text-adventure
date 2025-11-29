@@ -11,11 +11,11 @@ document.addEventListener('DOMContentLoaded', () => {
   let helpText = '';
   let outlineText = '';
 
-  // preload help.txt
-  fetch('help.txt')
+  // preload help.html
+  fetch('help.html')
     .then(response => response.text())
     .then(data => { helpText = data; })
-    .catch(error => { console.error('Error loading help.txt:', error); });
+    .catch(error => { console.error('Error loading help text:', error); });
 
   fetch('outline.html')
     .then(response => response.text())
