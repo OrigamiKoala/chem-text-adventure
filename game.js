@@ -250,6 +250,7 @@ function typeWriter(element, text, speed, callback = () => {}) {
 
     const userInput = inputField ? inputField.value : '';
     const [newText, nextId] = parseinput(userInput, currentid);
+    inputField.value = '';
 
     // append only the user's response to the history (do not re-insert the previous question text)
     if (previousdiv) {
