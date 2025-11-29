@@ -201,17 +201,29 @@ function typeWriter(element, text, speed) {
   // update the game
   function updategame(e) {
     if (e && typeof e.preventDefault === 'function') {
-      e.preventDefault();
+        e.preventDefault();
     }
-    // --- NEW INTERRUPTION LOGIC ---
+    
+    // Check if typing is currently active and not finished
     if (currentTypingContext && !currentTypingContext.finished) {
-        // If typing is in progress, interrupt it instantly
+        // If typing is in progress, interrupt it instantly and DO NOT proceed
+        // with the game logic yet. We just want to finish the typing.
+        
         currentTypingContext.finish();
-        // Allow the function to continue to append the user response and start the new question
-    } else if (isProcessing) {
-        // If processing is true and typing is NOT active (i.e., we are just waiting), block the submission
+        
+        // Return here. The user will need to press Enter/Submit *one more time* // to submit the form now that the text is complete.
+        // This is standard behavior for skipping typewriter effects.
+        
+        return; 
+    }
+    
+    // --- If we reach here, typing is either finished naturally or was just completed by the user ---
+    
+    // The original processing check (to prevent double submissions)
+    if (isProcessing) {
         return;
     }
+    
     isProcessing = true;
 
     const userInput = inputField ? inputField.value : '';
