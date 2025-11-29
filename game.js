@@ -11,8 +11,8 @@ document.addEventListener('DOMContentLoaded', () => {
   let helpText = '';
   let outlineText = '';
 
-  // preload help.html
-  fetch('help.html')
+  // preload help.txt
+  fetch('help.txt')
     .then(response => response.text())
     .then(data => { helpText = data; })
     .catch(error => { console.error('Error loading help text:', error); });
