@@ -297,7 +297,7 @@ function typeWriter(element, text, speed, callback = () => {}) {
     };
     // --- ⬆️ END NEW CLEANUP FUNCTION ⬆️ ---
 
-    // newTextDiv.innerHTML = newText;
+     newTextDiv.innerHTML = newText;
     // Pass the cleanup function as the callback
    // typeWriter(newTextDiv, newText, 20, finishQuestionTyping); 
     
