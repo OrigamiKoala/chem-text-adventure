@@ -93,6 +93,8 @@ document.addEventListener('DOMContentLoaded', () => {
 // typewriter effect: display text as if being typed
 // typewriter effect: display text as if being typed
 function typeWriter(element, text, speed, callback = () => {}) {
+  console.log("typeWriter called");
+  console.log(text);
   let i = 0;
     element.innerHTML = ''; // Clear existing text
 
@@ -115,7 +117,7 @@ function typeWriter(element, text, speed, callback = () => {}) {
                     clearTimeout(typingTimeoutId);
                     typingTimeoutId = null;
                 }
-                
+                console.log('finish called');
                 element.innerHTML = text; // Display all remaining text
                 this.finished = true;
             }
@@ -123,6 +125,7 @@ function typeWriter(element, text, speed, callback = () => {}) {
     };
     
     function type() {
+      console.log("Typing");
         // ... (existing check for currentTypingContext.finished) ...
         if (currentTypingContext && currentTypingContext.finished) {
             return;
@@ -184,8 +187,9 @@ function typeWriter(element, text, speed, callback = () => {}) {
             callback();
         }
       }
-    type();
-  }
+      console.log('typed');
+    }
+  type();
 }
 
   // receiving input, returns output text and next id
@@ -321,7 +325,7 @@ function typeWriter(element, text, speed, callback = () => {}) {
 
      // newTextDiv.innerHTML = newText;
     // Pass the cleanup function as the callback
-   // typeWriter(newTextDiv, newText, 20, finishQuestionTyping); 
+    typeWriter(newTextDiv, newText, 20, finishQuestionTyping); 
     
     formElement.parentNode.insertBefore(newTextDiv, formElement);
     
