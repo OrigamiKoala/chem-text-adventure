@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
       console.error('Error loading data:', error);
     });
 
-  function jumpTo(divid) {
+  window.jumpTo = function(divid) {
     currentid = divid;
     previousdivid = null;
     if (formElement) {
@@ -43,7 +43,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     updategame();
   }
-  window.jumpTo = jumpTo; // expose to global scope for button onclick
 
   // load data from json and render initial prompt
   fetch('data.json')
