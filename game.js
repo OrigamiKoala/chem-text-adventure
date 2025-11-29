@@ -93,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // typewriter effect: display text as if being typed
 // typewriter effect: display text as if being typed
 function typeWriter(element, text, speed, callback = () => {}) {
-let i = 0;
+  let i = 0;
     element.innerHTML = ''; // Clear existing text
 
     // ✅ NEW: UNCONDITIONAL STATE RESET
@@ -132,7 +132,6 @@ let i = 0;
             
             // Scroll instantly to bottom so user sees new text
             scrollToBottom(false); 
-            
             // NEW: Assign the ID returned by setTimeout
             typingTimeoutId = setTimeout(type, speed); 
         } else {
@@ -142,6 +141,7 @@ let i = 0;
             scrollToBottom(true);
             callback();
         }
+      console.log("type ran");
     }
     type();
 }
