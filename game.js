@@ -1,3 +1,12 @@
+function jumpTo(divid) {
+  currentid = divid;
+  previousdivid = null;
+  if (formElement) {
+    formElement.scrollIntoView({ behavior: 'smooth' });
+  }
+  updategame();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   const qtext = document.getElementById('text');
   const previousdiv = document.getElementById('previous');
@@ -34,15 +43,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }).catch(error => {
       console.error('Error loading data:', error);
     });
-
-  window.jumpTo = function(divid) {
-    currentid = divid;
-    previousdivid = null;
-    if (formElement) {
-      formElement.scrollIntoView({ behavior: 'smooth' });
-    }
-    updategame();
-  }
 
   // load data from json and render initial prompt
   fetch('data.json')
@@ -152,7 +152,6 @@ function typeWriter(element, text, speed, callback = () => {}) {
 
             // Assign the ID returned by setTimeout, using the delay (1ms for tags, 'speed' for chars)
             typingTimeoutId = setTimeout(type, delay); 
-            console.log("type ran: " + i); // Keep this for debugging
             
         } else {
             // Typing finished naturally
@@ -160,7 +159,6 @@ function typeWriter(element, text, speed, callback = () => {}) {
             typingTimeoutId = null; 
             scrollToBottom(true);
             callback();
-            console.log("Typing Finished");
         }
     }
     type();
