@@ -1,1 +1,90 @@
-[{"id":0,"text":"Welcome to a choose-your-own-adventure game made by Carl, where you get to have fun (hopefully) and also learn some chemistry along the way (also hopefully)!<br><br>This game is interactive; type your response in the box below and hit enter.<br><br>Sometimes, you will be asked a question with multiple choices given; to respond, input the number next to your desired choice. For example, if the options are '1. banana, 2. apple, 3. orange' and you would like to answer 'banana', type '1'.<br><br>If you are asked to respond with a word/phrase, make sure it is lowercase and spelled correctly. If you are typing a long response, capitalize as you please.<br><br>If you wish to skip the typing animation, hit the 'Enter' key again.<br><br>If at any point you wish to see a list of commands or how to format your answer, type 'help'.<br><br>Typing 'outline' will generate an outline of content; you can skip to the section you wish.<br><br>If you wish to take back your answer, type 'undo'. Note that this works only for the previous answer; you cannot undo more than that (as of right now).<br><br>The game will display previous prompts, for your reference. If you wish to print it out, just hit Ctrl+P or Cmd+P (for Mac).<br><br>Type anything to start from the beginning.","type":"fr","next":1},{"id":1,"text":"this is div 1, fr","type":"fr","next":2},{"id":2,"text":"this is div 2, frq, ans = hi","type":"frq","next":3,"correct":"hi"},{"id":3,"text":"this is div 3, mcq","type":"mcq","next":4,"op1":0,"op2":1,"op3":2,"op4":4},{"id":4,"text":"this is div 4, links to div 6","type":"fr","next":6},{"id":5,"text":"end","type":"fr"},{"id":6,"text":"this is div 6, links to div 5","type":"fr","next":5}]
+[
+    {
+      "id": 0,
+      "text": "Welcome to a choose-your-own-adventure game made by Carl, where you get to have fun (hopefully) and also learn some chemistry along the way (also hopefully)!\n\nThis game is interactive; type your response in the box below and hit the \"Enter\" key.\n\nIf you wish to skip the typing animation, hit the 'Enter' key again.\n\nSometimes, you will be asked a question with multiple choices given; to respond, input the number next to your desired choice. For example, if the options are '1. banana, 2. apple, 3. orange' and you would like to answer 'banana', type '1'.\n\nIf you are asked to respond with a word/phrase, make sure it is lowercase and spelled correctly. If you are typing a long response, capitalize as you please.\n\nIf at any point you wish to see a list of commands or how to format your answer, type 'help'.\n\nTyping 'outline' will generate an outline of content; you can skip to the section you wish.\n\nIf you wish to take back your answer, type 'undo'. Note that this works only for the previous answer; you cannot undo more than that (as of right now).\n\nThe game will display previous prompts for your reference. If you wish to print it out, just hit Ctrl+P or Cmd+P (for Mac).\n\nType anything to start from the beginning.",
+      "type": "fr",
+      "next": 1,
+      "correct": null,
+      "op1": null,
+      "op2": null,
+      "op3": null,
+      "op4": null
+    },
+    {
+      "id": 1,
+      "text": "<h1>Section 1: Atoms</h1>\n\n<h3>Atomic Theory</h3>\n\nA long long time ago, some ancient Greek dudes asked a very interesting question: Could you keep on slicing something into smaller pieces forever?\n\nWhat do you think?\n\n1) Yes, definitely!\n2) Uhh....no",
+      "type": "mcq",
+      "next": 2,
+      "correct": 4,
+      "op1": 2,
+      "op2": null,
+      "op3": null,
+      "op4": null
+    },
+    {
+      "id": 2,
+      "text": "Some Greeks thought the answer was \"yes\", but one guy, Democritus, agreed with you. He decided at some point, you would reach the smallest thing in the universe that couldn't be split further. He called this atomos, meaning \"indivisible\". Later, scientists would call these super small particles \"atoms\".\n\nBut these were ancient Greeks, and they didn't yet have the tools to do fancy experiments to figure out the truth. So they kind of just forgot about atoms and agreed that all of matter was made of four elements: earth, air, fire, and water (hence Avatar). What's your favorite element?\n\n1) Earth\n2) Air\n3) Fire\n4) Water",
+      "type": "fr",
+      "next": 3,
+      "correct": null,
+      "op1": null,
+      "op2": null,
+      "op3": null,
+      "op4": null
+    },
+    {
+      "id": 3,
+      "text": "Nice choice :)\n\nWell, skip a couple centuries and along come the alchemists! These were people who believed in the idea of four elements. Three of their most famous goals were to make a panacea (something that could cure all diseases), find or make an elixir of immortality (that could ensure they lived forever), and turn any metal into gold (for more info see here). \n\nHistory kind of portrayed alchemists as superstitious crackpots who had no idea what they were doing, and were super greedy.\n\nI don't know how accurate that is, given that Isaac Newton (the guy who introduced the idea of gravity) was also an alchemist...\n\nBut the alchemists did something very important... they wrote down what they did!\n\nIn fact, they wrote down a lot of stuff",
+      "type": "mcq",
+      "next": 4,
+      "correct": null,
+      "op1": null,
+      "op2": null,
+      "op3": null,
+      "op4": null
+    },
+    {
+      "id": 4,
+      "text": "A lot of Greeks agreed with you.\n\nTry this out: Grab a piece of paper and tear it into two pieces.\n\nThen tear each piece into two more pieces.\n\nThen repeat.\n\n(please actually give it a try; tearing up paper is oddly satisfying)\n\nCould you keep on going forever?",
+      "type": "fr",
+      "next": 5,
+      "correct": null,
+      "op1": null,
+      "op2": null,
+      "op3": null,
+      "op4": null
+    },
+    {
+      "id": 5,
+      "text": "Wow! Look at that! You made a hypothesis, which is basically an answer to a question you are asking. Science revolves around making hypotheses, and then using experiments to back your ideas up (or prove them wrong)\n\nWell, how many pieces did you end up with?",
+      "type": "fr",
+      "next": 6,
+      "correct": null,
+      "op1": null,
+      "op2": null,
+      "op3": null,
+      "op4": null
+    },
+    {
+      "id": 6,
+      "text": "That's a lot of pieces! I certainly didn't end up with that many pieces when I tried!\n\nWell, it looks like our idea that things could be divided forever wasn't exactly true...but that's okay! Science is filled with wrong ideas, and today scientists still aren't really sure if all their ideas are right.\n\nWhy do you think you couldn't keep on going after a certain point?",
+      "type": "fr",
+      "next": 7,
+      "correct": null,
+      "op1": null,
+      "op2": null,
+      "op3": null,
+      "op4": null
+    },
+    {
+      "id": 7,
+      "text": "Good idea. Well, now what do you think? Can you forever divide something into smaller pieces?\n\n1) Definitely\n2) Nope",
+      "type": "mcq",
+      "next": null,
+      "correct": 4,
+      "op1": 2,
+      "op2": null,
+      "op3": null,
+      "op4": null
+    }
+  ]
