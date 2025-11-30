@@ -230,10 +230,11 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (inputstring == "undo"){
       output = JSdata[previousdivid] ? (JSdata[previousdivid].text || '') : 'Previous not found';
       nextdivid = previousdivid;
-    } else if (inputstring == "" || inputstring == null){
+    } else if (inputstring == 'default'){
       // allow user to press enter and skip typing animation
       currentTypingContext.finish();
-      return;
+      console.log("Input empty, typing interrupted");
+      return ['interrupt', currentdivid];
     // handle normal input
     } else if (currentobj.type === 'frq') {
       if (inputstring == currentobj.correct) {
@@ -312,30 +313,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // insert newText above the form as a question element
     if (formElement) {
-      const newTextDiv = document.createElement('div');
-      newTextDiv.className = 'question';
-      
-      // cleanup function to run after typing is done
-      const finishQuestionTyping = () => {
-        // reload html 
-      newTextDiv.innerHTML = newText;
-      // Final cleanup for the input field
-      const inputField = document.getElementById('response');
-      if (inputField) { 
-        inputField.value = '';
-        inputField.focus(); 
-      }
+      if (newText == 'interrupt') {
+        console.log("interrupt detected, no new question rendered");
+      } else {
+        const newTextDiv = document.createElement('div');
+        newTextDiv.className = 'question';
         
-        // Ensure final scroll is smooth
-      scrollToBottom(true);
-      };
+        // cleanup function to run after typing is done
+        const finishQuestionTyping = () => {
+          // reload html 
+        newTextDiv.innerHTML = newText;
+        // Final cleanup for the input field
+        const inputField = document.getElementById('response');
+        if (inputField) { 
+          inputField.value = '';
+          inputField.focus(); 
+        }
+          
+          // Ensure final scroll is smooth
+        scrollToBottom(true);
+        };
+
+        typeWriter(newTextDiv, newText, 20, finishQuestionTyping); 
       
-      typeWriter(newTextDiv, newText, 20, finishQuestionTyping); 
-    
-      formElement.parentNode.insertBefore(newTextDiv, formElement);
-      currentid = nextId;
-    }
+        formElement.parentNode.insertBefore(newTextDiv, formElement);
+        currentid = nextId;
+      }
     console.log("updategame completed");
+    }
   }
 });
 
