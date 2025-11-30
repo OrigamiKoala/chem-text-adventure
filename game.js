@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (previousdiv && formElement) {
           const initialDiv = document.createElement('div');
           initialDiv.className = 'question';
-          typeWriter(initialDiv, initialText, 20);
+          typeWriter(initialDiv, initialText, 10);
           formElement.parentNode.insertBefore(initialDiv, formElement);
           // remove the original placeholder element if present so it doesn't duplicate
           console.log('Initial text rendered.')
@@ -114,7 +114,6 @@ function findnode(nodeid) {
     console.log("speed= " + speed);
 
     let i = 0;
-    element.innerHTML = ''; // Clear existing text
 
     // reset typingTimeoutId
     if (typingTimeoutId) {
@@ -320,75 +319,84 @@ function findnode(nodeid) {
   }
 
   // update the game
-  function updategame(e) {
-    console.log("updategame called");
-    // prevent form submission from reloading the page
-    if (e && typeof e.preventDefault === 'function') {
-      e.preventDefault();
-    }
-    
-    // if typing in progress, stop it
-    if (currentTypingContext && !currentTypingContext.finished) { 
-      currentTypingContext.finish();
-      console.log('Typing interrupted by user.');
-    }
-
-    const userInput = inputField ? inputField.value : '';
-    let [newText, nextId] = parseinput(userInput, currentid);
-    inputField.value = '';
-
-    // append only the user's response to the history (do not re-insert the previous question text)
-    if (previousdiv) {
-      const container = document.createElement('div');
-      container.className = 'response';
-      container.innerHTML = `<div>${encodeURIComponent(userInput)}</div>`;
-      // insert the container just before the form so it appears in history
-      if (formElement && previousdiv === formElement.parentNode) {
-        previousdiv.insertBefore(container, formElement);
-      } else {
-        previousdiv.appendChild(container);
+  async function updategame(e) {
+    try{
+      console.log("updategame called");
+      // prevent form submission from reloading the page
+      if (e && typeof e.preventDefault === 'function') {
+        e.preventDefault();
       }
       
-      // insert an empty line after user input
-      const emptyLine = document.createElement('div');
-      emptyLine.className = 'spacer';
-      if (formElement && previousdiv === formElement.parentNode) {
-        previousdiv.insertBefore(emptyLine, formElement);
-      } else {
-        previousdiv.appendChild(emptyLine);
+      // if typing in progress, stop it
+      if (currentTypingContext && !currentTypingContext.finished) { 
+        currentTypingContext.finish();
+        console.log('Typing interrupted by user.');
       }
-    }
 
-    // insert newText above the form as a question element
-    if (formElement) {
-      if (newText == 'interrupt') {
-        console.log("interrupt detected, no new question rendered");
-        scrollToBottom(true);
-      } else {
-        const newTextDiv = document.createElement('div');
-        newTextDiv.className = 'question';
-        
-        // cleanup function to run after typing is done
-        const finishQuestionTyping = () => {
-          // reload html 
-        newTextDiv.innerHTML = newText;
-        // Final cleanup for the input field
-        const inputField = document.getElementById('response');
-        if (inputField) { 
-          inputField.value = '';
-          inputField.focus(); 
+      const userInput = inputField ? inputField.value : '';
+      let [newText, nextId] = parseinput(userInput, currentid);
+      inputField.value = '';
+
+      // append only the user's response to the history (do not re-insert the previous question text)
+      if (previousdiv) {
+        const container = document.createElement('div');
+        container.className = 'response';
+        container.innerHTML = `<div>${encodeURIComponent(userInput)}</div>`;
+        // insert the container just before the form so it appears in history
+        if (formElement && previousdiv === formElement.parentNode) {
+          previousdiv.insertBefore(container, formElement);
+        } else {
+          previousdiv.appendChild(container);
         }
-          
-          // Ensure final scroll is smooth
-        scrollToBottom(true);
-        };
-
-        typeWriter(newTextDiv, newText, 20, finishQuestionTyping); 
-      
-        formElement.parentNode.insertBefore(newTextDiv, formElement);
-        currentid = nextId;
+        
+        // insert an empty line after user input
+        const emptyLine = document.createElement('div');
+        emptyLine.className = 'spacer';
+        if (formElement && previousdiv === formElement.parentNode) {
+          previousdiv.insertBefore(emptyLine, formElement);
+        } else {
+          previousdiv.appendChild(emptyLine);
+        }
       }
-    console.log("updategame completed");
+      const splitnewText = newText.split("<br>");
+      for (var j=0; j<splitnewText.length;) {
+        // insert newText above the form as a question element
+        if (formElement) {
+          if (splitnewText[j] == 'interrupt') {
+            console.log("interrupt detected, no new question rendered");
+            scrollToBottom(true);
+            return;
+          } else {
+            const newTextDiv = document.createElement('div');
+            newTextDiv.className = 'question';
+            
+            // cleanup function to run after typing is done
+            function finishQuestionTyping() {
+                // reload html 
+              newTextDiv.innerHTML = splitnewText[j];
+              // Final cleanup for the input field
+              const inputField = document.getElementById('response');
+              if (inputField) { 
+                inputField.value = '';
+                inputField.focus(); 
+              }
+                
+                // Ensure final scroll is smooth
+              scrollToBottom(true);
+              return new Promise ((resolve) => { resolve()} );
+            };
+            const response = await finishQuestionTyping();
+
+            console.log("Typing part " + j + ": " + splitnewText[j]);
+            typeWriter(newTextDiv, splitnewText[j], 10, finishQuestionTyping); 
+            formElement.parentNode.insertBefore(newTextDiv, formElement);
+            currentid = nextId;
+          }
+        }
+      }
+      console.log("updategame completed");
+    } catch (error) {
+      console.error('Error in updategame:', error);
     }
   }
 });
