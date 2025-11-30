@@ -5,7 +5,7 @@ Hopefully I was (at least somewhat) successful!
 
 To play the game, download the Github repository and run index.html.
 
-Or, you can view it live at https://bit.ly/chemcyoa.
+Or, you can view it live at https://bit.ly/chem-cyoa.
 
 For those who aren't CS nerds:
 
