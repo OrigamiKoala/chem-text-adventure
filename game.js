@@ -7,7 +7,6 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentid = 0;
   let previousdivid = null;
   let JSdata = null;
-  let isProcessing = false;
   let helpText = '';
   let outlineText = '';
   let JSoutline = null;
@@ -261,12 +260,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- If we reach here, typing is either finished naturally or was just completed by the user ---
     
     // The original processing check (to prevent double submissions)
-    if (isProcessing) {
-        console.log('isprocessing=true');
-        return;
-    }
-    
-    isProcessing = true;
 
     const userInput = inputField ? inputField.value : '';
     let [newText, nextId] = parseinput(userInput, currentid);
@@ -310,9 +303,6 @@ document.addEventListener('DOMContentLoaded', () => {
             inputField.value = '';
             inputField.focus(); 
         }
-        
-        // Allow subsequent submissions
-        isProcessing = false;
         
         // Ensure final scroll is smooth
         scrollToBottom(true);
