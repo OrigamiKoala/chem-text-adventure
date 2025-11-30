@@ -276,24 +276,28 @@ document.addEventListener('DOMContentLoaded', () => {
       const nextobj = JSdata[nextdivid];
       output = nextobj ? (nextobj.text || '') : 'Next not found';
     } else if (currentobj.type === 'mcq') {
-      previousdivid = currentdivid;
       if (inputstring == "1") {
         nextdivid = currentobj.op1;
-      }
-      if (inputstring == "2") {
+        previousdivid = currentdivid;
+        console.log(nextdivid);
+      } else if (inputstring == "2") {
         nextdivid = currentobj.op2;
-      }
-      if (inputstring == "3") {
+        previousdivid = currentdivid;
+      } else if (inputstring == "3") {
         nextdivid = currentobj.op3;
-      }
-      if (inputstring == "4") {
+        previousdivid = currentdivid;
+      } else if (inputstring == "4") {
         nextdivid = currentobj.op4;
+        previousdivid = currentdivid;
+      } else {
+        console.log("Unrecognized answer choice: " + inputstring);
+        output = 'Unrecognized answer choice. Please enter the number corresponding to your choice.';
+        nextdivid = currentdivid;
+        return [output, nextdivid];
       }
-      const nextobj = JSdata[nextdivid];
-      output = nextobj ? (nextobj.text || '') : 'Invalid response. Try again.';
-      nextdivid = currentdivid; // stay on same question if invalid
+      output = JSdata[nextdivid] ? (JSdata[nextdivid].text || '') : 'Next not found';
     } else {
-      output = 'Unrecognized answer choice';
+      output = 'Error: Please enter the number corresponding to your choice.';
       nextdivid = currentdivid;
     }
     console.log("parseinput returned output=" + output + " and nextdivid=" + nextdivid);
