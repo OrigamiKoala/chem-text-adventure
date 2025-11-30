@@ -235,6 +235,25 @@ function findnode(nodeid) {
                 i = tagEnd + 1;
                 delay = 1;
               }
+            } else if (tagContent.startsWith('<sup')) {
+              console.log("<sup> tag detected at index " + i);
+              // Find the closing </sup> tag
+              let closingTagStart = text.indexOf('</sup>', i);
+
+              if (closingTagStart !== -1) {
+                // Render the entire <sup>...</sup> structure instantly
+                let fullSupHtml = text.substring(i, closingTagStart + 6); // +6 for length of </sup>
+                element.innerHTML += fullSupHtml;
+
+                // Set index i to after the closing tag
+                i = closingTagStart + 6;
+                delay = 1; // Tiny delay before next Qtext character
+              } else {
+                // Fallback for an unmatched opening tag (treat as a simple tag)
+                element.innerHTML += tagContent;
+                i = tagEnd + 1;
+                delay = 1;
+              }
             } else {
               console.log("Non-button/list HTML tag detected at index " + i);
               // If not a button, treat as a simple tag (e.g., <b>, <br>)
