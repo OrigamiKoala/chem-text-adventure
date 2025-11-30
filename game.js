@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let outlineText = '';
   let JSoutline = null;
   let currentTypingContext = null
-  let typingTimeoutId = null
+  let typingTimeoutId = null;
 
   // preload help.txt
   fetch('help.txt')
@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (formElement) {
       formElement.scrollIntoView({ behavior: 'smooth' });
     }
-    updategame();
+    updategame(new Event('jump'));
     console.log("jumpTo ran!");
   }
   window.jumpTo = jumpTo; // expose jumpTo to global scope for button onclick
@@ -186,7 +186,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // receiving input, returns output text and next id
   function parseinput(inputstring, currentdivid){
-    inputstring = encodeURIComponent(inputstring.trim());
+    if (inputstring){
+      inputstring = encodeURIComponent(inputstring.trim());
+    }
+    else {
+      inputstring = 'default';
+      console.log(inputstring);
+    }
     if (!JSdata) return ['Loading...', currentdivid];
     const currentobj = JSdata[currentdivid];
     if (!currentobj) return ['Unknown node', currentdivid];
@@ -262,7 +268,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // The original processing check (to prevent double submissions)
 
-    const userInput = inputField ? inputField.value : '';
+    const userInput = inputField ? inputField.value : 'hi';
+    console.log(currentid);
+    console.log(userInput);
     let [newText, nextId] = parseinput(userInput, currentid);
     inputField.value = '';
 
