@@ -2,11 +2,11 @@
     {
       "reference_num": 1,
       "content": "Atoms",
-      "div": 2
+      "div": "atomscover"
     },
     {
       "reference_num": 1.1,
       "content": "Atomic theory",
-      "div": 2
+      "div": "atomscover"
     }
   ]
