@@ -208,6 +208,7 @@ document.addEventListener('DOMContentLoaded', () => {
       nextdivid = previousdivid;
     } else if (inputstring == "" || inputstring == null){
       currentTypingContext.finish();
+      return;
     } else if (currentobj.type === 'frq') {
       if (inputstring === currentobj.correct) {
         nextdivid = currentobj.next;
