@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentTypingContext = null
   let typingTimeoutId = null;
   let outlineclicked = false;
+  let previouscontainer = null
 
   // preload help.txt
   fetch('help.txt')
@@ -58,16 +59,19 @@ document.addEventListener('DOMContentLoaded', () => {
       JSdata = data;
       let initialText = findnode("initial").text;
       let splitinitialText = initialText.split("--");
+      if (qtext && qtext.parentNode) qtext.parentNode.removeChild(qtext);
+      let newContainer = document.createElement('div');
+      formElement.parentNode.insertBefore(newContainer, formElement);
+      previouscontainer = newContainer;
       for (var j=0; j<splitinitialText.length;) {
         const initialDiv = document.createElement('div');
         initialDiv.className = 'question';
-        formElement.parentNode.insertBefore(initialDiv, formElement);
+        newContainer.appendChild(initialDiv, formElement);
         await typeWriter(initialDiv, splitinitialText[j], 10);
         j++;
       }
       // remove the original placeholder element if present so it doesn't duplicate
       console.log('Initial text rendered.')
-      if (qtext && qtext.parentNode) qtext.parentNode.removeChild(qtext);
     })
     .catch(error => {
       console.error('Error loading game data:', error);
@@ -134,7 +138,19 @@ function findnode(nodeid) {
                 typingTimeoutId = null;
             }
             console.log('finish() called');
-            element.innerHTML = text; // Display all remaining text
+            // Display all remaining text
+            let newText = findnode(currentid).text;
+            let splitnewText = newText.split("--");
+            previouscontainer.innerHTML = '';
+            let newContainer = previouscontainer;
+            for (var n=0; n<splitnewText.length;) {
+              const newinterruptTextDiv = document.createElement('div');
+              newinterruptTextDiv.className = 'question';
+              newinterruptTextDiv.innerHTML = splitnewText[n];
+              newContainer.appendChild(newinterruptTextDiv);
+              scrollToBottom(true);
+              n++;
+            }
             this.finished = true;
         }
       }
@@ -316,7 +332,6 @@ function findnode(nodeid) {
     console.log("parseinput returned output=" + output + " and nextdivid=" + nextdivid);
     return [output, nextdivid];
   }
-
   // update the game
   async function updategame(e) {
     console.log("updategame called");
@@ -356,47 +371,48 @@ function findnode(nodeid) {
         previousdiv.appendChild(emptyLine);
       }
     }
-    const splitnewText = newText.split("--");
+    let splitnewText = newText.split("--");
     console.log("newText split into " + splitnewText.length + " parts.");
+    const newContainer = document.createElement('div');
+    formElement.parentNode.insertBefore(newContainer, formElement);
     for (var j=0; j<splitnewText.length;) {
       if (!splitnewText[j] || splitnewText[j].trim() === '') {
         j++;
         continue;
       } else {
+        const newTextDiv = document.createElement('div');
+        newTextDiv.className = 'question';
+          
+        // cleanup function to run after typing is done
+        const finishQuestionTyping = () => {
+            // reload html 
+          newTextDiv.innerHTML = splitnewText[j];
+          // Final cleanup for the input field
+          const inputField = document.getElementById('response');
+          if (inputField) { 
+            inputField.value = '';
+            inputField.focus(); 
+          }
+            // Ensure final scroll is smooth
+          scrollToBottom(true);
+          ready = true;
+          j++;
+        };
       // insert newText above the form as a question element
         if (formElement) {
           if (splitnewText[j] == 'interrupt') {
             console.log("interrupt detected, no new question rendered");
-            scrollToBottom(true);
             return;
           } else {
-            const newTextDiv = document.createElement('div');
-            newTextDiv.className = 'question';
-            
-            // cleanup function to run after typing is done
-            const finishQuestionTyping = () => {
-                // reload html 
-              newTextDiv.innerHTML = splitnewText[j];
-              // Final cleanup for the input field
-              const inputField = document.getElementById('response');
-              if (inputField) { 
-                inputField.value = '';
-                inputField.focus(); 
-              }
-                // Ensure final scroll is smooth
-              scrollToBottom(true);
-              ready = true;
-              j++;
-            };
-
             console.log("Typing part " + j + ": " + splitnewText[j]);
-            formElement.parentNode.insertBefore(newTextDiv, formElement);
+            newContainer.appendChild(newTextDiv, formElement);
             await typeWriter(newTextDiv, splitnewText[j], 10, finishQuestionTyping);
             currentid = nextId;
           }
         }
       }
     }
+    previouscontainer = newContainer;
     console.log("updategame completed");
   }
 });
