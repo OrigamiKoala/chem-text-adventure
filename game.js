@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let JSoutline = null;
   let currentTypingContext = null
   let typingTimeoutId = null;
+  let outlineclicked = false;
 
   // preload help.txt
   fetch('help.txt')
@@ -39,12 +40,13 @@ document.addEventListener('DOMContentLoaded', () => {
   // jump to div id (for outline)
   function jumpTo(divid) {
     console.log("jumpTo called with divid=" + divid);
+    previousdivid = currentid;
     currentid = divid;
-    previousdivid = null;
+    outlineclicked = true;
     if (formElement) {
       formElement.scrollIntoView({ behavior: 'smooth' });
     }
-    updategame(new Event('jump'));
+    updategame();
     console.log("jumpTo completed");
   }
   window.jumpTo = jumpTo; // expose jumpTo to global scope for button onclick
@@ -249,13 +251,15 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (inputstring == "undo"){
       output = JSdata[previousdivid] ? (JSdata[previousdivid].text || '') : 'Previous not found';
       nextdivid = previousdivid;
-    } else if (inputstring == 'default'){
+    } else if (inputstring == 'default' && outlineclicked===false) {
       // allow user to press enter and skip typing animation
       currentTypingContext.finish();
       console.log("Input empty, typing interrupted");
+      previousdivid = currentdivid;
       return ['interrupt', currentdivid];
     // handle normal input
     } else if (currentobj.type === 'frq') {
+      previousdivid = currentdivid;
       if (inputstring == currentobj.correct) {
         nextdivid = currentobj.next;
         const nextobj = JSdata[nextdivid];
@@ -263,11 +267,16 @@ document.addEventListener('DOMContentLoaded', () => {
       } else {
         output = 'Try again';
       }
+    } else if (inputstring == 'default' && outlineclicked===true) {
+      outlineclicked===false;
+      return [JSdata[currentid].text, currentid];
     } else if (currentobj.type === 'fr') {
+      previousdivid = currentdivid;
       nextdivid = currentobj.next;
       const nextobj = JSdata[nextdivid];
       output = nextobj ? (nextobj.text || '') : 'Next not found';
     } else if (currentobj.type === 'mcq') {
+      previousdivid = currentdivid;
       if (inputstring == "1") {
         nextdivid = currentobj.op1;
       }
@@ -281,11 +290,12 @@ document.addEventListener('DOMContentLoaded', () => {
         nextdivid = currentobj.op4;
       }
       const nextobj = JSdata[nextdivid];
-      output = nextobj ? (nextobj.text || '') : 'Next not found';
+      output = nextobj ? (nextobj.text || '') : 'Invalid response. Try again.';
+      nextdivid = currentdivid; // stay on same question if invalid
     } else {
       output = 'Unrecognized answer choice';
+      nextdivid = currentdivid;
     }
-    previousdivid = currentdivid;
     console.log("parseinput returned output=" + output + " and nextdivid=" + nextdivid);
     return [output, nextdivid];
   }
@@ -304,7 +314,7 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log('Typing interrupted by user.');
     }
 
-    const userInput = inputField ? inputField.value : 'hi';
+    const userInput = inputField ? inputField.value : '';
     let [newText, nextId] = parseinput(userInput, currentid);
     inputField.value = '';
 
