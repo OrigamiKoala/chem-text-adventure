@@ -1,7 +1,7 @@
 [
     {
       "id": "initial",
-      "text": "Welcome to a choose-your-own-adventure game made by Carl, where you get to have fun (hopefully) and also learn some chemistry along the way (also hopefully)!\n<br>\n<br>This game is interactive; type your response in the box below and hit the \"Enter\" key.\n<br>\n<br>If you wish to skip the typing animation, hit the 'Enter' key again.\n<br>\n<br>If you wish to restart at any time, reload the page.\n<br>\n<br>Sometimes, you will be asked a question with multiple choices given; to respond, input the number next to your desired choice. For example, if the options are '1. banana, 2. apple, 3. orange' and you would like to answer 'banana', type '1'.\n<br>\n<br>If you are asked to respond with a word/phrase, make sure it is lowercase and spelled correctly. If you are typing a long response, capitalize as you please.\n<br>\n<br>If at any point you wish to see a list of commands or how to format your answer, type 'help'.\n<br>\n<br>Typing 'outline' will generate an outline of content; you can skip to the section you wish.\n<br>\n<br>If you wish to take back your answer, type 'undo'. Note that this works only for the previous answer; you cannot undo more than that (as of right now).\n<br>\n<br>The game will display previous prompts for your reference. If you wish to print it out, just hit Ctrl+P or Cmd+P (for Mac).\n<br>\n<br>Type anything to start from the beginning.",
+      "text": "Welcome to a choose-your-own-adventure game made by Carl, where you get to have fun (hopefully) and also learn some chemistry along the way (also hopefully)!\n--\nThis game is interactive; type your response in the box below and hit the \"Enter\" key.\n--\nIf you wish to skip the typing animation, hit the 'Enter' key again.\n--\nIf you wish to restart at any time, reload the page.\n--\nSometimes, you will be asked a question with multiple choices given; to respond, input the number next to your desired choice. For example, if the options are '1. banana, 2. apple, 3. orange' and you would like to answer 'banana', type '1'.\n--\nIf you are asked to respond with a word/phrase, make sure it is lowercase and spelled correctly. If you are typing a long response, capitalize as you please.\n--\nIf at any point you wish to see a list of commands or how to format your answer, type 'help'.\n--\nTyping 'outline' will generate an outline of content; you can skip to the section you wish.\n--\nIf you wish to take back your answer, type 'undo'. Note that this works only for the previous answer; you cannot undo more than that (as of right now).\n--\nThe game will display previous prompts for your reference. If you wish to print it out, just hit Ctrl+P or Cmd+P (for Mac).\n--\nType anything to start from the beginning.",
       "type": "fr",
       "next": "atomscover",
       "correct": null,
@@ -12,7 +12,7 @@
     },
     {
       "id": "end",
-      "text": "And that is where the story ends...for now. Check back in a couple days and there might be something new :)\n<br>\n<br>It would be greatly appreciated if you could take a minute to fill out a super short <a href=\"http://bit.ly/chemcyoafeedback\">feedback form</a>. Thank you so much!",
+      "text": "And that is where the story ends...for now. Check back in a couple days and there might be something new :)\n--\nIt would be greatly appreciated if you could take a minute to fill out a super short <a href=\"http://bit.ly/chemcyoafeedback\">feedback form</a>. Thank you so much!",
       "type": "fr",
       "next": null,
       "correct": null,
@@ -23,7 +23,7 @@
     },
     {
       "id": "atomscover",
-      "text": "<h1>Section 1: Atoms</h1>\n\n<h3>Atomic Theory</h3>\n\n<br>A long long time ago, some ancient Greek dudes asked a very interesting question: Could you keep on slicing something into smaller pieces forever?\n<br>\n<br>What do you think?\n<br>\n<ol type = \"1\">\n<li>Yes, definitely!</li>\n<li>Uhh....no</li>\n</ol>",
+      "text": "<h1>Section 1: Atoms</h1>\n--\n<h3>Atomic Theory</h3>\n--\nA long long time ago, some ancient Greek dudes asked a very interesting question: Could you keep on slicing something into smaller pieces forever?\n--\nWhat do you think?\n--\n<ol type = \"1\">\n<li>Yes, definitely!</li>\n<li>Uhh....no</li>\n</ol>",
       "type": "mcq",
       "next": null,
       "correct": null,
@@ -34,7 +34,7 @@
     },
     {
       "id": "elements",
-      "text": "Some Greeks thought the answer was \"yes\", but one guy, Democritus, agreed with you. He decided at some point, you would reach the smallest thing in the universe that couldn't be split further. He called this atomos, meaning \"indivisible\". Later, scientists would call these super small particles \"atoms\".\n<br>\n<br>But these were ancient Greeks, and they didn't yet have the tools to do fancy experiments to figure out the truth. So they kind of just forgot about atoms and agreed that all of matter was made of four elements: earth, air, fire, and water (hence Avatar). What's your favorite element?\n<br>\n<ol type=\"1\">\n<li>Earth</li>\n<li>Air</li>\n<li>Fire</li>\n<li>Water</li>\n</ol>",
+      "text": "Some Greeks thought the answer was \"yes\", but one guy, Democritus, agreed with you. He decided at some point, you would reach the smallest thing in the universe that couldn't be split further. He called this atomos, meaning \"indivisible\". Later, scientists would call these super small particles \"atoms\".\n--\nBut these were ancient Greeks, and they didn't yet have the tools to do fancy experiments to figure out the truth. So they kind of just forgot about atoms and agreed that all of matter was made of four elements: earth, air, fire, and water (hence Avatar). What's your favorite element?\n--\n<ol type=\"1\">\n<li>Earth</li>\n<li>Air</li>\n<li>Fire</li>\n<li>Water</li>\n</ol>",
       "type": "fr",
       "next": "alchemy",
       "correct": null,
@@ -45,7 +45,7 @@
     },
     {
       "id": "alchemy",
-      "text": "Nice choice :)\n<br>\n<br>Well, skip a couple centuries and along come the alchemists! These were people who believed in the idea of four elements. Three of their most famous goals were to make a panacea (something that could cure all diseases), find or make an elixir of immortality (that could ensure they lived forever), and turn any metal into gold (for more info see <a href=\"https://en.wikipedia.org/wiki/Alchemy\" target=\"_blank\">here</a>). \n<br>\n<br>History kind of portrayed alchemists as superstitious crackpots who had no idea what they were doing, and were super greedy.\n<br>\n<br>I don't know how accurate that is, given that Isaac Newton (the guy who introduced the idea of gravity) was also an alchemist...\n<br>\n<br>But the alchemists did something very important... they wrote down what they did!\n<br>\n<br>In fact, they wrote down a lot of data and observations that they collected from their experiments, and these notebooks would later be pretty useful for later chemists. Do you write stuff down?\n<ol type=\"1\">\n<li>Absolutely!</li>\n<li>Nope</li>\n</ol>",
+      "text": "Nice choice :)\n--\nWell, skip a couple centuries and along come the alchemists! These were people who believed in the idea of four elements. Three of their most famous goals were to make a panacea (something that could cure all diseases), find or make an elixir of immortality (that could ensure they lived forever), and turn any metal into gold (for more info see <a href=\"https://en.wikipedia.org/wiki/Alchemy\">here</a>). \n--\nHistory kind of portrayed alchemists as superstitious crackpots who had no idea what they were doing, and were super greedy.\n--\nI don't know how accurate that is, given that Isaac Newton (the guy who introduced the idea of gravity) was also an alchemist...\n--\nBut the alchemists did something very important... they wrote down what they did!\n--\nIn fact, they wrote down a lot of data and observations that they collected from their experiments, and these notebooks would later be pretty useful for later chemists. Do you write stuff down?\n<ol type=\"1\">\n<li>Absolutely!</li>\n<li>Nope</li>\n</ol>",
       "type": "mcq",
       "next": null,
       "correct": null,
@@ -56,7 +56,7 @@
     },
     {
       "id": "divisiblepaper",
-      "text": "A lot of Greeks agreed with you.\n<br>\n<br>Try this out: Grab a piece of paper and tear it into two pieces.\n<br>\n<br>Then tear each piece into two more pieces.\n<br>\n<br>Then repeat.\n<br>\n<br>(please actually give it a try; tearing up paper is oddly satisfying)\n<br>\n<br>Could you keep on going forever?",
+      "text": "A lot of Greeks agreed with you.\n--\nTry this out: Grab a piece of paper and tear it into two pieces.\n--\nThen tear each piece into two more pieces.\n--\nThen repeat.\n--\n(please actually give it a try; tearing up paper is oddly satisfying)\n--\nCould you keep on going forever?",
       "type": "fr",
       "next": "hypothesis",
       "correct": null,
@@ -67,7 +67,7 @@
     },
     {
       "id": "hypothesis",
-      "text": "Wow! Look at that! You made a hypothesis, which is basically an answer to a question you are asking. Science revolves around making hypotheses, and then using experiments to back your ideas up (or prove them wrong)\n<br>\n<br>Well, how many pieces did you end up with?",
+      "text": "Wow! Look at that! You made a hypothesis, which is basically an answer to a question you are asking. Science revolves around making hypotheses, and then using experiments to back your ideas up (or prove them wrong)\n--\nWell, how many pieces did you end up with?",
       "type": "fr",
       "next": "explainpaperlab",
       "correct": null,
@@ -78,7 +78,7 @@
     },
     {
       "id": "explainpaperlab",
-      "text": "That's a lot of pieces! I certainly didn't end up with that many pieces when I tried!\n<br>\n<br>Well, it looks like our idea that things could be divided forever wasn't exactly true...but that's okay! Science is filled with wrong ideas, and today scientists still aren't really sure if all their ideas are right.\n<br>\n<br>Why do you think you couldn't keep on going after a certain point?",
+      "text": "That's a lot of pieces! I certainly didn't end up with that many pieces when I tried!\n--\nWell, it looks like our idea that things could be divided forever wasn't exactly true...but that's okay! Science is filled with wrong ideas, and today scientists still aren't really sure if all their ideas are right.\n--\nWhy do you think you couldn't keep on going after a certain point?",
       "type": "fr",
       "next": "paperlabresult",
       "correct": null,
@@ -89,7 +89,7 @@
     },
     {
       "id": "paperlabresult",
-      "text": "Good idea. Well, now what do you think? Can you forever divide something into smaller pieces?\n<br>\n<ol type=\"1\">\n<li>Definitely</li>\n<li>Nope</li>\n</ol>",
+      "text": "Good idea. Well, now what do you think? Can you forever divide something into smaller pieces?\n<ol type=\"1\">\n<li>Definitely</li>\n<li>Nope</li>\n</ol>",
       "type": "mcq",
       "next": null,
       "correct": null,
@@ -111,7 +111,7 @@
     },
     {
       "id": "takenotes",
-      "text": "Hmmm...that's okay. I would suggest writing stuff down though - it could come useful in the future. Also, it builds good habits for a scientist. \n<br>\n<br>Type anything to continue.",
+      "text": "Hmmm...that's okay. I would suggest writing stuff down though - it could come useful in the future. Also, it builds good habits for a scientist. \n--\nType anything to continue.",
       "type": "fr",
       "next": "end",
       "correct": null,
@@ -122,7 +122,7 @@
     },
     {
       "id": "studyhabitsvalidation",
-      "text": "Nice app! I might give it a try.\n<br>\n<br>Type anything to continue.",
+      "text": "Nice app! I might give it a try.\n--\nType anything to continue.",
       "type": "fr",
       "next": "end",
       "correct": null,

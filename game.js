@@ -54,24 +54,20 @@ document.addEventListener('DOMContentLoaded', () => {
   // load data from json and render initial prompt
   fetch('data.json')
     .then(response => response.json())
-    .then(data => {
+    .then(async data => {
       JSdata = data;
-      if (JSdata && findnode(currentid)) {
-        const initialText = findnode(currentid).text || '';
-        // create a rendered question div and insert it above the form
-        if (previousdiv && formElement) {
-          const initialDiv = document.createElement('div');
-          initialDiv.className = 'question';
-          typeWriter(initialDiv, initialText, 10);
-          formElement.parentNode.insertBefore(initialDiv, formElement);
-          // remove the original placeholder element if present so it doesn't duplicate
-          console.log('Initial text rendered.')
-          if (qtext && qtext.parentNode) qtext.parentNode.removeChild(qtext);
-        } else if (qtext) {
-          qtext.innerText = initialText;
-          if (qtext.parentNode) qtext.parentNode.removeChild(qtext);
-        }
+      let initialText = findnode("initial").text;
+      let splitinitialText = initialText.split("--");
+      for (var j=0; j<splitinitialText.length;) {
+        const initialDiv = document.createElement('div');
+        initialDiv.className = 'question';
+        formElement.parentNode.insertBefore(initialDiv, formElement);
+        await typeWriter(initialDiv, splitinitialText[j], 10);
+        j++;
       }
+      // remove the original placeholder element if present so it doesn't duplicate
+      console.log('Initial text rendered.')
+      if (qtext && qtext.parentNode) qtext.parentNode.removeChild(qtext);
     })
     .catch(error => {
       console.error('Error loading game data:', error);
@@ -360,7 +356,7 @@ function findnode(nodeid) {
         previousdiv.appendChild(emptyLine);
       }
     }
-    const splitnewText = newText.split("<br>");
+    const splitnewText = newText.split("--");
     console.log("newText split into " + splitnewText.length + " parts.");
     for (var j=0; j<splitnewText.length;) {
       if (!splitnewText[j] || splitnewText[j].trim() === '') {
