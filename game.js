@@ -128,7 +128,6 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     
     function type() {
-      console.log("type() called");
       // if finished typing, move on
       if (currentTypingContext && currentTypingContext.finished) {
         console.log("Typing already finished, exiting type()");
@@ -194,7 +193,7 @@ document.addEventListener('DOMContentLoaded', () => {
         callback();
         console.log("Typing complete, callback executed");
       }
-      console.log("type() ended");
+      console.log("character typed");
     }
     type();
     console.log("typeWriter finished");
