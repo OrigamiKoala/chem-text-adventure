@@ -56,8 +56,8 @@ document.addEventListener('DOMContentLoaded', () => {
     .then(response => response.json())
     .then(data => {
       JSdata = data;
-      if (JSdata && JSdata[currentid]) {
-        const initialText = JSdata[currentid].text || '';
+      if (JSdata && findnode(currentid)) {
+        const initialText = findnode(currentid).text || '';
         // create a rendered question div and insert it above the form
         if (previousdiv && formElement) {
           const initialDiv = document.createElement('div');
@@ -76,6 +76,20 @@ document.addEventListener('DOMContentLoaded', () => {
     .catch(error => {
       console.error('Error loading game data:', error);
     });
+  function findnode(divid) {
+    if (JSdata) {
+      for (var i=0; i<JSdata.length;) {
+        if (JSdata[i].divid == divid) {
+          return JSdata[i];
+          console.log("findnode found node for divid=" + divid);
+        }
+        i++;
+      }
+      console.log("findnode did not find node for divid=" + divid);
+      return null;
+    }
+    return {text: "JSdata not loaded"};
+  }
 
   // attach listener to form (safe when form exists)
   if (formElement) {
@@ -232,7 +246,7 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log("inputstring was empty or null, set to 'default'");
     }
     if (!JSdata) return ['Loading...', currentdivid];
-    const currentobj = JSdata[currentdivid];
+    const currentobj = findnode(currentdivid);
     if (!currentobj) return ['Unknown node', currentdivid];
 
     // Ensure `text` exists on the current object to avoid undefined errors
@@ -249,7 +263,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (inputstring == "outline"){
       return [outlineText || 'Loading outline... please wait', currentdivid];
     } else if (inputstring == "undo"){
-      output = JSdata[previousdivid] ? (JSdata[previousdivid].text || '') : 'Previous not found';
+      output = findnode(previousdivid) ? (findnode(previousdivid).text || '') : 'Previous not found';
       nextdivid = previousdivid;
     } else if (inputstring == 'default' && outlineclicked===false) {
       // allow user to press enter and skip typing animation
@@ -262,18 +276,18 @@ document.addEventListener('DOMContentLoaded', () => {
       previousdivid = currentdivid;
       if (inputstring == currentobj.correct) {
         nextdivid = currentobj.next;
-        const nextobj = JSdata[nextdivid];
+        const nextobj = findnode(nextdivid);
         output = nextobj ? (nextobj.text || '') : 'Next not found';
       } else {
         output = 'Try again';
       }
     } else if (inputstring == 'default' && outlineclicked===true) {
       outlineclicked===false;
-      return [JSdata[currentid].text, currentid];
+      return [findnode(currentid).text, currentid];
     } else if (currentobj.type === 'fr') {
       previousdivid = currentdivid;
       nextdivid = currentobj.next;
-      const nextobj = JSdata[nextdivid];
+      const nextobj = findnode(nextdivid);
       output = nextobj ? (nextobj.text || '') : 'Next not found';
     } else if (currentobj.type === 'mcq') {
       if (inputstring == "1") {
@@ -295,7 +309,7 @@ document.addEventListener('DOMContentLoaded', () => {
         nextdivid = currentdivid;
         return [output, nextdivid];
       }
-      output = JSdata[nextdivid] ? (JSdata[nextdivid].text || '') : 'Next not found';
+      output = findnode(nextdivid) ? (findnode(nextdivid).text || '') : 'Next not found';
     } else {
       output = 'Error: Please enter the number corresponding to your choice.';
       nextdivid = currentdivid;
