@@ -17,8 +17,8 @@ For those who aren't CS nerds:
 
 If you have any feedback (positive or otherwise), please feel free to fill out a feedback form at https://bit.ly/chemcyoafeedback.
 
-Since most of the code for this game was AI-generated (via Visual Studio Code's Github Copilot and Google Gemini), I cannot claim credit for that, or put it under a license.
+Most of the code for this game was AI-generated (via Visual Studio Code's Github Copilot and Google Gemini). I did do quite a bit of editing (because AI is not that good at writing bug-free code yet...), but since some of the code is AI generated, I cannot claim credit for it, or put it under a license.
 
-However, any text that appears in the game is 100% human-written by yours truly :)
+However, any text that appears in the game is 100% human-written by yours truly 😁
 
-So the text is under the CC BY-SA 4.0 license, but the code is not.
+So the text is under the [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/deed.en) license, but the code is not.
