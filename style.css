@@ -100,7 +100,7 @@ form#responseform{
     padding:4px 4px 4px 4px;
     box-sizing:border-box;
     overflow:hidden;
-    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    background: linear-gradient(180deg, rgb(20, 40, 62), rgba(10,30,52,1));
     border-radius:12px;
     border:1px solid rgba(255,255,255,0.03);
     box-shadow: 0 8px 30px rgba(2,6,23,0.6);
