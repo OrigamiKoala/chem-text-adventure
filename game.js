@@ -305,7 +305,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- ⬇️ NEW CLEANUP FUNCTION ⬇️ ---
     const finishQuestionTyping = () => {
         // Only allow subsequent submissions and focus the input AFTER typing is done
-        
+    // 1. **Insert New HTML Here**
+        newTextDiv.innerHTML = newText;
         // Final cleanup for the input field
         const inputField = document.getElementById('response');
         if (inputField) { 
