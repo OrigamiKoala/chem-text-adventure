@@ -76,16 +76,16 @@ document.addEventListener('DOMContentLoaded', () => {
     .catch(error => {
       console.error('Error loading game data:', error);
     });
-function findnode(divid) {
+function findnode(nodeid) {
     if (JSdata) {
         // Use the built-in .find() method to search the array
-        const node = JSdata.find(item => item.divid == divid);
+        const node = JSdata.find(item => item.id == nodeid);
 
         if (node) {
-            console.log("findnode found node for divid=" + divid);
+            console.log("findnode found node for divid=" + nodeid);
             return node;
         } else {
-            console.log("findnode did not find node for divid=" + divid);
+            console.log("findnode did not find node for divid=" + nodeid);
             return null;
         }
     }
