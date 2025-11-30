@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const previousdiv = document.getElementById('previous');
   const formElement = document.getElementById('responseform');
   const inputField = document.getElementById('response');
-  let currentid = 0;
+  let currentid = "initial";
   let previousdivid = null;
   let JSdata = null;
   let helpText = '';
@@ -27,10 +27,10 @@ document.addEventListener('DOMContentLoaded', () => {
     .then(response => response.json())
     .then(data => {
       JSoutline = data;
-      if (JSoutline && JSoutline[currentid]) {
+      if (JSoutline) {
         outlineText = 'Click on a section to jump to it.<br>';
         for (const item of JSoutline) {
-          outlineText += '<button class="outline" onclick="jumpTo('+item.div+')">' +item.reference_num +' ' + item.content + '</button><br>';
+          outlineText += '<button class="outline" onclick="jumpTo(\''+item.div+'\')">' +item.reference_num +' ' + item.content + '</button><br>';
         }
       }
     }).catch(error => {
@@ -89,7 +89,7 @@ function findnode(nodeid) {
             return null;
         }
     }
-    return { text: "JSdata not loaded" };
+    return { text: "node data not loaded" };
 }
 
   // attach listener to form (safe when form exists)
