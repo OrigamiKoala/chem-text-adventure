@@ -17,7 +17,7 @@ For those who aren't CS nerds:
 
 If you have any feedback (positive or otherwise), please feel free to fill out a feedback form at https://bit.ly/chemcyoafeedback.
 
-Most of the code for this game was AI-generated (via Visual Studio Code's Github Copilot and Google Gemini). I did do quite a bit of editing (because AI is not that good at writing bug-free code yet...), but since some of the code is AI generated, I cannot claim credit for it, or put it under a license.
+Most of the code for this game was AI-generated (via Visual Studio Code's Github Copilot and Google Gemini). I did do quite a bit of editing (because AI is not that good at writing bug-free code yet...or at visual design...), but since some of the code is AI generated, I cannot claim credit for it, or put it under a license.
 
 However, any text that appears in the game is 100% human-written by yours truly 😁
 
