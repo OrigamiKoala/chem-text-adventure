@@ -313,21 +313,6 @@
       "reference_num": 1.2,
       "content": "Atomic Structure",
       "div": "magnets"
-    },
-    {
-      "reference_num": 1.3,
-      "content": "Isotopes and Atomic Mass",
-      "div": "isotopes"
-    },
-    {
-      "reference_num": 1.4,
-      "content": "Molecular Formulas",
-      "div": "error"
-    },
-    {
-      "reference_num": 1.5,
-      "content": "Percent Composition",
-      "div": "error"
     }
   ]
 }
