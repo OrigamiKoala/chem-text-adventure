@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let typingTimeoutId = null;
   let outlineclicked = false;
   let previouscontainer = null
+  let previoustext = '';
   let typespeed = 15;
   const emptyLine = document.createElement('div');
   emptyLine.className = 'spacer';
@@ -61,6 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
     .then(async data => {
       JSdata = data.pchem_nodes;
       let initialText = findnode("initial").text;
+      previoustext= initialText;
       let splitinitialText = initialText.split("--");
       if (qtext && qtext.parentNode) qtext.parentNode.removeChild(qtext);
       let newContainer = document.createElement('div');
@@ -143,7 +145,7 @@ function findnode(nodeid) {
             }
             console.log('finish() called');
             // Display all remaining text
-            let newText = findnode(currentid).text;
+            let newText = previoustext;
             console.log(currentid);
             let splitnewText = newText.split("--");
             previouscontainer.remove();
@@ -387,6 +389,7 @@ function findnode(nodeid) {
         console.log("interrupt detected, no new question rendered");
         return;
       } else {
+        previoustext= newText;
         formElement.parentNode.insertBefore(newContainer, formElement);
         previouscontainer = newContainer;
         for (var j=0; j<splitnewText.length;) {
