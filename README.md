@@ -15,7 +15,7 @@ For those who aren't CS nerds:
 
 **Please note that this game is still being developed; new content is constantly being added.**
 
-I will try to release new updates every Saturday, though the updates might only modify old content, instead of introducing new modules.
+I will try to release new updates every Sunday, though the updates might only modify old content, instead of introducing new modules.
 
 If you have any feedback (positive or otherwise), please feel free to fill out a feedback form (https://bit.ly/chemcyoafeedback).
 
