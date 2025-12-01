@@ -17,6 +17,8 @@ document.addEventListener('DOMContentLoaded', () => {
   let outlineclicked = false;
   let previouscontainer = null
   let typespeed = 15;
+  const emptyLine = document.createElement('div');
+  emptyLine.className = 'spacer';
 
   // preload help.txt
   fetch('help.txt')
@@ -67,8 +69,9 @@ document.addEventListener('DOMContentLoaded', () => {
       for (var j=0; j<splitinitialText.length;) {
         const initialDiv = document.createElement('div');
         initialDiv.className = 'question';
-        newContainer.appendChild(initialDiv, formElement);
+        newContainer.appendChild(initialDiv);
         await typeWriter(initialDiv, splitinitialText[j], typespeed);
+        initialDiv.insertAdjacentHTML('afterend', emptyLine.outerHTML);
         j++;
       }
       // remove the original placeholder element if present so it doesn't duplicate
@@ -149,6 +152,7 @@ function findnode(nodeid) {
               newinterruptTextDiv.className = 'question';
               newinterruptTextDiv.innerHTML = splitnewText[n];
               newContainer.appendChild(newinterruptTextDiv);
+              newinterruptTextDiv.insertAdjacentHTML('afterend', emptyLine.outerHTML);
               scrollToBottom(true);
               n++;
             }
@@ -353,19 +357,19 @@ function findnode(nodeid) {
 
     // append only the user's response to the history (do not re-insert the previous question text)
     if (previousdiv) {
-      const container = document.createElement('div');
-      container.className = 'response';
-      container.innerHTML = `<div>${encodeURIComponent(userInput)}</div>`;
-      // insert the container just before the form so it appears in history
-      if (formElement && previousdiv === formElement.parentNode) {
-        previousdiv.insertBefore(container, formElement);
-      } else {
-        previousdiv.appendChild(container);
+      if (userInput.trim() !== '') {
+        const container = document.createElement('div');
+        container.className = 'response';
+        container.innerHTML = `<div>${encodeURIComponent(userInput)}</div>`;
+        // insert the container just before the form so it appears in history
+        if (formElement && previousdiv === formElement.parentNode) {
+          previousdiv.insertBefore(container, formElement);
+        } else {
+          previousdiv.appendChild(container);
+        }
       }
       
       // insert an empty line after user input
-      const emptyLine = document.createElement('div');
-      emptyLine.className = 'spacer';
       if (formElement && previousdiv === formElement.parentNode) {
         previousdiv.insertBefore(emptyLine, formElement);
       } else {
@@ -387,6 +391,7 @@ function findnode(nodeid) {
         const finishQuestionTyping = () => {
             // reload html 
           newTextDiv.innerHTML = splitnewText[j];
+          newTextDiv.insertAdjacentHTML('afterend', emptyLine.outerHTML);
           // Final cleanup for the input field
           const inputField = document.getElementById('response');
           if (inputField) { 
@@ -406,6 +411,7 @@ function findnode(nodeid) {
           } else {
             console.log("Typing part " + j + ": " + splitnewText[j]);
             newContainer.appendChild(newTextDiv, formElement);
+            newContainer.appendChild(emptyLine, formElement);
             await typeWriter(newTextDiv, splitnewText[j], typespeed, finishQuestionTyping);
             currentid = nextId;
           }
