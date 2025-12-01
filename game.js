@@ -297,9 +297,9 @@ function findnode(nodeid) {
       if (inputstring == currentobj.correct) {
         nextdivid = currentobj.next;
         const nextobj = findnode(nextdivid);
-        output = nextobj ? (nextobj.text || '') : 'Next not found';
+        output = nextobj ? (nextobj.text || '') : 'Oops. I couldn\'t find the next part. Looks like you found a bug!';
       } else {
-        output = 'Try again';
+        output = 'Oops. That didn\' seeem to be exactly right. But that\'s okay; we all make mistakes! Check your formatting/spelling and try again :)';
       }
     } else if (inputstring == 'default' && outlineclicked===true) {
       outlineclicked===false;
@@ -308,7 +308,7 @@ function findnode(nodeid) {
       previousdivid = currentdivid;
       nextdivid = currentobj.next;
       const nextobj = findnode(nextdivid);
-      output = nextobj ? (nextobj.text || '') : 'Next not found';
+      output = nextobj ? (nextobj.text || '') : 'Oops. I couldn\'t find the next part. Looks like you found a bug!';
     } else if (currentobj.type === 'mcq') {
       if (inputstring == "1") {
         nextdivid = currentobj.op1;
@@ -325,13 +325,13 @@ function findnode(nodeid) {
         previousdivid = currentdivid;
       } else {
         console.log("Unrecognized answer choice: " + inputstring);
-        output = 'Unrecognized answer choice. Please enter the number corresponding to your choice.';
+        output = 'That doesn\'t seem to be an answer choice. Please enter the number corresponding to your choice, and try again.';
         nextdivid = currentdivid;
         return [output, nextdivid];
       }
-      output = findnode(nextdivid) ? (findnode(nextdivid).text || '') : 'Next not found';
+      output = findnode(nextdivid) ? (findnode(nextdivid).text || '') : 'Oops. I couldn\'t find the next part. Looks like you found a bug!';
     } else {
-      output = 'Error: Please enter the number corresponding to your choice.';
+      output = 'Oops! Looks like you found a bug! I guess I messed up when writing the question...';
       nextdivid = currentdivid;
     }
     console.log("parseinput returned output=" + output + " and nextdivid=" + nextdivid);
