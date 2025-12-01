@@ -1,12 +1,17 @@
 [
     {
       "reference_num": 1,
-      "content": "Atoms",
+      "content": "Atoms and Molecules",
       "div": "atomscover"
     },
     {
       "reference_num": 1.1,
-      "content": "Atomic theory",
+      "content": "History of the Atom",
       "div": "atomscover"
+    },
+    {
+      "reference_num": 1.2,
+      "content": "Atomic Structure",
+      "div": "magnets"
     }
   ]
