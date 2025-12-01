@@ -26,4 +26,5 @@ However, any text that appears in the game is 100% human-written by yours truly 
 So the text is under the [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/deed.en) license, but the code is not.
 
 Log:
-2025 November 30: Added Section 1, Subsections 1.1-1.2
+
+2025 November 30: Added Section 1: Atoms and Molecules, 1.1: History of the Atom, 1.2: Atomic Structure
