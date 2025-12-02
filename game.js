@@ -298,30 +298,36 @@ function findnode(nodeid) {
       console.log("Input empty, typing interrupted");
       return ['interrupt', currentdivid];
     // handle normal input
+    } else if (inputstring == 'default' && outlineclicked===true) {
+      console.log("Jumping");
+      outlineclicked=false;
+      wrongcounter = 0;
+      return [findnode(currentid).text, currentid];
     } else if (currentobj.type === 'frq') {
       previousdivid = currentdivid;
       if (inputstring == currentobj.correct) {
         nextdivid = currentobj.next;
         const nextobj = findnode(nextdivid);
         output = nextobj ? (nextobj.text || '') : 'Oops. I couldn\'t find the next part. Looks like you found a bug!';
-      } else {
+        wrongcounter = 0;
+      }
+      // else if (inputstring == "default"){
+      //   wrongcounter = 0;
+      //   return [findnode(currentdivid).text,currentdivid];
+      // }
+       else {
         if (wrongcounter >= 4){
           output = 'It seems like you\'re having some trouble with this question. Don\'t worry, it happens to everyone! The answer is '+currentobj.correct+'.';
           wrongcounter = 0;
         }
         else {
-          output = 'Oops. That didn\' seeem to be exactly right. But that\'s okay; we all make mistakes! Check your answer and try again :) Remember to spell/format your answer correctly! For more information on formatting, type "help".';
+          output = 'Oops. That didn\'t seeem to be exactly right. But that\'s okay; we all make mistakes! Check your answer and try again :) Remember to spell/format your answer correctly! For more information on formatting, type "help".';
           if (currentobj.hint!=null && currentobj.hint!=''){
             output += '--Hint: ' + currentobj.hint;
           }
           wrongcounter++;
         }
       }
-    } else if (inputstring == 'default' && outlineclicked===true) {
-      console.log("Jumping");
-      outlineclicked=false;
-      wrongcounter = 0;
-      return [findnode(currentid).text, currentid];
     } else if (currentobj.type === 'fr') {
       previousdivid = currentdivid;
       nextdivid = currentobj.next;
