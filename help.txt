@@ -14,7 +14,8 @@ List of commands:
 <br>Please note that links only load after the typing animation has finished.
 <br>
 <br>How to format answers:
-<br>Unless specified, round all answers to the appropriate significant figures. Unsure what that means? Check out http://www.astro.yale.edu/astro120/SigFig.pdf.
+<br>Unless specified, round all answers to the appropriate significant figures. Unsure what that means? Check out http://www.astro.yale.edu/astro120/SigFig.pdf. If your answer is above 10^3 or below 10^-3, write it in scientific notation. For example, if your answer was 0.0008, write it as "8e-4".
+<br>IMPORTANT: DO NOT INCLUDE UNITS IN YOUR ANSWER
 <br>If you are typing a word/phrase, make sure everything is lowercase. If you are typing a long response, you do not need to worry about that.
 <br>If you are responding to question with multiple options, make sure to type the number of your answer, not the answer itself. For example, if the question options are '1. banana, 2. apple, 3. orange' and you want to answer 'banana', type '1'
 <br>
