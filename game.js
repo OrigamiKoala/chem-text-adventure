@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let typespeed = 15;
   const emptyLine = document.createElement('div');
   emptyLine.className = 'spacer';
+  let wrongcounter = 0;
 
   // preload help.txt
   fetch('help.txt')
@@ -289,6 +290,7 @@ function findnode(nodeid) {
       return [outlineText || 'Loading outline... please wait', currentdivid];
     } else if (inputstring == "undo"){
       output = findnode(previousdivid) ? (findnode(previousdivid).text || '') : 'Previous not found';
+      wrongcounter = 0;
       nextdivid = previousdivid;
     } else if (inputstring == "default" && outlineclicked===false) {
       // allow user to press enter and skip typing animation
@@ -303,14 +305,22 @@ function findnode(nodeid) {
         const nextobj = findnode(nextdivid);
         output = nextobj ? (nextobj.text || '') : 'Oops. I couldn\'t find the next part. Looks like you found a bug!';
       } else {
-        output = 'Oops. That didn\' seeem to be exactly right. But that\'s okay; we all make mistakes! Check your answer and try again :) Remember to spell/format your answer correctly! For more information on formatting, type "help".';
-        if (currentobj.hint!=null && currentobj.hint!=''){
-          output += '--Hint:' + currentobj.hint;
+        if (wrongcounter >= 4){
+          output = 'It seems like you\'re having some trouble with this question. Don\'t worry, it happens to everyone! The answer is '+currentobj.correct+'.';
+          wrongcounter = 0;
+        }
+        else {
+          output = 'Oops. That didn\' seeem to be exactly right. But that\'s okay; we all make mistakes! Check your answer and try again :) Remember to spell/format your answer correctly! For more information on formatting, type "help".';
+          if (currentobj.hint!=null && currentobj.hint!=''){
+            output += '--Hint: ' + currentobj.hint;
+          }
+          wrongcounter++;
         }
       }
     } else if (inputstring == 'default' && outlineclicked===true) {
       console.log("Jumping");
       outlineclicked=false;
+      wrongcounter = 0;
       return [findnode(currentid).text, currentid];
     } else if (currentobj.type === 'fr') {
       previousdivid = currentdivid;
