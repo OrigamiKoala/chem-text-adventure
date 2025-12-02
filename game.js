@@ -304,7 +304,9 @@ function findnode(nodeid) {
         output = nextobj ? (nextobj.text || '') : 'Oops. I couldn\'t find the next part. Looks like you found a bug!';
       } else {
         output = 'Oops. That didn\' seeem to be exactly right. But that\'s okay; we all make mistakes! Check your answer and try again :) Remember to spell/format your answer correctly! For more information on formatting, type "help".';
-        output += '--' + currentobj.hint;
+        if (currentobj.hint!=null && currentobj.hint!=''){
+          output += '--Hint:' + currentobj.hint;
+        }
       }
     } else if (inputstring == 'default' && outlineclicked===true) {
       console.log("Jumping");
