@@ -14,6 +14,7 @@ List of commands:
 <br>Please note that links only load after the typing animation has finished.
 <br>
 <br>How to format answers:
+<br>Sometimes, I will ask a question, and have several options in quotes like this  - 'banana'. This means the correct answer is one of those options. For example, if the question is "Do you like 'bananas' or 'apples' more?", your two options are 'bananas' or 'apples'.
 <br>Unless specified, round all answers to the appropriate significant figures. Unsure what that means? Check out http://www.astro.yale.edu/astro120/SigFig.pdf. If your answer is above 10^3 or below 10^-3, write it in scientific notation. For example, if your answer was 0.0008, write it as "8e-4".
 <br>IMPORTANT: DO NOT INCLUDE UNITS IN YOUR ANSWER
 <br>If you are typing a word/phrase, make sure everything is lowercase. If you are typing a long response, you do not need to worry about that.
