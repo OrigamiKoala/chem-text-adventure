@@ -8,14 +8,19 @@ List of commands:
 <br>Repository: https://github.com/OrigamiKoala/chem-text-adventure
 <br>Feedback form: https://bit.ly/chemcyoafeedback 
 <br>
+Tutorial:
+<br>This game is interactive; type your response in the box below and hit the "Enter" key.
 <br>You can skip the typing animation by hitting the enter key.
 <br>To restart the game, just reload the page or relaunch the HTML file. Your progress will not be saved; you can jump to the section you were on by typing 'outline'
-<br>
+<br>The game will display previous prompts for your reference. If you wish to print it out, just hit Ctrl+P or Cmd+P (for Mac).
 <br>Please note that links only load after the typing animation has finished.
 <br>
 <br>How to format answers:
+<br>Sometimes, you will be asked a question with multiple choices given; to respond, input the number next to your desired choice. For example, if the options are '1. banana, 2. apple, 3. orange' and you would like to answer 'banana', type '1'.
 <br>Sometimes, I will ask a question, and have several options in quotes like this  - 'banana'. This means the correct answer is one of those options. For example, if the question is "Do you like 'bananas' or 'apples' more?", your two options are 'bananas' or 'apples'.
-<br>Unless specified, round all answers to the appropriate significant figures. Unsure what that means? Check out http://www.astro.yale.edu/astro120/SigFig.pdf. If your answer is above 10^3 or below 10^-3, write it in scientific notation. For example, if your answer was 0.0008, write it as "8e-4".
+<br>Make sure all short responses (words/phrases) are lowercase and spelled correctly. Long responses do not need this.
+<br>If you are given a hint, and the hint contains a question, don't type your answer. These questions are meant to guide your thoughts.
+<br>Unless specified, round all numerical answers to the appropriate significant figures. Unsure what that means? Check out http://www.astro.yale.edu/astro120/SigFig.pdf. If your answer is above 10^3 or below 10^-3, write it in scientific notation. For example, if your answer was 0.0008, write it as "8e-4".
 <br>IMPORTANT: DO NOT INCLUDE UNITS IN YOUR ANSWER
 <br>If you are typing a word/phrase, make sure everything is lowercase. If you are typing a long response, you do not need to worry about that.
 <br>If you are responding to question with multiple options, make sure to type the number of your answer, not the answer itself. For example, if the question options are '1. banana, 2. apple, 3. orange' and you want to answer 'banana', type '1'
