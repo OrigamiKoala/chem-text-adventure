@@ -38,13 +38,25 @@
     },
     {
       "id": "atomscover",
-      "text": "<h1>Section 1: Atoms and Molecules</h1>\n--\n<h3>History of the Atom</h3>\n--\nA long long time ago, some ancient Greek dudes asked a very interesting question: Could you keep on slicing something into smaller pieces forever?\n--\nWhat do you think?\n--\n<ol type = \"1\">\n<li>Yes, definitely!</li>\n<li>Uhh....no</li>\n</ol>",
+      "text": "<h1>Section 1: Atoms and Molecules</h1>\n--\n<h3>History of the Atom</h3>\n--\nA long long time ago, some ancient Greek dudes asked a very interesting question: Could you keep on slicing something into smaller pieces forever?\n--\nWell, let's do an activity to find out.\n<a class = \"lab\" href=\"https://docs.google.com/document/d/1UMbHajueGd_sgbd86Zby_NRyJ0OIcQH7juZGNtDlUFI/edit?tab=t.0#heading=h.m93xeq3u7pnl\">Atomos Activity</button>\n--\nClick on the activity, and make a copy of the document. Do the activity. Then, answer the questions, and come back here.\n--\nType anything once you are done.",
       "type": "mcq",
       "next": null,
       "correct": null,
       "hint": null,
       "op1": "divisiblepaper",
       "op2": "elements",
+      "op3": null,
+      "op4": null
+    },
+    {
+      "id": "atomscoverq",
+      "text": "Do you think you can keep slicing something in half forever?\n--\n<ol type = \"1\">\n<li>Yes, definitely!</li>\n<li>Uhh....no</li>\n</ol>",
+      "type": null,
+      "next": null,
+      "correct": null,
+      "hint": null,
+      "op1": null,
+      "op2": null,
       "op3": null,
       "op4": null
     },
@@ -62,7 +74,7 @@
     },
     {
       "id": "alchemy",
-      "text": "Nice choice :)\n--\nWell, skip a couple centuries and along come the alchemists! These were people who believed in the idea of four elements. Three of their most famous goals were to make a panacea (something that could cure all diseases), find or make an elixir of immortality (that could ensure they lived forever), and turn any metal into gold (for more info see <a href=\"https://en.wikipedia.org/wiki/Alchemy\">here</a>). \n--\nHistory kind of portrayed alchemists as superstitious crackpots who had no idea what they were doing, and were super greedy.\n--\nI don't know how accurate that is, given that Isaac Newton (the guy who introduced the idea of gravity) was also an alchemist...\n--\nBut the alchemists did something very important... they wrote down what they did!\n--\nIn fact, they wrote down a lot of data and observations that they collected from their experiments, and these notebooks would later be pretty useful for later chemists. Do you write stuff down?\n<ol type=\"1\">\n<li>Absolutely!</li>\n<li>Nope</li>\n</ol>",
+      "text": "Nice choice :)\n--\nWell, skip a couple centuries and along come the alchemists! These were people who believed in the idea of four elements. Three of their most famous goals were to make a panacea (something that could cure all diseases), find or make an elixir of immortality (that could ensure they lived forever), and turn any metal into gold (for more info see <a href=\"https://en.wikipedia.org/wiki/Alchemy\">here</a>). Basically, you know, your typical life goals.\n--\nHistory kind of portrayed alchemists as superstitious crackpots who had no idea what they were doing, and were super greedy.\n--\nI don't know how accurate that is, given that Isaac Newton (the guy who introduced the idea of gravity) was also an alchemist...\n--\nBut the alchemists did something very important... they wrote down what they did!\n--\nIn fact, they wrote down a lot of data and observations that they collected from their experiments, and these notebooks would later be pretty useful for later chemists. Do you write stuff down?\n<ol type=\"1\">\n<li>Absolutely!</li>\n<li>Nope</li>\n</ol>",
       "type": "mcq",
       "next": null,
       "correct": null,
