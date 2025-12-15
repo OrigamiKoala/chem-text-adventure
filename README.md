@@ -27,6 +27,7 @@ So the text is under the [CC BY-SA 4.0](https://creativecommons.org/licenses/by-
 
 Log:
 
+2025 December 14: Added activities
 2025 December 10: Added 1.4: Electronegativity, edited 1.3 and 1.5
 2025 December 7: Added 1.3: Isotopes and Atomic Mass, 1.5: Molecules, edited 1.1-1.2
 2025 November 30: Added Section 1: Atoms and Molecules, 1.1: History of the Atom, 1.2: Atomic Structure
