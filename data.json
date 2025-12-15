@@ -38,7 +38,7 @@
     },
     {
       "id": "atomscover",
-      "text": "<h1>Section 1: Atoms and Molecules</h1>\n--\n<h3>History of the Atom</h3>\n--\nA long long time ago, some ancient Greek dudes asked a very interesting question: Could you keep on slicing something into smaller pieces forever?\n--\nWell, let's do an activity to find out.\n<a class = \"lab\" href=\"https://docs.google.com/document/d/1UMbHajueGd_sgbd86Zby_NRyJ0OIcQH7juZGNtDlUFI/edit?tab=t.0#heading=h.m93xeq3u7pnl\">Atomos Activity</button>\n--\nClick on the activity, and make a copy of the document. Do the activity. Then, answer the questions, and come back here.\n--\nType anything once you are done.",
+      "text": "<h1>Section 1: Atoms and Molecules</h1>\n--\n<h3>History of the Atom</h3>\n--\nA long long time ago, some ancient Greek dudes asked a very interesting question: Could you keep on slicing something into smaller pieces forever?\n--\nWell, let's do an activity to find out.\n<a class = \"lab\" href=\"https://docs.google.com/document/d/1UMbHajueGd_sgbd86Zby_NRyJ0OIcQH7juZGNtDlUFI/copy\">Atomos Activity</button>\n--\nClick on the activity, and make a copy of the document. Do the activity. Then, answer the questions, and come back here.\n--\nType anything once you are done.",
       "type": "mcq",
       "next": null,
       "correct": null,
