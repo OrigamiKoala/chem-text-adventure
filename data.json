@@ -38,7 +38,7 @@
     },
     {
       "id": "atomscover",
-      "text": "<h1>Section 1: Atoms and Molecules</h1>\n--\n<h3>History of the Atom</h3>\n--\nA long long time ago, some ancient Greek dudes asked a very interesting question: Could you keep on slicing something into smaller pieces forever?\n--\nWell, let's do an activity to find out.\n--\n<a class = \"lab\" href=\"https://docs.google.com/document/d/1UMbHajueGd_sgbd86Zby_NRyJ0OIcQH7juZGNtDlUFI/copy\">Atomos Activity</button>\n--\nClick on the activity, and make a copy of the document. Do the activity. Then, answer the questions, and come back here.\n--\nType anything once you are done.",
+      "text": "<h1>Section 1: Atoms and Molecules</h1>\n--\n<h3>History of the Atom</h3>\n--\nA long long time ago, some ancient Greek dudes asked a very interesting question: Could you keep on slicing something into smaller pieces forever?\n--\nWell, let's do an activity to find out.\n--\n<a class = \"lab\" href=\"https://docs.google.com/document/d/1UMbHajueGd_sgbd86Zby_NRyJ0OIcQH7juZGNtDlUFI/copy\">Atomos Activity</button>\n--\nClick on the activity, and make a copy of the document. Try the activity. Then, answer the questions, and come back here.\n--\nType anything once you are done.",
       "type": "fr",
       "next": "atomscoverq",
       "correct": null,
@@ -302,7 +302,7 @@
     },
     {
       "id": "legos",
-      "text": "All atoms are made of protons, neutrons, and electrons - but with different amounts.\n--\nThe number of protons in an atom's nucleus determines its \"element\". Atoms are kind of like Legos - they come in different types.\n--\nThe number of protons and electrons determines how an atom behaves. Atoms with different numbers of protons and electrons behave differently, kind of like how Legos with different shapes fit together differently and are used for different things.\n--\nWe have a table of all the different elements - called the \"Periodic Table of the Elements\" or just the \"Periodic Table\". \n<br><img src = \"https://www.nist.gov/sites/default/files/styles/social/public/images/2024/06/25/NIST_periodictable_June24_iupac_Page_1.png?itok=odSH_Vgc\" alt=\"Periodic Table\">\n--\nThe number on top of each element symbol is the number of protons in an atom of that element.\n--\nFun fact: there is also a periodic table of legos: \n<br><img src = \"https://images.brickset.com/news/99007_P1078365.JPG\" alt = \"Periodic Table of Lego Colors\">\n--\nSo, looking at the periodic table, how many protons does an oxygen atom have?",
+      "text": "All atoms are made of protons, neutrons, and electrons - but with different amounts.\n--\nThe number of protons in an atom's nucleus determines its \"element\". Atoms are kind of like Legos - they come in different types.\n--\nThe number of protons and electrons determines how an atom behaves. Atoms with different numbers of protons and electrons behave differently, kind of like how Legos with different shapes fit together differently and are used for different things.\n--\nWe have a table of all the different elements - called the \"Periodic Table of the Elements\" or just the \"Periodic Table\". \n<br><img src = \"images/NIST_table.png\" alt=\"Periodic Table\">\n--\nThe number on top of each element symbol is the number of protons in an atom of that element.\n--\nFun fact: there is also a periodic table of legos: \n<br><img src = \"images/lego-periodic-table.jpeg\" alt = \"Periodic Table of Lego Colors\">\n--\nSo, looking at the periodic table, how many protons does an oxygen atom have?",
       "type": "frq",
       "next": "niceoxygen",
       "correct": 8,
@@ -494,7 +494,7 @@
     },
     {
       "id": "lithiumlosesit",
-      "text": "For an atom with only a few valence electrons, the easiest way for it to have a full outer shell is if it gets rid of all the electrons in its outer shell - and then the shell underneath is full! See below.\n<img src = \"https://cdn1.byjus.com/wp-content/uploads/2020/10/Valence-Electrons-1-700x327.png\" alt = \"Shells of an atom diagram\">\n--\nSo if lithium has one valence electron, does it want to 'lose it' or 'fill the valence shell'?",
+      "text": "For an atom with only a few valence electrons, the easiest way for it to have a full outer shell is if it gets rid of all the electrons in its outer shell - and then the shell underneath is full! See below.\n<img src = \"images/atom-shells.png\" alt = \"Shells of an atom diagram\">\n--\nSo if lithium has one valence electron, does it want to 'lose it' or 'fill the valence shell'?",
       "type": "frq",
       "next": "halffilled",
       "correct": "lose it",
@@ -806,11 +806,35 @@
     },
     {
       "id": "endofmolecules",
-      "text": "Nice job!\n--\nSince neither oxygen nor carbon is willing to give up an electron, they end up sharing some of their electrons.\n--\nIn the case of carbon dioxide, the oxygen on the left shares two of its electrons with the carbon. The carbon also shares two of its own electrons, so in total, the carbon and oxygen share <i>four</i> electrons.\n<img src=\"https://www.gcsescience.com/Carbon-Dioxide-Molecule.gif\">\n--\nThus, the oxygen and carbon share two pairs of electrons, so the bond is a <i>double bond</i>. Remember, this bond is also covalent!\n--\nIf two atoms share one pair of electrons, the bond is a <i>single bond</i>. If two atoms share three pairs of electrons, the bond is called a <i>triple bond</i>. A quadruple bond is pretty much unheard of.\n--\nHere's a tough question: In $Cl_2$, is the bond between the two chlorines 'ionic' or covalent? If it is covalent, is the bond 'single' or 'double'?",
+      "text": "Nice job!\n--\nSince neither oxygen nor carbon is willing to give up an electron, they end up sharing some of their electrons.\n--\nIn the case of carbon dioxide, the oxygen on the left shares two of its electrons with the carbon. The carbon also shares two of its own electrons, so in total, the carbon and oxygen share <i>four</i> electrons.\n<img src=\"images/co2-molecule.gif\">\n--\nThus, the oxygen and carbon share two pairs of electrons, so the bond is a <i>double bond</i>. Remember, this bond is also covalent!\n--\nIf two atoms share one pair of electrons, the bond is a <i>single bond</i>. If two atoms share three pairs of electrons, the bond is called a <i>triple bond</i>. A quadruple bond is pretty much unheard of.\n--\nHere's a tough question: In $Cl_2$, is the bond between the two chlorines 'ionic' or covalent? If it is covalent, is the bond 'single' or 'double'?",
       "type": "fr",
-      "next": "end",
+      "next": "endendofmolecules",
       "correct": "single",
       "hint": "First, find chlorine on the periodic table. How many valence electrons does each chlorine have? Is the bond ionic or covalent? If it is covalent, how many electrons should each chlorine contribute so that they can share and both have full shells?",
+      "op1": null,
+      "op2": null,
+      "op3": null,
+      "op4": null
+    },
+    {
+      "id": "endendofmolecules",
+      "text": "Nice job! Type anything to continue.",
+      "type": "fr",
+      "next": null,
+      "correct": null,
+      "hint": null,
+      "op1": null,
+      "op2": null,
+      "op3": null,
+      "op4": null
+    },
+    {
+      "id": "percentcompositioncover",
+      "text": "<h3>Percent Composition</h3>",
+      "type": null,
+      "next": null,
+      "correct": null,
+      "hint": null,
       "op1": null,
       "op2": null,
       "op3": null,
@@ -851,7 +875,7 @@
     {
       "reference_num": 1.6,
       "content": "Percent Composition",
-      "div": "error"
+      "div": "percentcompositioncover"
     }
   ]
 }
