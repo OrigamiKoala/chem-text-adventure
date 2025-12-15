@@ -266,6 +266,7 @@ function findnode(nodeid) {
 
     if (inputstring){
       inputstring = encodeURIComponent(inputstring.trim());
+      inputstring = inputstring.replaceAll('%20', ' ');
     }
     else {
       inputstring = 'default';
