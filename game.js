@@ -43,7 +43,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }).catch(error => {
       console.error('Error loading outline:', error);
     });
-
+  
+  function decode(encodedURIComponent){
+    let result = encodedURIComponent.replaceAll("%20", " ");
+    result = result.replaceAll("%25", "%");
+    result = result.replaceAll("%2F", "/");
+    result = result.replaceAll("%2C", ",");
+    return result;
+  }
   // jump to div id (for outline)
   function jumpTo(divid) {
     console.log("jumpTo called with divid=" + divid);
@@ -440,7 +447,7 @@ function findnode(nodeid) {
       if (userInput.trim() !== '') {
         const container = document.createElement('div');
         container.className = 'response';
-        container.innerHTML = `<div>${encodeURIComponent(userInput)}</div>`;
+        container.innerHTML = `<div>${decode(encodeURIComponent(userInput))}</div>`;
         // insert the container just before the form so it appears in history
         if (formElement && previousdiv === formElement.parentNode) {
           previousdiv.insertBefore(container, formElement);
