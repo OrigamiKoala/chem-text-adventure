@@ -75,6 +75,8 @@ document.addEventListener('DOMContentLoaded', () => {
         newContainer.appendChild(initialDiv);
         await typeWriter(initialDiv, splitinitialText[j], typespeed);
         initialDiv.insertAdjacentHTML('afterend', emptyLine.outerHTML);
+        initialDiv.innerHTML = splitinitialText[j];
+        MathJax.typeset();
         j++;
       }
       // remove the original placeholder element if present so it doesn't duplicate

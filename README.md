@@ -31,6 +31,8 @@ So the text is under the [CC BY-SA 4.0](https://creativecommons.org/licenses/by-
 
 Log:
 
+2025 December 16: Finished 1.6, cleaned up some code
+
 2025 December 15: Fixed the bugs (oops), added images, added MathJax equation rendering, added activities, added 1.6: Percent Composition
 
 2025 December 14: Added activities
