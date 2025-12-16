@@ -674,7 +674,7 @@
     },
     {
       "id": "molecularformula",
-      "text": "<h3>Molecules</h3>\n--\nThere are only 118 elements of the periodic table. Of these, only 92 naturally exist in the universe. Of these, only 90 exist on Earth.\n--\nThese 90 elements combine in lots of different ways to form <i>molecules</i>. You can imagine molecules as simple figures made from legos, which larger builds are made of. Atoms (legos) combine to form molecules, which then make up the world around us.\n--\nWe can describe any molecule by what atoms combine to form it. For example, you've probably heard that water is $H_2O$, which means one water molecule is made of two hydrogen atoms and one oxygen atom combined together.\n--\nThis is called the <i>molecular formula</i> of the molecule. It is kind of like the ingredients list in a recipe.\n--\nSo how many carbon atoms are in one molecule of benzene ($C_6H_6$)?",
+      "text": "<h3>Molecules</h3>\n--\nThere are only 118 elements of the periodic table. Of these, only 92 naturally exist in the universe. Of these, only 90 exist on Earth.\n--\nThese 90 elements combine in lots of different ways to form <i>molecules</i>. You can imagine molecules as simple figures made from legos, which larger builds are made of. Atoms (legos) combine to form molecules, which then make up the world around us.\n--\nWe can describe any molecule by what atoms combine to form it. For example, you've probably heard that water is \\(H_2O\\), which means one water molecule is made of two hydrogen atoms and one oxygen atom combined together.\n--\nThis is called the <i>molecular formula</i> of the molecule. It is kind of like the ingredients list in a recipe.\n--\nSo how many carbon atoms are in one molecule of benzene \\(C_6H_6\\)?",
       "type": "frq",
       "next": "benzenesuccess",
       "correct": 6,
@@ -818,7 +818,7 @@
     },
     {
       "id": "endofmolecules",
-      "text": "Nice job!\n--\nSince neither oxygen nor carbon is willing to give up an electron, they end up sharing some of their electrons.\n--\nIn the case of carbon dioxide, the oxygen on the left shares two of its electrons with the carbon. The carbon also shares two of its own electrons, so in total, the carbon and oxygen share <i>four</i> electrons.\n<img src=\"images/co2-molecule.gif\">\n--\nThus, the oxygen and carbon share two pairs of electrons, so the bond is a <i>double bond</i>. Remember, this bond is also covalent!\n--\nIf two atoms share one pair of electrons, the bond is a <i>single bond</i>. If two atoms share three pairs of electrons, the bond is called a <i>triple bond</i>. A quadruple bond is pretty much unheard of.\n--\nHere's a tough question: In $Cl_2$, is the bond between the two chlorines 'ionic' or covalent? If it is covalent, is the bond 'single' or 'double'?",
+      "text": "Nice job!\n--\nSince neither oxygen nor carbon is willing to give up an electron, they end up sharing some of their electrons.\n--\nIn the case of carbon dioxide, the oxygen on the left shares two of its electrons with the carbon. The carbon also shares two of its own electrons, so in total, the carbon and oxygen share <i>four</i> electrons.\n<img src=\"images/co2-molecule.gif\">\n--\nThus, the oxygen and carbon share two pairs of electrons, so the bond is a <i>double bond</i>. Remember, this bond is also covalent!\n--\nIf two atoms share one pair of electrons, the bond is a <i>single bond</i>. If two atoms share three pairs of electrons, the bond is called a <i>triple bond</i>. A quadruple bond is pretty much unheard of.\n--\nHere's a tough question: In \\(Cl_2\\), is the bond between the two chlorines 'ionic' or covalent? If it is covalent, is the bond 'single' or 'double'?",
       "type": "fr",
       "next": "endendofmolecules",
       "correct": "single",
@@ -842,10 +842,22 @@
     },
     {
       "id": "percentcompositioncover",
-      "text": "<h3>Percent Composition</h3>",
+      "text": "<h3>Percent Composition</h3>\nSometimes, we stumble upon this kind of question:\n--\nAn unknown compound X is only made of carbon, hydrogen, and oxygen. It is 40.00% carbon and 53.29% oxygen by mass. What is the empirical formula of X?\n--\nWell, first, what is an empirical formula?\n--\nAn empirical formula is the simplest way to write the molecular formula of a compound, with whole number subscripts. For example, suppose we have the molecule \\(C_6H_{12}O_6\\). The molecular formula is \\(C_6H_{12}O_6\\), but the empirical formula is \\(CH_2O\\).\n--\nAnother example is benzene, \\(C_6H_6\\). It has a molecular formula of \\(C_6H_6\\) but an empirical formula of \\(CH\\).\n--\nWhat is the empirical formula of \\(C_6H_{12}\\)? Use \"_\" to denote subscript.",
+      "type": "frq",
+      "next": "percentwhat",
+      "correct": "CH_2",
+      "hint": "If I wanted to answer \\(H_2O\\), I would type 'H_2O\"",
+      "op1": null,
+      "op2": null,
+      "op3": null,
+      "op4": null
+    },
+    {
+      "id": "percentwhat",
+      "text": "That's right!\n--\nNow, what does it mean if a compound is \"40% carbon by mass\"?\n--\nWell, if the molecule has a mass of 120 amu, then it has \\(40\\% \\times 120 = 48\\) amu of carbon atoms in it. Since each carbon atom is about 12 amu, the molecule has 4 carbon atoms in it.\n--\nSo what is the mass percent of carbon in \\(C_6H_6\\)? Express your answer as a percentage to the nearest hundreth.",
       "type": "fr",
       "next": "end",
-      "correct": null,
+      "correct": "92.26%25",
       "hint": null,
       "op1": null,
       "op2": null,

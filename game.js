@@ -289,6 +289,7 @@ function findnode(nodeid) {
       console.log("character typed");
     }
     type();
+    MathJax.typeset();
     console.log("typeWriter finished");
     });
   }
@@ -440,6 +441,7 @@ function findnode(nodeid) {
     if (formElement) {
       if (splitnewText[0] == 'interrupt') {
         console.log("interrupt detected, no new question rendered");
+        MathJax.typeset();
         return;
       } else {
         previoustext= newText;
@@ -469,9 +471,11 @@ function findnode(nodeid) {
           newContainer.appendChild(newTextDiv, formElement);
           newContainer.appendChild(emptyLine, formElement);
           await typeWriter(newTextDiv, splitnewText[j], typespeed, finishQuestionTyping);
+          MathJax.typeset();
         }
       }
     }
+    MathJax.typeset();
     console.log("updategame completed");
   }
 });
