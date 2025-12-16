@@ -248,6 +248,24 @@ function findnode(nodeid) {
               element.innerHTML += char;
               i++;
             }
+          } else if (text.charAt(i + 1) === '[') {
+            // LaTeX display math start
+            let mathEnd = text.indexOf('\\]', i + 2);
+            if (mathEnd !== -1) {
+              let mathContent = text.substring(i, mathEnd + 2);
+              element.innerHTML += mathContent;
+              i = mathEnd + 2;
+              delay = 1; // Tiny delay before next Qtext character
+              MathJax.typeset();
+            } else {
+              // No closing found, treat as normal characters
+              element.innerHTML += char;
+              i++;
+            }
+          } else {
+            // Just a backslash, append it
+            element.innerHTML += char;
+            i++;
           }
         } else {
             // Append regular character
