@@ -225,6 +225,24 @@ function findnode(nodeid) {
                 i = tagEnd + 1;
                 delay = 1;
               }
+            } else if (tagContent.startsWith('<ul')) {
+              console.log("<ul> tag detected at index " + i);
+              // Find the closing </ul> tag
+              let closingTagStart = text.indexOf('</ul>', i);
+
+              if (closingTagStart !== -1) {
+                // Render the entire <ul>...</ul> structure instantly
+                let fullUlHtml = text.substring(i, closingTagStart + 5); // +5 for length of </ul>
+                element.innerHTML += fullUlHtml; 
+
+                // Set index i to after the closing tag
+                i = closingTagStart + 5;
+                delay = 1; // Tiny delay before next Qtext character 
+              } else {
+                element.innerHTML += tagContent;
+                i = tagEnd + 1;
+                delay = 1;  
+              }
             } else {
               console.log("Non-button/list HTML tag detected at index " + i);
               // If not a button, treat as a simple tag (e.g., <b>, <br>)
