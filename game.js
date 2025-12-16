@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const emptyLine = document.createElement('div');
   emptyLine.className = 'spacer';
   let wrongcounter = 0;
+  let periodictableversion = 1;
 
   // preload help.txt
   fetch('help.txt')
@@ -352,6 +353,8 @@ function findnode(nodeid) {
       else {
         output = 'No hint available';
       }
+    } else if (inputstring == "periodic table") {
+      output = "<img src = 'images/periodic-table"+periodictableversion+".png'> Source: <a href='https://ptable.com/'>ptable.com</a>"
     } else if (inputstring == "default" && outlineclicked===false) {
       // allow user to press enter and skip typing animation
       currentTypingContext.finish();

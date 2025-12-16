@@ -3,6 +3,7 @@ List of commands:
 <br> 'outline' - open up the outline (can jump to different sections)
 <br> 'undo' - undo previous response (you can't undo more than that)
 <br> 'hint' - get a hint
+<br> 'periodic table' - summon the Periodic Table
 <br>
 <br>
 <br>Links:
@@ -10,6 +11,7 @@ List of commands:
 <br>Repository: https://github.com/OrigamiKoala/chem-text-adventure
 <br>Feedback form: https://bit.ly/chemcyoafeedback 
 <br>All Activities:  https://drive.google.com/drive/folders/1nx6zyVtBedPnAGJ6JaAt2o4evgxe94YH
+<br>Periodic table: https://ptable.com/
 <br>
 <br>
 <br>Tutorial:
