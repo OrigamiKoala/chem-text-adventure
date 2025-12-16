@@ -317,8 +317,6 @@ function findnode(nodeid) {
     console.log("parseinput called with inputstring=" + inputstring + " and currentdivid=" + currentdivid);
 
     if (inputstring){
-      inputstring = encodeURIComponent(inputstring.trim());
-      inputstring = inputstring.replaceAll('%20', ' ');
     }
     else {
       inputstring = 'default';
