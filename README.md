@@ -19,6 +19,8 @@ I will try to release new updates every Sunday, though the updates might only mo
 
 If you download it, this game can be played offline. All the images will load, but the activities and math formatting may not.
 
+All activities are designed to only require paper, pencil, and tools for working with paper (like scissors, tape, glue, etc).
+
 If you have any feedback (positive or otherwise), please feel free to fill out a feedback form (https://bit.ly/chemcyoafeedback).
 
 Most of the code for this game was AI-generated (via Visual Studio Code's Github Copilot and Google Gemini). I did do quite a bit of editing (because AI is not that good at writing bug-free code yet...or at visual design...), but since some of the code is AI generated, I cannot claim credit for it, or put it under a license.
