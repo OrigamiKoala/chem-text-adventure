@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
   emptyLine.className = 'spacer';
   let wrongcounter = 0;
   let periodictableversion = 1;
+  let hintcount = 1;
 
   // preload help.txt
   fetch('help.txt')
@@ -354,11 +355,27 @@ function findnode(nodeid) {
       wrongcounter = 0;
       nextdivid = previousdivid;
     } else if (inputstring == "hint") {
-      if (currentobj.hint!=null && currentobj.hint!=''){
-        output = currentobj.hint;
+      if (hintcount === 1){
+        if (currentobj.hint!=null && currentobj.hint!=''){
+          output = currentobj.hint;
+        }
+        else {
+          output = 'No hint available';
+        }
+        hintcount++;
+      }
+      else if (hintcount === 2){
+        if (currentobj.hint2!=null && currentobj.hint2!=''){
+          output = currentobj.hint2;
+        }
+        else {
+          output = 'No hint available';
+        }
+        hintcount = 1;
       }
       else {
         output = 'No hint available';
+        hintcount = 1;
       }
     } else if (inputstring == "periodic table") {
       output = "<img src = 'images/periodic-table"+periodictableversion+".png'> Source: <a href='https://ptable.com/'>ptable.com</a>"
@@ -375,7 +392,7 @@ function findnode(nodeid) {
       return [findnode(currentid).text, currentid];
     } else if (currentobj.type === 'frq') {
       previousdivid = currentdivid;
-      if (inputstring == currentobj.correct) {
+      if (inputstring == currentobj.correct || inputstring == currentobj.altcorrect) {
         nextdivid = currentobj.next;
         const nextobj = findnode(nextdivid);
         output = nextobj ? (nextobj.text || '') : 'Oops. I couldn\'t find the next part. Looks like you found a bug!';
