@@ -2,7 +2,7 @@
   "pchem_nodes": [
     {
       "id": "initial",
-      "text": "Welcome to a choose-your-own-adventure game made by Carl, where you get to have fun (hopefully) and also learn some chemistry along the way (also hopefully)!\n--\nFor a tutorial or information on formatting your answers, type 'help'. If this is your first time, check out the tutorial before moving on.\n--\nYou can find the GitHub repository for this app at <a href=\"https://github.com/OrigamiKoala/chem-text-adventure\">https://github.com/OrigamiKoala/chem-text-adventure</a>\n--\nIt would be greatly appreciated if you could take a minute to fill out a super short <a href=\"http://bit.ly/chemcyoafeedback\">feedback form</a>. Thank you so much!\n--\nType anything to start from the beginning.",
+      "text": "\\( 5^4\\) Welcome to a choose-your-own-adventure game made by Carl, where you get to have fun (hopefully) and also learn some chemistry along the way (also hopefully)!\n--\nFor a tutorial or information on formatting your answers, type 'help'. If this is your first time, check out the tutorial before moving on.\n--\nYou can find the GitHub repository for this app at <a href=\"https://github.com/OrigamiKoala/chem-text-adventure\">https://github.com/OrigamiKoala/chem-text-adventure</a>\n--\nIt would be greatly appreciated if you could take a minute to fill out a super short <a href=\"http://bit.ly/chemcyoafeedback\">feedback form</a>. Thank you so much!\n--\nType anything to start from the beginning.",
       "type": "fr",
       "next": "atomscover",
       "correct": null,
@@ -326,7 +326,19 @@
     },
     {
       "id": "orbitexplanation",
-      "text": "It's because the nucleus is positively charged (since it has a ton of protons), and this attracts the electrons, which are negatively charged.\n--\nSo the electrons orbit around the nucleus - but they do so at different distances.\n--\nKnowing that it requires energy to pull a positively and negatively charged thing apart, which electrons do you think have the highest energy, the 'farthest' ones, the 'middle' ones, or the 'closest' ones?",
+      "text": "It's because the nucleus is positively charged (since it has a ton of protons), and this attracts the electrons, which are negatively charged.\n--\nSo the electrons orbit around the nucleus - but they do so at different distances.\n--\nTime for another activity! <br><br>\n<a class = \"lab\" href=\"https://docs.google.com/document/d/12WCg_GUHLZzlHmYgFuB3IsSZI7bVbFmCDIwkFwL-bfI/copy\">Model of an Atom</a>\n--\nComplete the activity and then come back here.\n--\nType anything to continue.",
+      "type": "fr",
+      "next": "highestenergyelectrons",
+      "correct": null,
+      "hint": null,
+      "op1": null,
+      "op2": null,
+      "op3": null,
+      "op4": null
+    },
+    {
+      "id": "highestenergyelectrons",
+      "text": "Knowing that it requires energy to pull a positively and negatively charged thing apart, which electrons do you think have the highest energy, the 'farthest' ones, the 'middle' ones, or the 'closest' ones?",
       "type": "frq",
       "next": "farthesthighest",
       "correct": "farthest",
@@ -831,8 +843,8 @@
     {
       "id": "percentcompositioncover",
       "text": "<h3>Percent Composition</h3>",
-      "type": null,
-      "next": null,
+      "type": "fr",
+      "next": "end",
       "correct": null,
       "hint": null,
       "op1": null,

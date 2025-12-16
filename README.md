@@ -17,6 +17,8 @@ For those who aren't CS nerds:
 
 I will try to release new updates every Sunday, though the updates might only modify old content, instead of introducing new modules.
 
+If you download it, this game can be played offline. All the images will load, but the activities and math formatting may not.
+
 If you have any feedback (positive or otherwise), please feel free to fill out a feedback form (https://bit.ly/chemcyoafeedback).
 
 Most of the code for this game was AI-generated (via Visual Studio Code's Github Copilot and Google Gemini). I did do quite a bit of editing (because AI is not that good at writing bug-free code yet...or at visual design...), but since some of the code is AI generated, I cannot claim credit for it, or put it under a license.
@@ -27,7 +29,7 @@ So the text is under the [CC BY-SA 4.0](https://creativecommons.org/licenses/by-
 
 Log:
 
-2025 December 15: Fixed the bugs (oops), add images
+2025 December 15: Fixed the bugs (oops), added images, added MathJax equation rendering, added activities
 2025 December 14: Added activities
 2025 December 10: Added 1.4: Electronegativity, edited 1.3 and 1.5
 2025 December 7: Added 1.3: Isotopes and Atomic Mass, 1.5: Molecules, edited 1.1-1.2

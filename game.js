@@ -178,7 +178,6 @@ function findnode(nodeid) {
       if (i < text.length) {
         let delay = speed;
         let char = text.charAt(i);
-
         // Check for HTML tag
         if (char === '<') {
           console.log("HTML tag detected at index " + i);
@@ -232,6 +231,22 @@ function findnode(nodeid) {
               element.innerHTML += tagContent;
               i = tagEnd + 1;
               delay = 1;
+            }
+          }
+        } else if (char === '\\') {
+          if (text.charAt(i + 1) === '(') {
+            // LaTeX inline math start
+            let mathEnd = text.indexOf('\\)', i + 2);
+            if (mathEnd !== -1) {
+              let mathContent = text.substring(i, mathEnd + 2);
+              element.innerHTML += mathContent;
+              i = mathEnd + 2;
+              delay = 1; // Tiny delay before next Qtext character
+              MathJax.typeset();
+            } else {
+              // No closing found, treat as normal characters
+              element.innerHTML += char;
+              i++;
             }
           }
         } else {
