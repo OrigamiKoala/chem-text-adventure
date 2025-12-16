@@ -203,7 +203,7 @@ button:focus, input:focus{box-shadow:0 0 0 3px rgba(125,211,252,0.12); border-ra
 /* Print styles: remove app styling but preserve previous-user-input color */
 @media print {
     /* Reset our custom layout and visual styles to defaults */
-    body, .container#previous, .question, .response, form#responseform, input#response, button, .spacer, .outline {
+    body, .container#previous, .question, .response, form#responseform, input#response, button, .spacer, .outline, .lab {
         all: initial !important;
         display: block !important;
     }
@@ -211,13 +211,27 @@ button:focus, input:focus{box-shadow:0 0 0 3px rgba(125,211,252,0.12); border-ra
     /* Ensure a white page background and readable text color */
     body { background: #fff !important; color: #000 !important; }
 
-    /* Hide interactive controls (we don't need the live form in print)
-         but keep response entries visible. */
-    form#responseform, input, button { display: none !important; }
+    /* Hide interactive form controls, but allow buttons to be visible as text */
+    form#responseform, input, button[type=submit] { display: none !important; }
+
+    /* Style buttons to appear as plain text */
+    .lab, .outline, button {
+        background: none !important;
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        color: #000 !important;
+        text-decoration: none !important;
+        font-size: inherit !important;
+        font-family: inherit !important;
+        font-weight: normal !important;
+        display: inline !important; /* Display them inline with text */
+    }
 
     /* Preserve the color styling for previous user inputs only */
-    .response { color: var(--accent-2) !important; font-weight: 600 !important; }
-    .response div { color: var(--muted) !important; font-weight: 500 !important; }
+    .response { color: red !important; font-weight: 600 !important; }
+    .response div { color: red !important; font-weight: 500 !important; }
 
     /* Make questions and responses plain blocks with default font sizing */
     .question, .response { background: transparent !important; box-shadow: none !important; border: none !important; padding: 0 !important; margin: 0 0 8px 0 !important; font-size: 12pt !important; color: inherit !important; }
