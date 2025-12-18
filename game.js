@@ -476,16 +476,15 @@ function findnode(nodeid) {
     const flaskSolid = document.createElement('div');
     flaskSolid.id = 'flask-solid';
     flaskSolid.style.position = 'absolute';
-    flaskSolid.style.bottom = '10%';
-    flaskSolid.style.left = '30%';
-    flaskSolid.style.width = '40%';
-    flaskSolid.style.height = '40%';
+    flaskSolid.style.bottom = '0';
+    flaskSolid.style.left = '0';
+    flaskSolid.style.width = '0';
+    flaskSolid.style.height = '0';
     flaskSolid.style.backgroundColor = 'transparent'; 
     flaskSolid.style.zIndex = '1';
     flaskSolid.style.borderRadius = '0'; 
     flaskSolid.style.opacity = '0';
-    flaskSolid.style.transition = 'all 2s ease-in-out'; 
-    flaskSolid.style.transition = 'width 0s ease-in-out';
+    flaskSolid.style.transition = 'all 2s ease-in-out, width 0s ease-in-out, left 0s ease-in-out'; 
     flaskWrapper.appendChild(flaskSolid);
 
     const flaskGas = document.createElement('div');
@@ -641,11 +640,15 @@ function findnode(nodeid) {
                                     }
                                 }
                             }
-                            selectedBeakers = []; // Reset selected beakers AFTER the delay
                         }, slowReactionDelay); // Apply the delay here
                     }
                 }
              }
+        } else if (selectedBeakers.length === 3) {
+          let errortext = document.createElement('div');
+          errortext.className = "container";
+          errortext.innerText = "Error: Please reset the beaker";
+          toolbox.insertAdjacentHTML('afterEnd', errortext.outerHTML);
         }
       };
       labTable.appendChild(beakerContainer);
