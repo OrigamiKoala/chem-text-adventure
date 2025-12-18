@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentid = "initial";
   let previousdivid = null;
   let JSdata = null;
+  let fullJSdata = null;
   let helpText = '';
   let outlineText = '';
   let JSoutline = null;
@@ -16,12 +17,12 @@ document.addEventListener('DOMContentLoaded', () => {
   let typingTimeoutId = null;
   let outlineclicked = false;
   let previouscontainer = null
-  let previoustext = '';
+  let previoustext = ''
   let typespeed = 15;
   const emptyLine = document.createElement('div');
   emptyLine.className = 'spacer';
   let wrongcounter = 0;
-  let periodictableversion = 1;
+  let periodictableversion = 1
   let hintcount = 1;
 
   // preload help.txt
@@ -70,6 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
   fetch('data.json')
     .then(response => response.json())
     .then(async data => {
+      fullJSdata = data;
       JSdata = data.pchem_nodes;
       let initialText = findnode("initial").text;
       previoustext= initialText;
@@ -440,6 +442,248 @@ function findnode(nodeid) {
     console.log("parseinput returned output=" + output + " and nextdivid=" + nextdivid);
     return [output, nextdivid];
   }
+  function launch(labid) {
+    console.log("launching lab: " + labid);
+    const chatContainer = document.getElementById('chat-container');
+    const labContainer = document.getElementById('lab-container');
+    const formElement = document.getElementById('responseform');
+
+    chatContainer.classList.add('shifted');
+    labContainer.classList.add('visible');
+    formElement.classList.add('shifted-form');
+
+    // Clear any previous lab content
+    labContainer.innerHTML = '';
+
+    // Create lab table
+    const labTable = document.createElement('div');
+    labTable.className = 'lab-table';
+    labContainer.appendChild(labTable);
+
+    // Create toolbox
+    const toolbox = document.createElement('div');
+    toolbox.className = 'toolbox';
+    labContainer.appendChild(toolbox);
+
+    // Add elements to lab table
+    const flask = document.createElement('div');
+    flask.className = 'lab-item flask';
+    
+    const flaskWrapper = document.createElement('div');
+    flaskWrapper.style.position = 'relative';
+    flaskWrapper.style.display = 'inline-block';
+
+    const flaskSolid = document.createElement('div');
+    flaskSolid.id = 'flask-solid';
+    flaskSolid.style.position = 'absolute';
+    flaskSolid.style.bottom = '10%';
+    flaskSolid.style.left = '30%';
+    flaskSolid.style.width = '40%';
+    flaskSolid.style.height = '40%';
+    flaskSolid.style.backgroundColor = 'transparent'; 
+    flaskSolid.style.zIndex = '1';
+    flaskSolid.style.borderRadius = '0'; 
+    flaskSolid.style.opacity = '0';
+    flaskSolid.style.transition = 'all 2s ease-in-out'; 
+    flaskSolid.style.transition = 'width 0s ease-in-out';
+    flaskWrapper.appendChild(flaskSolid);
+
+    const flaskGas = document.createElement('div');
+    flaskGas.id = 'flask-gas';
+    flaskGas.style.position = 'absolute';
+    flaskGas.style.bottom = '60%'; // Positioned to float above/around neck
+    flaskGas.style.left = '10%';
+    flaskGas.style.width = '80%';
+    flaskGas.style.height = '80%';
+    flaskGas.style.backgroundColor = 'transparent'; 
+    flaskGas.style.zIndex = '3'; 
+    flaskGas.style.opacity = '0';
+    flaskGas.style.transition = 'all 2s ease-in-out';
+    flaskGas.style.mask = 'url(images/gas.png) no-repeat center / contain';
+    flaskGas.style.mask = 'url(images/gas.png) no-repeat center / contain';
+    flaskGas.style.webkitMaskMode = 'alpha';
+    flaskGas.style.maskMode = 'alpha';
+    flaskWrapper.appendChild(flaskGas);
+
+    const flaskImage = document.createElement('img');
+    flaskImage.src = 'images/flask.png';
+    flaskImage.alt = 'Erlenmeyer Flask';
+    flaskImage.style.position = 'relative';
+    flaskImage.style.zIndex = '2';
+    flaskWrapper.appendChild(flaskImage);
+
+    flask.appendChild(flaskWrapper);
+    labTable.appendChild(flask);
+
+    let selectedBeakers = [];
+
+    const labData = fullJSdata.labs.find(lab => lab.labid === labid);
+
+    for (let i = 1; i <= 4; i++) {
+      const beakerContainer = document.createElement('div');
+      beakerContainer.className = 'lab-item beaker';
+      
+      const beakerWrapper = document.createElement('div');
+      beakerWrapper.style.position = 'relative';
+      beakerWrapper.style.display = 'inline-block';
+
+      const beakerImage = document.createElement('img');
+      beakerImage.src = 'images/beaker.png';
+      beakerImage.alt = `Beaker ${i}`;
+      beakerImage.style.position = 'relative';
+      beakerImage.style.zIndex = '2';
+      
+      // Apply fluid color if available
+      const fluidColor = labData ? labData['color' + i] : null;
+      if (fluidColor) {
+        const fluidDiv = document.createElement('div');
+        fluidDiv.style.position = 'absolute';
+        fluidDiv.style.bottom = '15%';
+        fluidDiv.style.left = '15%';
+        fluidDiv.style.width = '70%';
+        fluidDiv.style.height = '50%';
+        fluidDiv.style.backgroundColor = fluidColor;
+        fluidDiv.style.zIndex = '1';
+        fluidDiv.style.borderRadius = '0 0 10% 10%';
+        beakerWrapper.appendChild(fluidDiv);
+      }
+      
+      beakerWrapper.appendChild(beakerImage);
+      beakerContainer.appendChild(beakerWrapper);
+      
+      const beakerLabel = document.createElement('div');
+      if (labData) {
+        beakerLabel.innerHTML = labData['beaker' + i] || `Beaker ${i}`;
+      } else {
+        beakerLabel.innerHTML = `Beaker ${i}`;
+      }
+      beakerContainer.appendChild(beakerLabel);
+      
+      beakerContainer.onclick = () => { 
+        console.log(`Beaker ${i} clicked`); 
+        
+        if (!selectedBeakers.includes(i)) {
+            selectedBeakers.push(i);
+        }
+
+        if (selectedBeakers.length === 1) {
+            const clickedBeaker = beakerContainer.querySelector('.lab-item.beaker img').previousElementSibling; // Assuming fluidDiv is the sibling before img
+            if (clickedBeaker && clickedBeaker.style.backgroundColor) {
+                const fluidColor = clickedBeaker.style.backgroundColor;
+                if (flaskSolid) {
+                    flaskSolid.style.width = '90%';
+                    flaskSolid.style.height = '50%';
+                    flaskSolid.style.bottom = '8%';
+                    flaskSolid.style.left = '5%';
+                    flaskSolid.style.borderRadius = '0 0 10% 10%';
+                    flaskSolid.style.clipPath = 'polygon(35% 0%, 65% 0%, 100% 100%, 0% 100%)';
+                    flaskSolid.style.backgroundColor = fluidColor;
+                    flaskSolid.style.opacity = '1';
+                    if (flaskGas) flaskGas.style.opacity = '0';
+                }
+            }
+        } else if (selectedBeakers.length === 2) {
+             if (labData && labData.reaction) {
+                let reactionData = null;
+                try {
+                    reactionData = (new Function("return " + labData.reaction))();
+                } catch (e) {
+                    console.error("Error parsing reaction data:", e);
+                }
+                
+                if (reactionData) {
+                    const key1 = selectedBeakers[0] + "_" + selectedBeakers[1];
+                    const key2 = selectedBeakers[1] + "_" + selectedBeakers[0];
+                    const outcome = reactionData[key1] || reactionData[key2];
+
+                    if (outcome) {
+                        const slowReactionDelay = 1000; // 1 second delay
+                        setTimeout(() => {
+                            let type = null;
+                            let color = null;
+
+                            if (typeof outcome === 'string') {
+                                if (outcome === 'solid') {
+                                    type = 'solid';
+                                    color = reactionData.solidcolor;
+                                }
+                            } else if (typeof outcome === 'object') {
+                                 type = outcome.type;
+                                 color = outcome.color || reactionData.solidcolor;
+                            }
+
+                            if (flaskSolid) {
+                                if (type === 'solid') {
+                                    flaskSolid.style.width = '40%';
+                                    flaskSolid.style.height = '40%';
+                                    flaskSolid.style.bottom = '10%';
+                                    flaskSolid.style.left = '30%';
+                                    flaskSolid.style.borderRadius = '0';
+                                    flaskSolid.style.clipPath = 'none';
+                                    flaskSolid.style.backgroundColor = color || 'white';
+                                    flaskSolid.style.opacity = '1';
+                                    if (flaskGas) flaskGas.style.opacity = '0';
+                                } else if (type === 'liquid') {
+                                    flaskSolid.style.width = '90%';
+                                    flaskSolid.style.height = '50%';
+                                    flaskSolid.style.bottom = '8%';
+                                    flaskSolid.style.left = '5%';
+                                    flaskSolid.style.borderRadius = '0 0 10% 10%';
+                                    flaskSolid.style.clipPath = 'polygon(35% 0%, 65% 0%, 100% 100%, 0% 100%)';
+                                    flaskSolid.style.backgroundColor = color || 'white';
+                                    flaskSolid.style.opacity = '1';
+                                    if (flaskGas) flaskGas.style.opacity = '0';
+                                } else if (type === 'gas') {
+                                    flaskSolid.style.opacity = '0';
+                                    if (flaskGas) {
+                                        flaskGas.style.backgroundColor = color || 'white';
+                                        flaskGas.style.opacity = '1';
+                                    }
+                                }
+                            }
+                            selectedBeakers = []; // Reset selected beakers AFTER the delay
+                        }, slowReactionDelay); // Apply the delay here
+                    }
+                }
+             }
+        }
+      };
+      labTable.appendChild(beakerContainer);
+    }
+    MathJax.typeset();
+
+    // Add elements to toolbox
+    const thermometer = document.createElement('div');
+    thermometer.className = 'lab-item tool';
+    thermometer.innerHTML = 'Thermometer';
+    thermometer.onclick = () => { console.log('Thermometer clicked'); };
+    toolbox.appendChild(thermometer);
+
+    const phMeter = document.createElement('div');
+    phMeter.className = 'lab-item tool';
+    phMeter.innerHTML = 'pH Meter';
+    phMeter.onclick = () => { console.log('pH Meter clicked'); };
+    toolbox.appendChild(phMeter);
+
+    const resetButton = document.createElement('div');
+    resetButton.className = 'lab-item tool';
+    resetButton.innerHTML = 'Reset';
+    resetButton.onclick = () => { 
+        console.log('Reset clicked'); 
+        selectedBeakers = [];
+        if (flaskSolid) {
+            flaskSolid.style.opacity = '0';
+            flaskSolid.style.backgroundColor = 'transparent'; 
+        }
+        if (flaskGas) {
+            flaskGas.style.opacity = '0';
+            flaskGas.style.backgroundColor = 'transparent'; 
+        }
+    };
+    toolbox.appendChild(resetButton);
+  }
+  window.launch = launch;
+  
   // update the game
   async function updategame(e) {
     console.log("updategame called");
