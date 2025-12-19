@@ -560,8 +560,18 @@ function findnode(nodeid) {
       beakerImage.style.position = 'relative';
       beakerImage.style.zIndex = '2';
       
+      // Parse attributes if available
+      let beakerAttributes = null;
+      if (labData && labData['attributes' + i]) {
+          try {
+              beakerAttributes = (new Function("return " + labData['attributes' + i]))();
+          } catch (e) {
+              console.error("Error parsing beaker attributes:", e);
+          }
+      }
+
       // Apply fluid color if available
-      const fluidColor = labData ? labData['color' + i] : null;
+      const fluidColor = beakerAttributes ? beakerAttributes.color : null;
       if (fluidColor) {
         const fluidDiv = document.createElement('div');
         fluidDiv.style.position = 'absolute';
@@ -592,8 +602,44 @@ function findnode(nodeid) {
         
         selectedBeakers.push(beakerIdx);
 
+        const mixColors = (beakerIndices) => {
+            let r = 0, g = 0, b = 0, a = 0;
+            let count = 0;
+            beakerIndices.forEach(idx => {
+                let attr = null;
+                if (labData['attributes' + idx]) {
+                    try {
+                        attr = (new Function("return " + labData['attributes' + idx]))();
+                    } catch(e) {}
+                }
+                const colorStr = attr ? attr.color : null;
+                if (colorStr) {
+                    const match = colorStr.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+                    if (match) {
+                        r += parseInt(match[1]);
+                        g += parseInt(match[2]);
+                        b += parseInt(match[3]);
+                        a += match[4] ? parseFloat(match[4]) : 1;
+                        count++;
+                    }
+                }
+            });
+            if (count > 0) {
+                return `rgba(${Math.round(r/count)}, ${Math.round(g/count)}, ${Math.round(b/count)}, ${a/count})`;
+            }
+            return 'white';
+        };
+
         const getSplitColor = (beakerIndices) => {
-            const colors = beakerIndices.map(idx => labData['color' + idx]).filter(c => c);
+            const colors = beakerIndices.map(idx => {
+                let attr = null;
+                if (labData['attributes' + idx]) {
+                    try {
+                        attr = (new Function("return " + labData['attributes' + idx]))();
+                    } catch(e) {}
+                }
+                return attr ? attr.color : null;
+            }).filter(c => c);
             if (colors.length === 0) return 'white';
             if (colors.length === 1) return colors[0];
             
@@ -669,7 +715,13 @@ function findnode(nodeid) {
         };
 
         if (selectedBeakers.length === 1) {
-            const fluidColor = labData ? labData['color' + beakerIdx] : null;
+            let attr = null;
+            if (labData['attributes' + beakerIdx]) {
+                try {
+                    attr = (new Function("return " + labData['attributes' + beakerIdx]))();
+                } catch(e) {}
+            }
+            const fluidColor = attr ? attr.color : null;
             if (fluidColor) {
                 if (flaskSolid) {
                     flaskSolid.style.width = '90%';
@@ -683,7 +735,71 @@ function findnode(nodeid) {
                 }
                 if (flaskGas) flaskGas.style.opacity = '0';
             }
+            if (attr && attr.temp) {
+                currentTemperature = parseInt(attr.temp);
+                if (tempDisplay && tempDisplay.innerText !== "") {
+                    tempDisplay.innerText = "Temperature: " + currentTemperature.toFixed(1) + " K";
+                }
+            }
         } else if (selectedBeakers.length >= 2 && selectedBeakers.length <= 4) {
+             if (labData && labData.reaction) {
+                let reactionData = null;
+                try {
+                    reactionData = (new Function("return " + labData.reaction))();
+                } catch (e) {
+                    console.error("Error parsing reaction data:", e);
+                }
+                
+                if (reactionData) {
+                    const getCombinations = (arr, size) => {
+                        let result = [];
+                        const f = (prefix, chars) => {
+                            for (let i = 0; i < chars.length; i++) {
+                                let newPrefix = [...prefix, chars[i]];
+                                if (newPrefix.length === size) {
+                                    result.push(newPrefix);
+                                } else {
+                                    f(newPrefix, chars.slice(i + 1));
+                                }
+                            }
+                        };
+                        f([], arr);
+                        return result;
+                    };
+
+                    let outcome = null;
+                    for (let size = selectedBeakers.length; size >= 2; size--) {
+                        const combos = getCombinations(selectedBeakers, size);
+                        for (const combo of combos) {
+                            const key = combo.sort((a, b) => a - b).join("_");
+                            if (reactionData[key]) {
+                                outcome = reactionData[key];
+                                break;
+                            }
+                        }
+                        if (outcome) break;
+                    }
+                    
+                    if (outcome) {
+                        handleReaction(outcome, reactionData);
+                    } else {
+                        // Split colors if no reaction found
+                        const splitColor = getSplitColor(selectedBeakers);
+                        if (flaskSolid) {
+                            flaskSolid.style.width = '90%';
+                            flaskSolid.style.height = '50%';
+                            flaskSolid.style.bottom = '8%';
+                            flaskSolid.style.left = '5%';
+                            flaskSolid.style.borderRadius = '0 0 10% 10%';
+                            flaskSolid.style.clipPath = 'polygon(35% 0%, 65% 0%, 100% 100%, 0% 100%)';
+                            flaskSolid.style.background = splitColor; 
+                            flaskSolid.style.opacity = '1';
+                            if (flaskGas) flaskGas.style.opacity = '0';
+                        }
+                    }
+                }
+             }
+        } else if (selectedBeakers.length === 5) {
              if (labData && labData.reaction) {
                 let reactionData = null;
                 try {

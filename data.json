@@ -1373,13 +1373,13 @@
     {
       "labid": "solubility1",
       "beaker1": "substance1",
-      "color1": "rgba(255, 255, 255, 0.3)",
+      "attributes1": "{\"color\":\"rgba(255, 255, 255, 0.3)\", \"temp\":\"1000 K\"}",
       "beaker2": "substance2",
-      "color2": "rgba(255, 0, 255, 0.3)",
+      "attributes2": "{\"color\":\"rgba(255, 0, 255, 0.3)\"}",
       "beaker3": "substance3",
-      "color3": "rgba(0, 255, 255, 0.3)",
+      "attributes3": "{\"color\":\"rgba(0, 255, 255, 0.3)\"}",
       "beaker4": "substance4",
-      "color4": "rgba(255, 255, 0, 0.3)",
+      "attributes4": "{\"color\":\"rgba(255, 255, 0, 0.3)\"}",
       "reaction": "{\"1_2\":{\"type\":\"solid\", \"color\":\"#ffffff\", \"temp\":\"200 K\"}, \"2_3_4\":{\"type\":\"liquid\", \"color\":\"#32a852\", \"temp\":\"300 K\"}, \"1_2_3\":{\"type\":\"gas\", \"color\":\"#eb4034\", \"temp\":\"500 K\"}}"
     }
   ]
