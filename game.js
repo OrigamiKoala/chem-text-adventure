@@ -422,22 +422,32 @@ function findnode(nodeid) {
       const nextobj = findnode(nextdivid);
       output = nextobj ? (nextobj.text || '') : 'Oops. I couldn\'t find the next part. Looks like you found a bug!';
     } else if (currentobj.type === 'mcq') {
-      if (inputstring == "1") {
-        nextdivid = currentobj.op1;
+      let targetNodeId = null;
+
+      if (inputstring == "1") targetNodeId = currentobj.op1;
+      else if (inputstring == "2") targetNodeId = currentobj.op2;
+      else if (inputstring == "3") targetNodeId = currentobj.op3;
+      else if (inputstring == "4") targetNodeId = currentobj.op4;
+
+      // Safe check for direct ID match
+      if (!targetNodeId) {
+         if (currentobj.op1 && inputstring.toLowerCase() == currentobj.op1.toLowerCase()) targetNodeId = currentobj.op1;
+         else if (currentobj.op2 && inputstring.toLowerCase() == currentobj.op2.toLowerCase()) targetNodeId = currentobj.op2;
+         else if (currentobj.op3 && inputstring.toLowerCase() == currentobj.op3.toLowerCase()) targetNodeId = currentobj.op3;
+         else if (currentobj.op4 && inputstring.toLowerCase() == currentobj.op4.toLowerCase()) targetNodeId = currentobj.op4;
+      }
+
+      if (targetNodeId) {
+        nextdivid = targetNodeId;
         previousdivid = currentdivid;
         console.log(nextdivid);
-      } else if (inputstring == "2") {
-        nextdivid = currentobj.op2;
-        previousdivid = currentdivid;
-      } else if (inputstring == "3" && currentobj.op3) {
-        nextdivid = currentobj.op3;
-        previousdivid = currentdivid;
-      } else if (inputstring == "4" && currentobj.op3) {
-        nextdivid = currentobj.op4;
-        previousdivid = currentdivid;
       } else {
-        console.log("Unrecognized answer choice: " + inputstring);
-        output = 'Hmmmm...that doesn\'t seem to be an answer choice. Please enter the number corresponding to your choice, and try again.';
+        if (["1", "2", "3", "4"].includes(inputstring)) {
+           output = 'That option is not available. Please choose a valid number.';
+        } else {
+           console.log("Unrecognized answer choice: " + inputstring);
+           output = 'Hmmmm...that doesn\'t seem to be an answer choice. Please enter the number corresponding to your choice, and try again.';
+        }
         nextdivid = currentdivid;
         return [output, nextdivid];
       }
