@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
         await typeWriter(initialDiv, splitinitialText[j], typespeed);
         initialDiv.insertAdjacentHTML('afterend', emptyLine.outerHTML);
         initialDiv.innerHTML = splitinitialText[j];
-        MathJax.typeset();
+        if (typeof MathJax !== 'undefined') MathJax.typesetPromise();
         j++;
       }
       // remove the original placeholder element if present so it doesn't duplicate
@@ -274,7 +274,7 @@ function findnode(nodeid) {
               element.innerHTML += mathContent;
               i = mathEnd + 2;
               delay = 1; // Tiny delay before next Qtext character
-              MathJax.typeset();
+              if (typeof MathJax !== 'undefined') MathJax.typesetPromise();
             } else {
               // No closing found, treat as normal characters
               element.innerHTML += char;
@@ -288,7 +288,7 @@ function findnode(nodeid) {
               element.innerHTML += mathContent;
               i = mathEnd + 2;
               delay = 1; // Tiny delay before next Qtext character
-              MathJax.typeset();
+              if (typeof MathJax !== 'undefined') MathJax.typesetPromise();
             } else {
               // No closing found, treat as normal characters
               element.innerHTML += char;
@@ -321,7 +321,7 @@ function findnode(nodeid) {
       console.log("character typed");
     }
     type();
-    MathJax.typeset();
+    if (typeof MathJax !== 'undefined') MathJax.typesetPromise();
     console.log("typeWriter finished");
     });
   }
@@ -623,7 +623,7 @@ function findnode(nodeid) {
             reactionNameDisplay.innerHTML = "";
         } else {
             reactionNameDisplay.innerHTML = "Reaction: " + (currentReactionName || "None");
-            if (typeof MathJax !== 'undefined') MathJax.typeset();
+            if (typeof MathJax !== 'undefined') MathJax.typesetPromise();
         }
     };
 
@@ -865,7 +865,7 @@ function findnode(nodeid) {
                       if (phDisplay && phDisplay.innerText !== "") phDisplay.innerText = "pH: " + currentPH.toFixed(1);
                       if (reactionNameDisplay && reactionNameDisplay.innerHTML !== "") {
                            reactionNameDisplay.innerHTML = "Reaction: " + currentReactionName;
-                           if (typeof MathJax !== 'undefined') MathJax.typeset();
+                           if (typeof MathJax !== 'undefined') MathJax.typesetPromise();
                       }
                  }, 2000);
              }
@@ -936,7 +936,7 @@ function findnode(nodeid) {
       };
       beakersContainer.appendChild(beakerContainer);
     }
-    MathJax.typeset();
+    if (typeof MathJax !== 'undefined') MathJax.typesetPromise();
 
     // Add elements to toolbox
     const thermometer = document.createElement('div');
@@ -1071,7 +1071,7 @@ function findnode(nodeid) {
     if (formElement) {
       if (splitnewText[0] == 'interrupt') {
         console.log("interrupt detected, no new question rendered");
-        MathJax.typeset();
+        if (typeof MathJax !== 'undefined') MathJax.typesetPromise();
         return;
       } else {
         previoustext= newText;
@@ -1101,11 +1101,11 @@ function findnode(nodeid) {
           newContainer.appendChild(newTextDiv, formElement);
           newContainer.appendChild(emptyLine, formElement);
           await typeWriter(newTextDiv, splitnewText[j], typespeed, finishQuestionTyping);
-          MathJax.typeset();
+          if (typeof MathJax !== 'undefined') MathJax.typesetPromise();
         }
       }
     }
-    MathJax.typeset();
+    if (typeof MathJax !== 'undefined') MathJax.typesetPromise();
     console.log("updategame completed");
   }
 });
