@@ -400,6 +400,7 @@ function findnode(nodeid) {
       wrongcounter = 0;
       return [findnode(currentid).text, currentid];
     } else if (currentobj.type === 'frq') {
+      inputstring = inputstring.trim();
       previousdivid = currentdivid;
       if (inputstring == currentobj.correct || inputstring == currentobj.altcorrect) {
         nextdivid = currentobj.next;
@@ -422,6 +423,7 @@ function findnode(nodeid) {
       const nextobj = findnode(nextdivid);
       output = nextobj ? (nextobj.text || '') : 'Oops. I couldn\'t find the next part. Looks like you found a bug!';
     } else if (currentobj.type === 'mcq') {
+      inputstring = inputstring.trim();
       let targetNodeId = null;
 
       if (inputstring == "1") targetNodeId = currentobj.op1;
