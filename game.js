@@ -465,6 +465,26 @@ function findnode(nodeid) {
     toolbox.className = 'toolbox';
     labContainer.appendChild(toolbox);
 
+    // Reaction info container
+    const reactionInfoContainer = document.createElement('div');
+    reactionInfoContainer.id = 'reaction-info-container';
+    reactionInfoContainer.style.textAlign = 'center';
+    reactionInfoContainer.style.marginTop = '10px';
+    labContainer.appendChild(reactionInfoContainer);
+
+    const showReactionBtn = document.createElement('button');
+    showReactionBtn.className = 'lab-item tool';
+    showReactionBtn.innerHTML = 'Show Reaction';
+    reactionInfoContainer.appendChild(showReactionBtn);
+
+    const reactionNameDisplay = document.createElement('div');
+    reactionNameDisplay.id = 'reaction-name-display';
+    reactionNameDisplay.style.marginTop = '10px';
+    reactionNameDisplay.style.fontWeight = 'bold';
+    reactionNameDisplay.style.minHeight = '1.2em';
+    reactionNameDisplay.style.color = '#000';
+    reactionInfoContainer.appendChild(reactionNameDisplay);
+
     // Add elements to lab table
     const flask = document.createElement('div');
     flask.className = 'lab-item flask';
@@ -533,6 +553,16 @@ function findnode(nodeid) {
     let selectedBeakers = [];
     let currentTemperature = 298;
     let currentPH = 7.0;
+    let currentReactionName = "";
+
+    showReactionBtn.onclick = () => {
+        if (reactionNameDisplay.innerHTML !== "") {
+            reactionNameDisplay.innerHTML = "";
+        } else {
+            reactionNameDisplay.innerHTML = "Reaction: " + (currentReactionName || "None");
+            if (typeof MathJax !== 'undefined') MathJax.typeset();
+        }
+    };
 
     const startCooling = () => {
         if (window.activeTempInterval) clearInterval(window.activeTempInterval);
@@ -718,13 +748,22 @@ function findnode(nodeid) {
 
                     if (outcome && outcome.ph) {
                         currentPH = parseFloat(outcome.ph);
+                    } else {
+                        currentPH = 7.0;
                     }
+
+                    // Store the reaction name
+                    currentReactionName = outcome.name || "Unknown Reaction";
 
                     if (tempDisplay && tempDisplay.innerText !== "") {
                         tempDisplay.innerText = "Temperature: " + currentTemperature.toFixed(1) + " K";
                     }
                     if (phDisplay && phDisplay.innerText !== "") {
                         phDisplay.innerText = "pH: " + currentPH.toFixed(1);
+                    }
+                    if (reactionNameDisplay && reactionNameDisplay.innerHTML !== "") {
+                        reactionNameDisplay.innerHTML = "Reaction: " + currentReactionName;
+                        if (typeof MathJax !== 'undefined') MathJax.typeset();
                     }
                 }, slowReactionDelay);
             }
@@ -923,6 +962,7 @@ function findnode(nodeid) {
         selectedBeakers = [];
         currentTemperature = 298;
         currentPH = 7.0;
+        currentReactionName = "";
         startCooling();
         if (flaskSolid) {
             flaskSolid.style.opacity = '0';
@@ -938,6 +978,9 @@ function findnode(nodeid) {
         }
         if (phDisplay) {
             phDisplay.innerText = '';
+        }
+        if (reactionNameDisplay) {
+            reactionNameDisplay.innerText = '';
         }
     };
     toolbox.appendChild(resetButton);

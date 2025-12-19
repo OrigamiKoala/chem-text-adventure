@@ -292,7 +292,6 @@ button:focus, input:focus{box-shadow:0 0 0 3px rgba(125,211,252,0.12); border-ra
 
 .toolbox {
     width: 100%;
-    min-height: 30%;
     background-color: #e0e0e0;
     border: 2px solid #d0d0d0;
     border-radius: 10px;

@@ -1373,14 +1373,14 @@
     {
       "labid": "solubility1",
       "beaker1": "substance1",
-      "attributes1": "{\"color\":\"rgba(255, 255, 255, 0.3)\", \"temp\":\"1000 K\"}",
+      "attributes1": "{\"color\":\"rgba(255, 255, 255, 0.3)\", \"temp\":\"1000 K\", \"ph\":\"5.0\"}",
       "beaker2": "substance2",
       "attributes2": "{\"color\":\"rgba(255, 0, 255, 0.3)\"}",
       "beaker3": "substance3",
       "attributes3": "{\"color\":\"rgba(0, 255, 255, 0.3)\"}",
       "beaker4": "substance4",
       "attributes4": "{\"color\":\"rgba(255, 255, 0, 0.3)\"}",
-      "reaction": "{\"1_2\":{\"type\":\"solid\", \"color\":\"#ffffff\", \"temp\":\"200 K\", \"ph\":\"6.0\"}, \"2_3_4\":{\"type\":\"liquid\", \"color\":\"#32a852\", \"temp\":\"300 K\"}, \"1_2_3\":{\"type\":\"gas\", \"color\":\"#eb4034\", \"temp\":\"500 K\"}}"
+      "reaction": "{\"1_2\":{\"name\":\"Substance1 + substance2\", \"type\":\"solid\", \"color\":\"#ffffff\", \"temp\":\"200 K\", \"ph\":\"6.0\"}, \"2_3_4\":{\"name\":\"$$2+3+4$$\",\"type\":\"liquid\", \"color\":\"#32a852\", \"temp\":\"300 K\"}, \"1_2_3\":{\"name\":\"1+2+3\", \"type\":\"gas\", \"color\":\"#eb4034\", \"temp\":\"500 K\"}}"
     }
   ]
 }
