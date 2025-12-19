@@ -1102,11 +1102,11 @@ function findnode(nodeid) {
             newTextDiv.innerHTML = splitnewText[j];
             newTextDiv.insertAdjacentHTML('afterend', emptyLine.outerHTML);
             // Final cleanup for the input field
-            const inputField = document.getElementById('response');
-            if (inputField) { 
-              inputField.value = '';
-              inputField.focus(); 
-            }
+            // const inputField = document.getElementById('response');
+            // if (inputField) { 
+            //   inputField.value = '';
+            //   inputField.focus(); 
+            // }
               // Ensure final scroll is smooth
             scrollToBottom(true);
             ready = true;
