@@ -1290,7 +1290,7 @@
     },
     {
       "id": "openingsoda",
-      "text": "Even though bubbles form when you open a can of soda, those bubbles are carbon dioxide, which was injected into the drink when it was made. The carbon dioxide is just released from the drink into the air. So, since no new substance is formed, this is physical.\n--\nThat last example just shows that while what I said above are general guidelines, they are by no means rules.\n--\nWhat is a rule: chemical change involves the formation of new substances, and physical change does not.\n--\nWell, seems like you have a pretty good handle on physical vs chemical changes.\n--\nNow, let's try out some chemical reactions with the virtual lab!\n--\n<button class = \"lab\" onclick=\"launch('reactions')\">Launch the Virtual Lab!</button>\n--\nPlay around with the lab a little bit. Don't be afraid to try different things, and don't be afraid if you don't know what pH is. We'll go over that soon :)\n--\nType anything to continue.",
+      "text": "Even though bubbles form when you open a can of soda, those bubbles are carbon dioxide, which was injected into the drink when it was made. The carbon dioxide is just released from the drink into the air. So, since no new substance is formed, this is physical.\n--\nThat last example just shows that while what I said above are general guidelines, they are by no means rules.\n--\nWhat is a rule: chemical change involves the formation of new substances, and physical change does not.\n--\nWell, seems like you have a pretty good handle on physical vs chemical changes.\n--\nNow, let's try out some chemical reactions with the virtual lab!\n--\n<button class = \"lab\" onclick=\"launch('reactions')\">Launch the Virtual Lab!</button>\n--\nPlay around with the lab a little bit. Don't be afraid to try different things, and don't be afraid if you don't know what pH is. We'll go over that soon :)\n--\nYou can launch your previous lab at any time by typing 'launch lab', and close the lab by typing 'close lab'.\n--\nType anything to continue.",
       "type": "fr",
       "next": "end",
       "correct": null,
@@ -1380,7 +1380,7 @@
       "attributes3": "{\"color\":\"rgba(0, 255, 255, 0.3)\"}",
       "beaker4": "D",
       "attributes4": "{\"color\":\"rgba(255, 255, 0, 0.3)\"}",
-      "reaction": "{\"1_2\":{\"name\":\"Substance1 + substance2\", \"type\":\"solid\", \"color\":\"#ffffff\", \"temp\":\"200 K\", \"ph\":\"6.0\"}, \"2_3_4\":{\"name\":\"$$2+3+4$$\",\"type\":\"liquid\", \"color\":\"#32a852\", \"temp\":\"300 K\"}, \"1_2_3\":{\"name\":\"1+2+3\", \"type\":\"gas\", \"color\":\"#eb4034\", \"temp\":\"500 K\"}}"
+      "reaction": "{\"1_2\":{\"name\":\"$$A+B \\to E\", \"type\":\"solid\", \"color\":\"#ffffff\", \"temp\":\"200 K\", \"ph\":\"6.0\"}, \"2_3_4\":{\"name\":\"$$B+C+D \\to F$$\",\"type\":\"liquid\", \"color\":\"#32a852\", \"temp\":\"300 K\"}, \"1_2_3\":{\"name\":\"A+B+C \\to G\", \"type\":\"gas\", \"color\":\"#eb4034\", \"temp\":\"500 K\"}}"
     }
   ]
 }
