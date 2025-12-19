@@ -4,6 +4,8 @@ List of commands:
 <br> 'undo' - undo previous response (you can't undo more than that)
 <br> 'hint' - get a hint
 <br> 'periodic table' - summon the Periodic Table
+<br> 'launch lab' - launch the previous virtual lab
+<br> 'close lab' - close the virtual lab
 <br>
 <br>
 <br>Links:

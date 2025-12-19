@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let wrongcounter = 0;
   let periodictableversion = 1
   let hintcount = 1;
+  let currentlab = "reactions";
 
   // preload help.txt
   fetch('help.txt')
@@ -381,6 +382,12 @@ function findnode(nodeid) {
       }
     } else if (inputstring == "periodic table") {
       output = "<img src = 'images/periodic-table"+periodictableversion+".png'> Source: <a href='https://ptable.com/'>ptable.com</a>"
+    } else if (inputstring == "launch lab") {
+      launch(currentlab);
+      output = "Launching lab '"+currentlab+"'...";
+    } else if (inputstring == "close lab") {
+      closelab();
+      output = "Closing lab...";
     } else if (inputstring == "default" && outlineclicked===false) {
       // allow user to press enter and skip typing animation
       currentTypingContext.finish();
@@ -443,6 +450,7 @@ function findnode(nodeid) {
     return [output, nextdivid];
   }
   function launch(labid) {
+    currentlab = labid;
     console.log("launching lab: " + labid);
     const chatContainer = document.getElementById('chat-container');
     const labContainer = document.getElementById('lab-container');
@@ -1000,6 +1008,23 @@ function findnode(nodeid) {
     }, 500);
   }
   window.launch = launch;
+
+  function closelab() {
+    console.log("closing lab");
+    const chatContainer = document.getElementById('chat-container');
+    const labContainer = document.getElementById('lab-container');
+    const formElement = document.getElementById('responseform');
+
+    chatContainer.classList.remove('shifted');
+    labContainer.classList.remove('visible');
+    formElement.classList.remove('shifted-form');
+
+    if (window.activeTempInterval) {
+        clearInterval(window.activeTempInterval);
+        window.activeTempInterval = null;
+    }
+  }
+  window.closelab = closelab;
   
   // update the game
   async function updategame(e) {
