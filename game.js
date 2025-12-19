@@ -970,27 +970,14 @@ function findnode(nodeid) {
     resetButton.innerHTML = 'Reset';
     resetButton.onclick = () => { 
         console.log('Reset clicked'); 
-        selectedBeakers = [];
+        flaskContents = [];
         currentTemperature = 298;
         currentPH = 7.0;
         currentReactionName = "";
         flask.classList.remove('flask-active');
         startCooling();
-        if (flaskSolid) {
-            flaskSolid.style.opacity = '0';
-            flaskSolid.style.backgroundColor = 'transparent'; 
-            flaskSolid.style.background = 'none'; 
-            flaskSolid.style.transitionDelay = '0s';
-        }
-        if (flaskGas) {
-            flaskGas.style.opacity = '0';
-            flaskGas.style.backgroundColor = 'transparent'; 
-        }
-        if (flaskLiquid) {
-            flaskLiquid.style.opacity = '0';
-            flaskLiquid.style.backgroundColor = 'transparent';
-            flaskLiquid.style.height = '0%';
-        }
+        renderVisuals([]); // Clear visuals using the renderer
+        
         if (tempDisplay && tempDisplay.innerText !== "") {
             tempDisplay.innerText = "Temperature: " + currentTemperature.toFixed(1) + " K";
         }
