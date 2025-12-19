@@ -435,6 +435,26 @@ function findnode(nodeid) {
          else if (currentobj.op2 && inputstring.toLowerCase() == currentobj.op2.toLowerCase()) targetNodeId = currentobj.op2;
          else if (currentobj.op3 && inputstring.toLowerCase() == currentobj.op3.toLowerCase()) targetNodeId = currentobj.op3;
          else if (currentobj.op4 && inputstring.toLowerCase() == currentobj.op4.toLowerCase()) targetNodeId = currentobj.op4;
+
+         // Text match (extract options from HTML)
+         if (!targetNodeId && currentobj.text) {
+             try {
+                 const doc = new DOMParser().parseFromString(currentobj.text, 'text/html');
+                 const listItems = doc.querySelectorAll('ol li');
+                 for (let i = 0; i < listItems.length; i++) {
+                     const optionText = listItems[i].textContent.trim();
+                     if (inputstring.trim().toLowerCase() === optionText.toLowerCase()) {
+                         const opKey = 'op' + (i + 1);
+                         if (currentobj[opKey]) {
+                             targetNodeId = currentobj[opKey];
+                         }
+                         break;
+                     }
+                 }
+             } catch (e) {
+                 console.log("Error parsing options text: " + e);
+             }
+         }
       }
 
       if (targetNodeId) {
