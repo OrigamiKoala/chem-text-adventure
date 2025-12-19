@@ -994,6 +994,10 @@ function findnode(nodeid) {
         }
     };
     toolbox.appendChild(resetButton);
+    scrollToBottom(true);
+    setTimeout(() => {
+      scrollToBottom(true);
+    }, 500);
   }
   window.launch = launch;
   
