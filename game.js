@@ -413,7 +413,7 @@ function findnode(nodeid) {
           wrongcounter = 0;
         }
         else {
-          output = 'Oops. That didn\'t seeem to be exactly right. But that\'s okay; we all make mistakes! Check your answer and try again :) Remember to spell/format your answer correctly! For more information on formatting, type "help". If you need a hint, type "hint".';
+          output = 'Oops. That didn\'t seeem to be exactly right. But that\'s okay; we all make mistakes! Check your answer and try again :) Remember to spell/format your answer correctly! For more information on formatting, type \'help\'. If you need a hint, type \'hint\'.';
           wrongcounter++;
         }
       }
