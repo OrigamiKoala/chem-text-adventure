@@ -549,6 +549,11 @@ function findnode(nodeid) {
     phDisplay.style.textAlign = 'center';
     flask.appendChild(phDisplay);
 
+    // Container for beakers
+    const beakersContainer = document.createElement('div');
+    beakersContainer.className = 'beakers-container';
+    labTable.appendChild(beakersContainer);
+
     let selectedBeakers = [];
     let currentTemperature = 298;
     let currentPH = 7.0;
@@ -717,8 +722,8 @@ function findnode(nodeid) {
                     if (flaskSolid) {
                         if (type === 'solid') {
                             flaskSolid.style.width = '40%';
-                            flaskSolid.style.height = '40%';
-                            flaskSolid.style.bottom = '15%';
+                            flaskSolid.style.height = '35%';
+                            flaskSolid.style.bottom = '12%';
                             flaskSolid.style.left = '30%';
                             flaskSolid.style.borderRadius = '0';
                             flaskSolid.style.clipPath = 'none';
@@ -726,8 +731,8 @@ function findnode(nodeid) {
                             flaskSolid.style.opacity = '1';
                         } else if (type === 'liquid') {
                             flaskSolid.style.width = '90%';
-                            flaskSolid.style.height = '50%';
-                            flaskSolid.style.bottom = '12%';
+                            flaskSolid.style.height = '45%';
+                            flaskSolid.style.bottom = '10%';
                             flaskSolid.style.left = '5%';
                             flaskSolid.style.borderRadius = '0 0 10% 10%';
                             flaskSolid.style.clipPath = 'polygon(35% 0%, 65% 0%, 100% 100%, 0% 100%)';
@@ -784,8 +789,8 @@ function findnode(nodeid) {
             if (fluidColor) {
                 if (flaskSolid) {
                     flaskSolid.style.width = '90%';
-                    flaskSolid.style.height = '50%';
-                    flaskSolid.style.bottom = '12%';
+                    flaskSolid.style.height = '45%';
+                    flaskSolid.style.bottom = '10%';
                     flaskSolid.style.left = '5%';
                     flaskSolid.style.borderRadius = '0 0 10% 10%';
                     flaskSolid.style.clipPath = 'polygon(35% 0%, 65% 0%, 100% 100%, 0% 100%)';
@@ -852,8 +857,8 @@ function findnode(nodeid) {
                         const splitColor = getSplitColor(selectedBeakers);
                         if (flaskSolid) {
                             flaskSolid.style.width = '90%';
-                            flaskSolid.style.height = '50%';
-                            flaskSolid.style.bottom = '12%';
+                            flaskSolid.style.height = '45%';
+                            flaskSolid.style.bottom = '10%';
                             flaskSolid.style.left = '5%';
                             flaskSolid.style.borderRadius = '0 0 10% 10%';
                             flaskSolid.style.clipPath = 'polygon(35% 0%, 65% 0%, 100% 100%, 0% 100%)';
@@ -911,8 +916,8 @@ function findnode(nodeid) {
                         const splitColor = getSplitColor(selectedBeakers);
                         if (flaskSolid) {
                             flaskSolid.style.width = '90%';
-                            flaskSolid.style.height = '50%';
-                            flaskSolid.style.bottom = '12%';
+                            flaskSolid.style.height = '45%';
+                            flaskSolid.style.bottom = '10%';
                             flaskSolid.style.left = '5%';
                             flaskSolid.style.borderRadius = '0 0 10% 10%';
                             flaskSolid.style.clipPath = 'polygon(35% 0%, 65% 0%, 100% 100%, 0% 100%)';
@@ -927,7 +932,7 @@ function findnode(nodeid) {
           alert("Please reset the flask");
         }
       };
-      labTable.appendChild(beakerContainer);
+      beakersContainer.appendChild(beakerContainer);
     }
     MathJax.typeset();
 

@@ -286,12 +286,32 @@ button:focus, input:focus{box-shadow:0 0 0 3px rgba(125,211,252,0.12); border-ra
     margin-bottom: 30px;
     padding: 20px;
     display: flex;
-    justify-content: space-around;
+    flex-direction: row; /* Force side-by-side */
+    justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap;
-    gap: 15px;
+    gap: 20px;
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
     position: relative;
+    overflow-x: auto; /* Allow horizontal scroll if screen too small instead of wrapping beakers under flask */
+}
+
+.lab-item.flask {
+    flex: 0 0 auto;
+    margin-right: 40px;
+}
+
+/* Container for beakers to keep them grouped */
+.beakers-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 15px;
+    flex: 1;
+}
+
+.lab-item.beaker {
+    flex: 0 1 auto;
 }
 
 /* Subtle reflection on the bench */
@@ -373,6 +393,11 @@ button:focus, input:focus{box-shadow:0 0 0 3px rgba(125,211,252,0.12); border-ra
 
 .lab-item.flask {
     cursor: default; /* Not clickable */
+    min-width: 240px; /* Doubled from 120px */
+}
+
+.lab-item.flask img {
+    max-height: 220px; /* Doubled from 110px */
 }
 
 .lab-item.beaker:hover {
@@ -393,9 +418,9 @@ button:focus, input:focus{box-shadow:0 0 0 3px rgba(125,211,252,0.12); border-ra
 
 /* Glass glow effect for active reactions */
 @keyframes glass-glow {
-    0% { filter: drop-shadow(0 0 5px rgba(125,211,252,0.2)); }
-    50% { filter: drop-shadow(0 0 15px rgba(125,211,252,0.5)); }
-    100% { filter: drop-shadow(0 0 5px rgba(125,211,252,0.2)); }
+    0% { filter: invert(1) brightness(2) drop-shadow(0 0 5px rgba(125,211,252,0.2)); }
+    50% { filter: invert(1) brightness(2) drop-shadow(0 0 15px rgba(125,211,252,0.5)); }
+    100% { filter: invert(1) brightness(2) drop-shadow(0 0 5px rgba(125,211,252,0.2)); }
 }
 
 .flask-active img {
