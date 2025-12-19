@@ -869,7 +869,7 @@ function findnode(nodeid) {
              }
         };
 
-        if (selectedBeakers.length === 5) {
+        if (selectedBeakers.length > 6) {
              alert("Please reset the flask");
              return;
         }
