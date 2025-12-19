@@ -26,6 +26,12 @@ document.addEventListener('DOMContentLoaded', () => {
   let hintcount = 1;
   let currentlab = "reactions";
 
+  const safeTypeset = (elements) => {
+    if (typeof MathJax !== 'undefined' && MathJax.typesetPromise) {
+      MathJax.typesetPromise(elements).catch(err => console.log('MathJax error: ' + err));
+    }
+  };
+
   // preload help.txt
   fetch('help.txt')
     .then(response => response.text())
@@ -40,14 +46,14 @@ document.addEventListener('DOMContentLoaded', () => {
       if (JSoutline) {
         outlineText = 'Click on a section to jump to it.<br>';
         for (const item of JSoutline) {
-          outlineText += '<button class="outline" onclick="jumpTo(\''+item.div+'\')">' +item.reference_num +' ' + item.content + '</button><br>';
+          outlineText += '<button class="outline" onclick="jumpTo(\'' + item.div + '\')">' + item.reference_num + ' ' + item.content + '</button><br>';
         }
       }
     }).catch(error => {
       console.error('Error loading outline:', error);
     });
-  
-  function decode(encodedURIComponent){
+
+  function decode(encodedURIComponent) {
     let result = encodedURIComponent.replaceAll("%20", " ");
     result = result.replaceAll("%25", "%");
     result = result.replaceAll("%2F", "/");
@@ -75,20 +81,20 @@ document.addEventListener('DOMContentLoaded', () => {
       fullJSdata = data;
       JSdata = data.pchem_nodes;
       let initialText = findnode("initial").text;
-      previoustext= initialText;
+      previoustext = initialText;
       let splitinitialText = initialText.split("--");
       if (qtext && qtext.parentNode) qtext.parentNode.removeChild(qtext);
       let newContainer = document.createElement('div');
       formElement.parentNode.insertBefore(newContainer, formElement);
       previouscontainer = newContainer;
-      for (var j=0; j<splitinitialText.length;) {
+      for (var j = 0; j < splitinitialText.length;) {
         const initialDiv = document.createElement('div');
         initialDiv.className = 'question';
         newContainer.appendChild(initialDiv);
         await typeWriter(initialDiv, splitinitialText[j], typespeed);
         initialDiv.insertAdjacentHTML('afterend', emptyLine.outerHTML);
         initialDiv.innerHTML = splitinitialText[j];
-        if (typeof MathJax !== 'undefined') MathJax.typesetPromise();
+        safeTypeset();
         j++;
       }
       // remove the original placeholder element if present so it doesn't duplicate
@@ -97,21 +103,21 @@ document.addEventListener('DOMContentLoaded', () => {
     .catch(error => {
       console.error('Error loading game data:', error);
     });
-function findnode(nodeid) {
+  function findnode(nodeid) {
     if (JSdata) {
-        // Use the built-in .find() method to search the array
-        const node = JSdata.find(item => item.id == nodeid);
+      // Use the built-in .find() method to search the array
+      const node = JSdata.find(item => item.id == nodeid);
 
-        if (node) {
-            console.log("findnode found node for divid=" + nodeid);
-            return node;
-        } else {
-            console.log("findnode did not find node for divid=" + nodeid);
-            return null;
-        }
+      if (node) {
+        console.log("findnode found node for divid=" + nodeid);
+        return node;
+      } else {
+        console.log("findnode did not find node for divid=" + nodeid);
+        return null;
+      }
     }
     return { text: "node data not loaded" };
-}
+  }
 
   // attach listener to form (safe when form exists)
   if (formElement) {
@@ -128,35 +134,35 @@ function findnode(nodeid) {
   }
 
   // typewriter effect
-  function typeWriter(element, text, speed, callback = () => {}) {
+  function typeWriter(element, text, speed, callback = () => { }) {
     return new Promise(resolve => {
-    console.log("typeWriter called");
-    console.log("element= " + element);
-    console.log("text= " + text);
-    console.log("speed= " + speed);
+      console.log("typeWriter called");
+      console.log("element= " + element);
+      console.log("text= " + text);
+      console.log("speed= " + speed);
 
-    let i = 0;
+      let i = 0;
 
-    // reset typingTimeoutId
-    if (typingTimeoutId) {
+      // reset typingTimeoutId
+      if (typingTimeoutId) {
         clearTimeout(typingTimeoutId);
         console.log('Cleared existing typing timeout');
-    }
-    typingTimeoutId = null;
-    currentTypingContext = null; 
+      }
+      typingTimeoutId = null;
+      currentTypingContext = null;
 
-    // finish typing if form is resubmitted
-    currentTypingContext = {
-          element: element,
-          text: text,
-          finished: false,
-    // A method to instantly finish the typing
-      finish: function() {
-        if (!this.finished) {
+      // finish typing if form is resubmitted
+      currentTypingContext = {
+        element: element,
+        text: text,
+        finished: false,
+        // A method to instantly finish the typing
+        finish: function () {
+          if (!this.finished) {
             // IMPORTANT: Immediately stop the pending timer
             if (typingTimeoutId) {
-                clearTimeout(typingTimeoutId);
-                typingTimeoutId = null;
+              clearTimeout(typingTimeoutId);
+              typingTimeoutId = null;
             }
             console.log('finish() called');
             // Display all remaining text
@@ -166,7 +172,7 @@ function findnode(nodeid) {
             previouscontainer.remove();
             let newContainer = document.createElement('div');
             formElement.parentNode.insertBefore(newContainer, formElement);
-            for (var n=0; n<splitnewText.length;) {
+            for (var n = 0; n < splitnewText.length;) {
               console.log("Rendering interrupted text part " + n + ": " + splitnewText[n]);
               const newinterruptTextDiv = document.createElement('div');
               newinterruptTextDiv.className = 'question';
@@ -177,160 +183,160 @@ function findnode(nodeid) {
               n++;
             }
             this.finished = true;
+          }
         }
       }
-    }
-    
-    function type() {
-      // if finished typing, move on
-      if (currentTypingContext && currentTypingContext.finished) {
-        console.log("Typing already finished, exiting type()");
-        return;
-      }
 
-      // if not finished typing
-      if (i < text.length) {
-        let delay = speed;
-        let char = text.charAt(i);
-        // Check for HTML tag
-        if (char === '<') {
-          console.log("HTML tag detected at index " + i);
-          let tagEnd = text.indexOf('>', i);
-    
-          if (tagEnd !== -1) {
-            let tagContent = text.substring(i, tagEnd + 1);
-            
-            // check if it's the specific <button tag
-            if (tagContent.startsWith('<button')) {
-              console.log("<button> tag detected at index " + i);
-              // Find the closing </button> tag
-              let closingTagStart = text.indexOf('</button>', i);
+      function type() {
+        // if finished typing, move on
+        if (currentTypingContext && currentTypingContext.finished) {
+          console.log("Typing already finished, exiting type()");
+          return;
+        }
 
-              if (closingTagStart !== -1) {
-                // Render the entire <button>...</button> structure instantly
-                let fullButtonHtml = text.substring(i, closingTagStart + 9); // +9 for length of </button>
-                element.innerHTML += fullButtonHtml;
+        // if not finished typing
+        if (i < text.length) {
+          let delay = speed;
+          let char = text.charAt(i);
+          // Check for HTML tag
+          if (char === '<') {
+            console.log("HTML tag detected at index " + i);
+            let tagEnd = text.indexOf('>', i);
 
-                // Set index i to after the closing tag
-                i = closingTagStart + 9;
-                delay = 1; // Tiny delay before next Qtext character
+            if (tagEnd !== -1) {
+              let tagContent = text.substring(i, tagEnd + 1);
+
+              // check if it's the specific <button tag
+              if (tagContent.startsWith('<button')) {
+                console.log("<button> tag detected at index " + i);
+                // Find the closing </button> tag
+                let closingTagStart = text.indexOf('</button>', i);
+
+                if (closingTagStart !== -1) {
+                  // Render the entire <button>...</button> structure instantly
+                  let fullButtonHtml = text.substring(i, closingTagStart + 9); // +9 for length of </button>
+                  element.innerHTML += fullButtonHtml;
+
+                  // Set index i to after the closing tag
+                  i = closingTagStart + 9;
+                  delay = 1; // Tiny delay before next Qtext character
+                } else {
+                  // Fallback for an unmatched opening tag (treat as a simple tag)
+                  element.innerHTML += tagContent;
+                  i = tagEnd + 1;
+                  delay = 1;
+                }
+              } else if (tagContent.startsWith('<ol')) {
+                console.log("<ol> tag detected at index " + i);
+                // Find the closing </ol> tag
+                let closingTagStart = text.indexOf('</ol>', i);
+
+                if (closingTagStart !== -1) {
+                  // Render the entire <ol>...</ol> structure instantly
+                  let fullOlHtml = text.substring(i, closingTagStart + 5); // +5 for length of </ol>
+                  element.innerHTML += fullOlHtml;
+
+                  // Set index i to after the closing tag
+                  i = closingTagStart + 5;
+                  delay = 1; // Tiny delay before next Qtext character
+                } else {
+                  // Fallback for an unmatched opening tag (treat as a simple tag)
+                  element.innerHTML += tagContent;
+                  i = tagEnd + 1;
+                  delay = 1;
+                }
+              } else if (tagContent.startsWith('<ul')) {
+                console.log("<ul> tag detected at index " + i);
+                // Find the closing </ul> tag
+                let closingTagStart = text.indexOf('</ul>', i);
+
+                if (closingTagStart !== -1) {
+                  // Render the entire <ul>...</ul> structure instantly
+                  let fullUlHtml = text.substring(i, closingTagStart + 5); // +5 for length of </ul>
+                  element.innerHTML += fullUlHtml;
+
+                  // Set index i to after the closing tag
+                  i = closingTagStart + 5;
+                  delay = 1; // Tiny delay before next Qtext character 
+                } else {
+                  element.innerHTML += tagContent;
+                  i = tagEnd + 1;
+                  delay = 1;
+                }
               } else {
-                // Fallback for an unmatched opening tag (treat as a simple tag)
+                console.log("Non-button/list HTML tag detected at index " + i);
+                // If not a button, treat as a simple tag (e.g., <b>, <br>)
                 element.innerHTML += tagContent;
                 i = tagEnd + 1;
                 delay = 1;
               }
-            } else if (tagContent.startsWith('<ol')) {
-              console.log("<ol> tag detected at index " + i);
-              // Find the closing </ol> tag
-              let closingTagStart = text.indexOf('</ol>', i);
-
-              if (closingTagStart !== -1) {
-                // Render the entire <ol>...</ol> structure instantly
-                let fullOlHtml = text.substring(i, closingTagStart + 5); // +5 for length of </ol>
-                element.innerHTML += fullOlHtml;
-
-                // Set index i to after the closing tag
-                i = closingTagStart + 5;
+            }
+          } else if (char === '\\') {
+            if (text.charAt(i + 1) === '(') {
+              // LaTeX inline math start
+              let mathEnd = text.indexOf('\\)', i + 2);
+              if (mathEnd !== -1) {
+                let mathContent = text.substring(i, mathEnd + 2);
+                element.innerHTML += mathContent;
+                i = mathEnd + 2;
                 delay = 1; // Tiny delay before next Qtext character
+                safeTypeset();
               } else {
-                // Fallback for an unmatched opening tag (treat as a simple tag)
-                element.innerHTML += tagContent;
-                i = tagEnd + 1;
-                delay = 1;
+                // No closing found, treat as normal characters
+                element.innerHTML += char;
+                i++;
               }
-            } else if (tagContent.startsWith('<ul')) {
-              console.log("<ul> tag detected at index " + i);
-              // Find the closing </ul> tag
-              let closingTagStart = text.indexOf('</ul>', i);
-
-              if (closingTagStart !== -1) {
-                // Render the entire <ul>...</ul> structure instantly
-                let fullUlHtml = text.substring(i, closingTagStart + 5); // +5 for length of </ul>
-                element.innerHTML += fullUlHtml; 
-
-                // Set index i to after the closing tag
-                i = closingTagStart + 5;
-                delay = 1; // Tiny delay before next Qtext character 
+            } else if (text.charAt(i + 1) === '[') {
+              // LaTeX display math start
+              let mathEnd = text.indexOf('\\]', i + 2);
+              if (mathEnd !== -1) {
+                let mathContent = text.substring(i, mathEnd + 2);
+                element.innerHTML += mathContent;
+                i = mathEnd + 2;
+                delay = 1; // Tiny delay before next Qtext character
+                safeTypeset();
               } else {
-                element.innerHTML += tagContent;
-                i = tagEnd + 1;
-                delay = 1;  
+                // No closing found, treat as normal characters
+                element.innerHTML += char;
+                i++;
               }
             } else {
-              console.log("Non-button/list HTML tag detected at index " + i);
-              // If not a button, treat as a simple tag (e.g., <b>, <br>)
-              element.innerHTML += tagContent;
-              i = tagEnd + 1;
-              delay = 1;
-            }
-          }
-        } else if (char === '\\') {
-          if (text.charAt(i + 1) === '(') {
-            // LaTeX inline math start
-            let mathEnd = text.indexOf('\\)', i + 2);
-            if (mathEnd !== -1) {
-              let mathContent = text.substring(i, mathEnd + 2);
-              element.innerHTML += mathContent;
-              i = mathEnd + 2;
-              delay = 1; // Tiny delay before next Qtext character
-              if (typeof MathJax !== 'undefined') MathJax.typesetPromise();
-            } else {
-              // No closing found, treat as normal characters
-              element.innerHTML += char;
-              i++;
-            }
-          } else if (text.charAt(i + 1) === '[') {
-            // LaTeX display math start
-            let mathEnd = text.indexOf('\\]', i + 2);
-            if (mathEnd !== -1) {
-              let mathContent = text.substring(i, mathEnd + 2);
-              element.innerHTML += mathContent;
-              i = mathEnd + 2;
-              delay = 1; // Tiny delay before next Qtext character
-              if (typeof MathJax !== 'undefined') MathJax.typesetPromise();
-            } else {
-              // No closing found, treat as normal characters
+              // Just a backslash, append it
               element.innerHTML += char;
               i++;
             }
           } else {
-            // Just a backslash, append it
-            element.innerHTML += char;
-            i++;
-          }
-        } else {
             // Append regular character
             element.innerHTML += char;
             i++;
-        }
-        // Scroll instantly to bottom so user sees new text
-        scrollToBottom(false);
+          }
+          // Scroll instantly to bottom so user sees new text
+          scrollToBottom(false);
 
-        // Assign the ID returned by setTimeout, using the delay (1ms for tags, 'speed' for chars)
-        typingTimeoutId = setTimeout(type, delay); 
-      } else {
-        // Typing finished naturally
-        currentTypingContext.finished = true; 
-        typingTimeoutId = null; 
-        scrollToBottom(true);
-        callback();
-        resolve();
-        console.log("Typing complete, callback executed");
+          // Assign the ID returned by setTimeout, using the delay (1ms for tags, 'speed' for chars)
+          typingTimeoutId = setTimeout(type, delay);
+        } else {
+          // Typing finished naturally
+          currentTypingContext.finished = true;
+          typingTimeoutId = null;
+          scrollToBottom(true);
+          callback();
+          resolve();
+          console.log("Typing complete, callback executed");
+        }
+        console.log("character typed");
       }
-      console.log("character typed");
-    }
-    type();
-    if (typeof MathJax !== 'undefined') MathJax.typesetPromise();
-    console.log("typeWriter finished");
+      type();
+      safeTypeset();
+      console.log("typeWriter finished");
     });
   }
 
   // receiving input, returns output text and next id
-  function parseinput(inputstring, currentdivid){
+  function parseinput(inputstring, currentdivid) {
     console.log("parseinput called with inputstring=" + inputstring + " and currentdivid=" + currentdivid);
 
-    if (inputstring){
+    if (inputstring) {
     }
     else {
       inputstring = 'default';
@@ -349,17 +355,17 @@ function findnode(nodeid) {
     let nextdivid = currentdivid;
 
     // handle special commands
-    if (inputstring == "help"){
+    if (inputstring == "help") {
       return [helpText || 'Loading help... please wait', currentdivid];
-    } else if (inputstring == "outline"){
+    } else if (inputstring == "outline") {
       return [outlineText || 'Loading outline... please wait', currentdivid];
-    } else if (inputstring == "undo"){
+    } else if (inputstring == "undo") {
       output = findnode(previousdivid) ? (findnode(previousdivid).text || '') : 'Previous not found';
       wrongcounter = 0;
       nextdivid = previousdivid;
     } else if (inputstring == "hint") {
-      if (hintcount === 1){
-        if (currentobj.hint!=null && currentobj.hint!=''){
+      if (hintcount === 1) {
+        if (currentobj.hint != null && currentobj.hint != '') {
           output = currentobj.hint;
         }
         else {
@@ -367,8 +373,8 @@ function findnode(nodeid) {
         }
         hintcount++;
       }
-      else if (hintcount === 2){
-        if (currentobj.hint2!=null && currentobj.hint2!=''){
+      else if (hintcount === 2) {
+        if (currentobj.hint2 != null && currentobj.hint2 != '') {
           output = currentobj.hint2;
         }
         else {
@@ -381,22 +387,22 @@ function findnode(nodeid) {
         hintcount = 1;
       }
     } else if (inputstring == "periodic table") {
-      output = "<img src = 'images/periodic-table"+periodictableversion+".png'> Source: <a href='https://ptable.com/'>ptable.com</a>"
+      output = "<img src = 'images/periodic-table" + periodictableversion + ".png'> Source: <a href='https://ptable.com/'>ptable.com</a>"
     } else if (inputstring == "launch lab") {
       launch(currentlab);
-      output = "Launching lab '"+currentlab+"'...";
+      output = "Launching lab '" + currentlab + "'...";
     } else if (inputstring == "close lab") {
       closelab();
       output = "Closing lab...";
-    } else if (inputstring == "default" && outlineclicked===false) {
+    } else if (inputstring == "default" && outlineclicked === false) {
       // allow user to press enter and skip typing animation
       currentTypingContext.finish();
       console.log("Input empty, typing interrupted");
       return ['interrupt', currentdivid];
-    // handle normal input
-    } else if (inputstring == 'default' && outlineclicked===true) {
+      // handle normal input
+    } else if (inputstring == 'default' && outlineclicked === true) {
       console.log("Jumping");
-      outlineclicked=false;
+      outlineclicked = false;
       wrongcounter = 0;
       return [findnode(currentid).text, currentid];
     } else if (currentobj.type === 'frq') {
@@ -408,8 +414,8 @@ function findnode(nodeid) {
         output = nextobj ? (nextobj.text || '') : 'Oops. I couldn\'t find the next part. Looks like you found a bug!';
         wrongcounter = 0;
       } else {
-        if (wrongcounter >= 4){
-          output = 'It seems like you\'re having some trouble with this question. Don\'t worry, it happens to everyone! The answer is '+currentobj.correct+'.';
+        if (wrongcounter >= 4) {
+          output = 'It seems like you\'re having some trouble with this question. Don\'t worry, it happens to everyone! The answer is ' + currentobj.correct + '.';
           wrongcounter = 0;
         }
         else {
@@ -433,30 +439,30 @@ function findnode(nodeid) {
 
       // Safe check for direct ID match
       if (!targetNodeId) {
-         if (currentobj.op1 && inputstring.toLowerCase() == currentobj.op1.toLowerCase()) targetNodeId = currentobj.op1;
-         else if (currentobj.op2 && inputstring.toLowerCase() == currentobj.op2.toLowerCase()) targetNodeId = currentobj.op2;
-         else if (currentobj.op3 && inputstring.toLowerCase() == currentobj.op3.toLowerCase()) targetNodeId = currentobj.op3;
-         else if (currentobj.op4 && inputstring.toLowerCase() == currentobj.op4.toLowerCase()) targetNodeId = currentobj.op4;
+        if (currentobj.op1 && inputstring.toLowerCase() == currentobj.op1.toLowerCase()) targetNodeId = currentobj.op1;
+        else if (currentobj.op2 && inputstring.toLowerCase() == currentobj.op2.toLowerCase()) targetNodeId = currentobj.op2;
+        else if (currentobj.op3 && inputstring.toLowerCase() == currentobj.op3.toLowerCase()) targetNodeId = currentobj.op3;
+        else if (currentobj.op4 && inputstring.toLowerCase() == currentobj.op4.toLowerCase()) targetNodeId = currentobj.op4;
 
-         // Text match (extract options from HTML)
-         if (!targetNodeId && currentobj.text) {
-             try {
-                 const doc = new DOMParser().parseFromString(currentobj.text, 'text/html');
-                 const listItems = doc.querySelectorAll('ol li');
-                 for (let i = 0; i < listItems.length; i++) {
-                     const optionText = listItems[i].textContent.trim();
-                     if (inputstring.trim().toLowerCase() === optionText.toLowerCase()) {
-                         const opKey = 'op' + (i + 1);
-                         if (currentobj[opKey]) {
-                             targetNodeId = currentobj[opKey];
-                         }
-                         break;
-                     }
-                 }
-             } catch (e) {
-                 console.log("Error parsing options text: " + e);
-             }
-         }
+        // Text match (extract options from HTML)
+        if (!targetNodeId && currentobj.text) {
+          try {
+            const doc = new DOMParser().parseFromString(currentobj.text, 'text/html');
+            const listItems = doc.querySelectorAll('ol li');
+            for (let i = 0; i < listItems.length; i++) {
+              const optionText = listItems[i].textContent.trim();
+              if (inputstring.trim().toLowerCase() === optionText.toLowerCase()) {
+                const opKey = 'op' + (i + 1);
+                if (currentobj[opKey]) {
+                  targetNodeId = currentobj[opKey];
+                }
+                break;
+              }
+            }
+          } catch (e) {
+            console.log("Error parsing options text: " + e);
+          }
+        }
       }
 
       if (targetNodeId) {
@@ -465,10 +471,10 @@ function findnode(nodeid) {
         console.log(nextdivid);
       } else {
         if (["1", "2", "3", "4"].includes(inputstring)) {
-           output = 'That option is not available. Please choose a valid number.';
+          output = 'That option is not available. Please choose a valid number.';
         } else {
-           console.log("Unrecognized answer choice: " + inputstring);
-           output = 'Hmmmm...that doesn\'t seem to be an answer choice. Please enter the number corresponding to your choice, and try again.';
+          console.log("Unrecognized answer choice: " + inputstring);
+          output = 'Hmmmm...that doesn\'t seem to be an answer choice. Please enter the number corresponding to your choice, and try again.';
         }
         nextdivid = currentdivid;
         return [output, nextdivid];
@@ -527,7 +533,7 @@ function findnode(nodeid) {
     // Add elements to lab table
     const flask = document.createElement('div');
     flask.className = 'lab-item flask';
-    
+
     const flaskWrapper = document.createElement('div');
     flaskWrapper.style.position = 'relative';
     flaskWrapper.style.display = 'inline-block';
@@ -539,11 +545,11 @@ function findnode(nodeid) {
     flaskSolid.style.left = '0';
     flaskSolid.style.width = '0';
     flaskSolid.style.height = '0';
-    flaskSolid.style.backgroundColor = 'transparent'; 
+    flaskSolid.style.backgroundColor = 'transparent';
     flaskSolid.style.zIndex = '1';
-    flaskSolid.style.borderRadius = '0'; 
+    flaskSolid.style.borderRadius = '0';
     flaskSolid.style.opacity = '0';
-    flaskSolid.style.transition = 'all 2s ease-in-out, width 0s ease-in-out, left 0s ease-in-out'; 
+    flaskSolid.style.transition = 'all 2s ease-in-out, width 0s ease-in-out, left 0s ease-in-out';
     flaskWrapper.appendChild(flaskSolid);
 
     const flaskGas = document.createElement('div');
@@ -553,8 +559,8 @@ function findnode(nodeid) {
     flaskGas.style.left = '10%';
     flaskGas.style.width = '80%';
     flaskGas.style.height = '80%';
-    flaskGas.style.backgroundColor = 'transparent'; 
-    flaskGas.style.zIndex = '1'; 
+    flaskGas.style.backgroundColor = 'transparent';
+    flaskGas.style.zIndex = '1';
     flaskGas.style.opacity = '0';
     flaskGas.style.transition = 'all 2s ease-in-out';
     flaskGas.style.maskImage = "url('images/gas.png')";
@@ -575,7 +581,7 @@ function findnode(nodeid) {
     flaskLiquid.style.width = '90%';
     flaskLiquid.style.height = '0%';
     flaskLiquid.style.backgroundColor = 'transparent';
-    flaskLiquid.style.zIndex = '2'; 
+    flaskLiquid.style.zIndex = '2';
     flaskLiquid.style.borderRadius = '0 0 10% 10%';
     flaskLiquid.style.clipPath = 'polygon(35% 0%, 65% 0%, 100% 100%, 0% 100%)';
     flaskLiquid.style.opacity = '0';
@@ -622,111 +628,112 @@ function findnode(nodeid) {
     let currentProductColor = null;
 
     showReactionBtn.onclick = () => {
-        if (reactionNameDisplay.innerHTML !== "") {
-            reactionNameDisplay.innerHTML = "";
-        } else {
-            reactionNameDisplay.innerHTML = "Reaction: " + (currentReactionName || "None");
-            if (typeof MathJax !== 'undefined') MathJax.typesetPromise();
-        }
+      if (reactionNameDisplay.innerHTML !== "") {
+        reactionNameDisplay.innerHTML = "";
+      } else {
+        reactionNameDisplay.innerHTML = "Reaction: " + (currentReactionName || "None");
+        safeTypeset([reactionNameDisplay]);
+      }
     };
 
     const startCooling = () => {
-        if (window.activeTempInterval) clearInterval(window.activeTempInterval);
-        window.activeTempInterval = setInterval(() => {
-            const ambientTemp = 298;
-            const k = 0.002;
-            const diff = currentTemperature - ambientTemp;
-            if (Math.abs(diff) > 0.01) {
-                currentTemperature -= k * diff;
-            } else {
-                currentTemperature = ambientTemp;
-            }
-            if (tempDisplay && tempDisplay.innerText !== "") {
-                tempDisplay.innerText = "Temperature: " + currentTemperature.toFixed(1) + " K";
-            }
-        }, 1000);
+      if (window.activeTempInterval) clearInterval(window.activeTempInterval);
+      window.activeTempInterval = setInterval(() => {
+        const ambientTemp = 298;
+        const k = 0.002;
+        const diff = currentTemperature - ambientTemp;
+        if (Math.abs(diff) > 0.01) {
+          currentTemperature -= k * diff;
+        } else {
+          currentTemperature = ambientTemp;
+        }
+        if (tempDisplay && tempDisplay.innerText !== "") {
+          tempDisplay.innerText = "Temperature: " + currentTemperature.toFixed(1) + " K";
+        }
+      }, 1000);
     };
 
     startCooling();
 
-             // Reusable Renderer
-             const renderVisuals = (liquidColors, pType, pColor) => {
-                                 // Solid Layer
-                                 if (flaskSolid) {
-                                     if (pType === 'solid') {
-                                         flaskSolid.style.width = '40%';
-                                         flaskSolid.style.height = '35%';
-                                         flaskSolid.style.bottom = '12%';
-                                         flaskSolid.style.left = '30%';
-                                         flaskSolid.style.borderRadius = '0';
-                                         flaskSolid.style.clipPath = 'none';
-                                         flaskSolid.style.background = pColor || 'white';
-                                         flaskSolid.style.transitionDelay = '0s';
-                                         flaskSolid.style.opacity = '1';
-                                     } else {
-                                         flaskSolid.style.transitionDelay = '0s';
-                                         flaskSolid.style.opacity = '0';
-                                     }
-                                 }
-                 // Liquid Layer
-                 if (flaskLiquid) {
-                     if (liquidColors.length > 0) {
-                         // Reset dimensions in case they were morphed to solid
-                         flaskLiquid.style.width = '90%';
-                         flaskLiquid.style.left = '5%';
-                         flaskLiquid.style.bottom = '10%';
-                         
-                         let targetHeight = '45%';
-                         let targetClip = 'polygon(35% 0%, 65% 0%, 100% 100%, 0% 100%)';
-                         
-                         if (liquidColors.length === 1) {
-                             flaskLiquid.style.background = liquidColors[0];
-                             targetHeight = '22.5%';
-                             targetClip = 'polygon(17.5% 0%, 82.5% 0%, 100% 100%, 0% 100%)';
-                         } else {
-                             let gradientParts = [];
-                             const step = 100 / liquidColors.length;
-                             liquidColors.forEach((color, i) => {
-                                 gradientParts.push(`${color} ${i * step}%`);
-                                 gradientParts.push(`${color} ${(i + 1) * step}%`);
-                             });
-                             flaskLiquid.style.background = `linear-gradient(to top, ${gradientParts.join(', ')})`;
-                             targetHeight = '45%';
-                             targetClip = 'polygon(35% 0%, 65% 0%, 100% 100%, 0% 100%)';
-                         }
-                         
-                         if (flaskLiquid.style.opacity === '0' && flaskLiquid.style.width === '90%') {
-                             flaskLiquid.style.height = '0%';
-                             flaskLiquid.style.clipPath = 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)';
-                             void flaskLiquid.offsetWidth;
-                             flaskLiquid.style.height = targetHeight;
-                             flaskLiquid.style.clipPath = targetClip;
-                         } else {
-                             flaskLiquid.style.height = targetHeight;
-                             flaskLiquid.style.clipPath = targetClip;
-                         }
-                         flaskLiquid.style.opacity = '0.7';
-                     } else {
-                         // No liquids
-                         flaskLiquid.style.opacity = '0';
-                         
-                                                 if (pType === 'solid') {
-                                                     // shape of the liquid never changes
-                                                 } else {
-                                                     flaskLiquid.style.height = '0%';
-                                                 }                     }
-                 }
-                 
-                 // Gas Layer
-                 if (flaskGas) {
-                     if (pType === 'gas') {
-                         flaskGas.style.background = pColor || 'white';
-                         flaskGas.style.opacity = '1';
-                     } else {
-                         flaskGas.style.opacity = '0';
-                     }
-                 }
-             };
+    // Reusable Renderer
+    const renderVisuals = (liquidColors, pType, pColor) => {
+      // Solid Layer
+      if (flaskSolid) {
+        if (pType === 'solid') {
+          flaskSolid.style.width = '40%';
+          flaskSolid.style.height = '35%';
+          flaskSolid.style.bottom = '12%';
+          flaskSolid.style.left = '30%';
+          flaskSolid.style.borderRadius = '0';
+          flaskSolid.style.clipPath = 'none';
+          flaskSolid.style.background = pColor || 'white';
+          flaskSolid.style.transitionDelay = '0s';
+          flaskSolid.style.opacity = '1';
+        } else {
+          flaskSolid.style.transitionDelay = '0s';
+          flaskSolid.style.opacity = '0';
+        }
+      }
+      // Liquid Layer
+      if (flaskLiquid) {
+        if (liquidColors.length > 0) {
+          // Reset dimensions in case they were morphed to solid
+          flaskLiquid.style.width = '90%';
+          flaskLiquid.style.left = '5%';
+          flaskLiquid.style.bottom = '10%';
+
+          let targetHeight = '45%';
+          let targetClip = 'polygon(35% 0%, 65% 0%, 100% 100%, 0% 100%)';
+
+          if (liquidColors.length === 1) {
+            flaskLiquid.style.background = liquidColors[0];
+            targetHeight = '22.5%';
+            targetClip = 'polygon(17.5% 0%, 82.5% 0%, 100% 100%, 0% 100%)';
+          } else {
+            let gradientParts = [];
+            const step = 100 / liquidColors.length;
+            liquidColors.forEach((color, i) => {
+              gradientParts.push(`${color} ${i * step}%`);
+              gradientParts.push(`${color} ${(i + 1) * step}%`);
+            });
+            flaskLiquid.style.background = `linear-gradient(to top, ${gradientParts.join(', ')})`;
+            targetHeight = '45%';
+            targetClip = 'polygon(35% 0%, 65% 0%, 100% 100%, 0% 100%)';
+          }
+
+          if (flaskLiquid.style.opacity === '0' && flaskLiquid.style.width === '90%') {
+            flaskLiquid.style.height = '0%';
+            flaskLiquid.style.clipPath = 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)';
+            void flaskLiquid.offsetWidth;
+            flaskLiquid.style.height = targetHeight;
+            flaskLiquid.style.clipPath = targetClip;
+          } else {
+            flaskLiquid.style.height = targetHeight;
+            flaskLiquid.style.clipPath = targetClip;
+          }
+          flaskLiquid.style.opacity = '0.7';
+        } else {
+          // No liquids
+          flaskLiquid.style.opacity = '0';
+
+          if (pType === 'solid') {
+            // shape of the liquid never changes
+          } else {
+            flaskLiquid.style.height = '0%';
+          }
+        }
+      }
+
+      // Gas Layer
+      if (flaskGas) {
+        if (pType === 'gas') {
+          flaskGas.style.background = pColor || 'white';
+          flaskGas.style.opacity = '1';
+        } else {
+          flaskGas.style.opacity = '0';
+        }
+      }
+    };
 
     const labData = fullJSdata.labs.find(lab => lab.labid === labid);
 
@@ -735,12 +742,12 @@ function findnode(nodeid) {
       // but usually if 3 and 4 are empty we just don't show them).
       // Assuming if label is missing for 3 or 4, we skip.
       if (i > 2 && labData && !labData['beaker' + i]) {
-          continue;
+        continue;
       }
-      
+
       const beakerContainer = document.createElement('div');
       beakerContainer.className = 'lab-item beaker';
-      
+
       const beakerWrapper = document.createElement('div');
       beakerWrapper.style.position = 'relative';
       beakerWrapper.style.display = 'inline-block';
@@ -750,15 +757,17 @@ function findnode(nodeid) {
       beakerImage.alt = `Beaker ${i}`;
       beakerImage.style.position = 'relative';
       beakerImage.style.zIndex = '2';
-      
+
       // Parse attributes if available
       let beakerAttributes = null;
       if (labData && labData['attributes' + i]) {
-          try {
-              beakerAttributes = (new Function("return " + labData['attributes' + i]))();
-          } catch (e) {
-              console.error("Error parsing beaker attributes:", e);
-          }
+        try {
+          // Sanitize string to preserve backslashes for invalid escapes (like \ce)
+          const sanitizedAttributes = labData['attributes' + i].replace(/\\(?!["\\/bfnrtu])/g, "\\\\");
+          beakerAttributes = JSON.parse(sanitizedAttributes);
+        } catch (e) {
+          console.error("Error parsing beaker attributes:", e);
+        }
       }
 
       // Apply fluid color if available
@@ -775,10 +784,10 @@ function findnode(nodeid) {
         fluidDiv.style.borderRadius = '0 0 10% 10%';
         beakerWrapper.appendChild(fluidDiv);
       }
-      
+
       beakerWrapper.appendChild(beakerImage);
       beakerContainer.appendChild(beakerWrapper);
-      
+
       const beakerLabel = document.createElement('div');
       if (labData) {
         beakerLabel.innerHTML = labData['beaker' + i] || `Beaker ${i}`;
@@ -786,126 +795,126 @@ function findnode(nodeid) {
         beakerLabel.innerHTML = `Beaker ${i}`;
       }
       beakerContainer.appendChild(beakerLabel);
-      
+
       const beakerIdx = i;
-      beakerContainer.onclick = () => { 
-        console.log(`Beaker ${beakerIdx} clicked`); 
-        
+      beakerContainer.onclick = () => {
+        console.log(`Beaker ${beakerIdx} clicked`);
+
         selectedBeakers.push(beakerIdx);
 
         const getColors = (indices) => {
-            return indices.map(idx => {
-                let attr = null;
-                if (labData['attributes' + idx]) {
-                    try {
-                        attr = (new Function("return " + labData['attributes' + idx]))();
-                    } catch(e) {}
-                }
-                return attr ? attr.color : null;
-            }).filter(c => c);
+          return indices.map(idx => {
+            let attr = null;
+            if (labData['attributes' + idx]) {
+              try {
+                attr = (new Function("return " + labData['attributes' + idx]))();
+              } catch (e) { }
+            }
+            return attr ? attr.color : null;
+          }).filter(c => c);
         };
 
         const updateFlaskContent = (outcome, reactionData, reactingIndices) => {
-             // 1. Calculate Pre-Reaction State
-             // Start with the current state of the flask
-             let preLiquidColors = [...currentLiquidColors];
-             
-             // Identify and add the newly added beaker's liquid (it's the last one in selectedBeakers)
-             if (selectedBeakers.length > 0) {
-                 const newBeakerId = selectedBeakers[selectedBeakers.length - 1];
-                 const newColors = getColors([newBeakerId]);
-                 if (newColors.length > 0) {
-                     preLiquidColors.push(newColors[0]);
-                 }
-             }
+          // 1. Calculate Pre-Reaction State
+          // Start with the current state of the flask
+          let preLiquidColors = [...currentLiquidColors];
 
-             // 2. Calculate Post-Reaction State
-             let postLiquidLayers = [];
-             let productRecency = -1;
-             let tempReactants = reactingIndices ? [...reactingIndices] : [];
+          // Identify and add the newly added beaker's liquid (it's the last one in selectedBeakers)
+          if (selectedBeakers.length > 0) {
+            const newBeakerId = selectedBeakers[selectedBeakers.length - 1];
+            const newColors = getColors([newBeakerId]);
+            if (newColors.length > 0) {
+              preLiquidColors.push(newColors[0]);
+            }
+          }
 
-             selectedBeakers.forEach((bId, index) => {
-                 const rIndex = tempReactants.indexOf(bId);
-                 if (rIndex > -1) {
-                     tempReactants.splice(rIndex, 1);
-                     if (index > productRecency) productRecency = index;
-                 } else {
-                     const colors = getColors([bId]);
-                     if (colors.length > 0) {
-                         postLiquidLayers.push({ color: colors[0], recency: index });
-                     }
-                 }
-             });
-             
-             let prodType = null;
-             let prodColor = null;
-             if (outcome) {
-                if (typeof outcome === 'string') {
-                    if (outcome === 'solid') {
-                        prodType = 'solid';
-                        prodColor = reactionData.solidcolor;
-                    }
-                } else {
-                    prodType = outcome.type;
-                    prodColor = outcome.color || reactionData.solidcolor;
-                }
-                
-                if (prodType === 'liquid' && prodColor) {
-                    postLiquidLayers.push({ color: prodColor, recency: productRecency });
-                }
-             }
+          // 2. Calculate Post-Reaction State
+          let postLiquidLayers = [];
+          let productRecency = -1;
+          let tempReactants = reactingIndices ? [...reactingIndices] : [];
 
-             postLiquidLayers.sort((a, b) => a.recency - b.recency);
-             const postLiquidColors = postLiquidLayers.map(l => l.color);
+          selectedBeakers.forEach((bId, index) => {
+            const rIndex = tempReactants.indexOf(bId);
+            if (rIndex > -1) {
+              tempReactants.splice(rIndex, 1);
+              if (index > productRecency) productRecency = index;
+            } else {
+              const colors = getColors([bId]);
+              if (colors.length > 0) {
+                postLiquidLayers.push({ color: colors[0], recency: index });
+              }
+            }
+          });
 
-             // 3. Execution Logic
-             // Render Pre-Reaction state (Current State + New Liquid)
-             // We pass the *current* product type/color to persist solids/gases during the pour
-             renderVisuals(preLiquidColors, currentProductType, currentProductColor);
+          let prodType = null;
+          let prodColor = null;
+          if (outcome) {
+            if (typeof outcome === 'string') {
+              if (outcome === 'solid') {
+                prodType = 'solid';
+                prodColor = reactionData.solidcolor;
+              }
+            } else {
+              prodType = outcome.type;
+              prodColor = outcome.color || reactionData.solidcolor;
+            }
 
-             if (outcome) {
-                 // Wait for the pour animation (2s) then trigger reaction
-                 setTimeout(() => {
-                     flask.classList.add('flask-active');
-                     setTimeout(() => flask.classList.remove('flask-active'), 1000);
-                     
-                     renderVisuals(postLiquidColors, prodType, prodColor);
-                     
-                     // Update State to Post-Reaction
-                     currentLiquidColors = postLiquidColors;
-                     currentProductType = prodType;
-                     currentProductColor = prodColor;
+            if (prodType === 'liquid' && prodColor) {
+              postLiquidLayers.push({ color: prodColor, recency: productRecency });
+            }
+          }
 
-                     // Update Info
-                      if (outcome.temp || (reactionData.temp && prodType === 'solid')) {
-                          currentTemperature = parseInt(outcome.temp || reactionData.temp);
-                      }
-                      if (outcome.ph) currentPH = parseFloat(outcome.ph);
-                      currentReactionName = outcome.name || "Unknown Reaction";
-                      
-                      if (tempDisplay && tempDisplay.innerText !== "") tempDisplay.innerText = "Temperature: " + currentTemperature.toFixed(1) + " K";
-                      if (phDisplay && phDisplay.innerText !== "") phDisplay.innerText = "pH: " + currentPH.toFixed(1);
-                      if (reactionNameDisplay && reactionNameDisplay.innerHTML !== "") {
-                           reactionNameDisplay.innerHTML = "Reaction: " + currentReactionName;
-                           if (typeof MathJax !== 'undefined') MathJax.typesetPromise();
-                      }
-                 }, 2000);
-             } else {
-                 // No new reaction, but we must update the state to include the added liquid
-                 // The 'post' state calculation correctly handles "just mixing" (no reactants consumed)
-                 // So we can trust postLiquidColors.
-                 // productType/Color remain as they were (or null if they were null)
-                 // However, existing logic derived prodType/prodColor only if outcome exists.
-                 // So we should preserve currentProductType/Color if no outcome.
-                 
-                 currentLiquidColors = postLiquidColors; 
-                 // currentProductType/Color remain unchanged
-             }
+          postLiquidLayers.sort((a, b) => a.recency - b.recency);
+          const postLiquidColors = postLiquidLayers.map(l => l.color);
+
+          // 3. Execution Logic
+          // Render Pre-Reaction state (Current State + New Liquid)
+          // We pass the *current* product type/color to persist solids/gases during the pour
+          renderVisuals(preLiquidColors, currentProductType, currentProductColor);
+
+          if (outcome) {
+            // Wait for the pour animation (2s) then trigger reaction
+            setTimeout(() => {
+              flask.classList.add('flask-active');
+              setTimeout(() => flask.classList.remove('flask-active'), 1000);
+
+              renderVisuals(postLiquidColors, prodType, prodColor);
+
+              // Update State to Post-Reaction
+              currentLiquidColors = postLiquidColors;
+              currentProductType = prodType;
+              currentProductColor = prodColor;
+
+              // Update Info
+              if (outcome.temp || (reactionData.temp && prodType === 'solid')) {
+                currentTemperature = parseInt(outcome.temp || reactionData.temp);
+              }
+              if (outcome.ph) currentPH = parseFloat(outcome.ph);
+              currentReactionName = outcome.name || "Unknown Reaction";
+
+              if (tempDisplay && tempDisplay.innerText !== "") tempDisplay.innerText = "Temperature: " + currentTemperature.toFixed(1) + " K";
+              if (phDisplay && phDisplay.innerText !== "") phDisplay.innerText = "pH: " + currentPH.toFixed(1);
+              if (reactionNameDisplay && reactionNameDisplay.innerHTML !== "") {
+                reactionNameDisplay.innerHTML = "Reaction: " + currentReactionName;
+                if (typeof MathJax !== 'undefined') MathJax.typesetPromise([reactionNameDisplay]);
+              }
+            }, 2000);
+          } else {
+            // No new reaction, but we must update the state to include the added liquid
+            // The 'post' state calculation correctly handles "just mixing" (no reactants consumed)
+            // So we can trust postLiquidColors.
+            // productType/Color remain as they were (or null if they were null)
+            // However, existing logic derived prodType/prodColor only if outcome exists.
+            // So we should preserve currentProductType/Color if no outcome.
+
+            currentLiquidColors = postLiquidColors;
+            // currentProductType/Color remain unchanged
+          }
         };
 
         if (selectedBeakers.length > 6) {
-             alert("Please reset the flask");
-             return;
+          alert("Please reset the flask");
+          return;
         }
 
         let outcome = null;
@@ -913,57 +922,61 @@ function findnode(nodeid) {
         let reactingIndices = [];
 
         if (labData && labData.reaction && selectedBeakers.length >= 2) {
-             try {
-                reactionData = (new Function("return " + labData.reaction))();
-             } catch(e) {}
-             
-             if (reactionData) {
-                 const getCombinations = (arr, size) => {
-                        let result = [];
-                        const f = (prefix, chars) => {
-                            for (let i = 0; i < chars.length; i++) {
-                                let newPrefix = [...prefix, chars[i]];
-                                if (newPrefix.length === size) {
-                                    result.push(newPrefix);
-                                } else {
-                                    f(newPrefix, chars.slice(i + 1));
-                                }
-                            }
-                        };
-                        f([], arr);
-                        return result;
-                 };
+          try {
+            // Sanitize string to preserve backslashes for invalid escapes (like \ce)
+            const sanitizedReaction = labData.reaction.replace(/\\(?!["\\/bfnrtu])/g, "\\\\");
+            reactionData = JSON.parse(sanitizedReaction);
+          } catch (e) {
+            console.error("Error parsing reaction data:", e);
+          }
 
-                 for (let size = selectedBeakers.length; size >= 2; size--) {
-                     const combos = getCombinations(selectedBeakers, size);
-                     for (const combo of combos) {
-                         const key = combo.sort((a, b) => a - b).join("_");
-                         if (reactionData[key]) {
-                             outcome = reactionData[key];
-                             reactingIndices = combo;
-                             break;
-                         }
-                     }
-                     if (outcome) break;
-                 }
-             }
+          if (reactionData) {
+            const getCombinations = (arr, size) => {
+              let result = [];
+              const f = (prefix, chars) => {
+                for (let i = 0; i < chars.length; i++) {
+                  let newPrefix = [...prefix, chars[i]];
+                  if (newPrefix.length === size) {
+                    result.push(newPrefix);
+                  } else {
+                    f(newPrefix, chars.slice(i + 1));
+                  }
+                }
+              };
+              f([], arr);
+              return result;
+            };
+
+            for (let size = selectedBeakers.length; size >= 2; size--) {
+              const combos = getCombinations(selectedBeakers, size);
+              for (const combo of combos) {
+                const key = combo.sort((a, b) => a - b).join("_");
+                if (reactionData[key]) {
+                  outcome = reactionData[key];
+                  reactingIndices = combo;
+                  break;
+                }
+              }
+              if (outcome) break;
+            }
+          }
         }
-        
+
         if (selectedBeakers.length === 1) {
-             let attr = null;
-             if (labData['attributes' + beakerIdx]) {
-                 try {
-                    attr = (new Function("return " + labData['attributes' + beakerIdx]))();
-                 } catch(e) {}
-             }
-             if (attr) {
-                 if (attr.temp) currentTemperature = parseInt(attr.temp);
-                 if (attr.ph) currentPH = parseFloat(attr.ph);
-             }
-             if (tempDisplay && tempDisplay.innerText !== "") tempDisplay.innerText = "Temperature: " + currentTemperature.toFixed(1) + " K";
-             if (phDisplay && phDisplay.innerText !== "") phDisplay.innerText = "pH: " + currentPH.toFixed(1);
+          let attr = null;
+          if (labData['attributes' + beakerIdx]) {
+            try {
+              attr = (new Function("return " + labData['attributes' + beakerIdx]))();
+            } catch (e) { }
+          }
+          if (attr) {
+            if (attr.temp) currentTemperature = parseInt(attr.temp);
+            if (attr.ph) currentPH = parseFloat(attr.ph);
+          }
+          if (tempDisplay && tempDisplay.innerText !== "") tempDisplay.innerText = "Temperature: " + currentTemperature.toFixed(1) + " K";
+          if (phDisplay && phDisplay.innerText !== "") phDisplay.innerText = "pH: " + currentPH.toFixed(1);
         }
-        
+
         updateFlaskContent(outcome, reactionData, reactingIndices);
       };
       beakersContainer.appendChild(beakerContainer);
@@ -974,54 +987,54 @@ function findnode(nodeid) {
     const thermometer = document.createElement('div');
     thermometer.className = 'lab-item tool';
     thermometer.innerHTML = 'Thermometer';
-    thermometer.onclick = () => { 
-        console.log('Thermometer clicked');
-        if (tempDisplay.innerText !== "") {
-            tempDisplay.innerText = "";
-            return;
-        }
-        tempDisplay.innerText = "Temperature: " + currentTemperature.toFixed(1) + " K";
+    thermometer.onclick = () => {
+      console.log('Thermometer clicked');
+      if (tempDisplay.innerText !== "") {
+        tempDisplay.innerText = "";
+        return;
+      }
+      tempDisplay.innerText = "Temperature: " + currentTemperature.toFixed(1) + " K";
     };
     toolbox.appendChild(thermometer);
 
     const phMeter = document.createElement('div');
     phMeter.className = 'lab-item tool';
     phMeter.innerHTML = 'pH Meter';
-    phMeter.onclick = () => { 
-        console.log('pH Meter clicked');
-        if (phDisplay.innerText !== "") {
-            phDisplay.innerText = "";
-            return;
-        }
-        phDisplay.innerText = "pH: " + currentPH.toFixed(1);
+    phMeter.onclick = () => {
+      console.log('pH Meter clicked');
+      if (phDisplay.innerText !== "") {
+        phDisplay.innerText = "";
+        return;
+      }
+      phDisplay.innerText = "pH: " + currentPH.toFixed(1);
     };
     toolbox.appendChild(phMeter);
 
     const resetButton = document.createElement('div');
     resetButton.className = 'lab-item tool';
     resetButton.innerHTML = 'Reset';
-    resetButton.onclick = () => { 
-        console.log('Reset clicked'); 
-        selectedBeakers = [];
-        currentTemperature = 298;
-        currentPH = 7.0;
-        currentReactionName = "";
-        currentLiquidColors = [];
-        currentProductType = null;
-        currentProductColor = null;
-        flask.classList.remove('flask-active');
-        startCooling();
-        renderVisuals([], null, null); // Clear visuals using the renderer
-        
-        if (tempDisplay && tempDisplay.innerText !== "") {
-            tempDisplay.innerText = "Temperature: " + currentTemperature.toFixed(1) + " K";
-        }
-        if (phDisplay && phDisplay.innerText !== "") {
-            phDisplay.innerText = "pH: " + currentPH.toFixed(1);
-        }
-        if (reactionNameDisplay) {
-            reactionNameDisplay.innerText = '';
-        }
+    resetButton.onclick = () => {
+      console.log('Reset clicked');
+      selectedBeakers = [];
+      currentTemperature = 298;
+      currentPH = 7.0;
+      currentReactionName = "";
+      currentLiquidColors = [];
+      currentProductType = null;
+      currentProductColor = null;
+      flask.classList.remove('flask-active');
+      startCooling();
+      renderVisuals([], null, null); // Clear visuals using the renderer
+
+      if (tempDisplay && tempDisplay.innerText !== "") {
+        tempDisplay.innerText = "Temperature: " + currentTemperature.toFixed(1) + " K";
+      }
+      if (phDisplay && phDisplay.innerText !== "") {
+        phDisplay.innerText = "pH: " + currentPH.toFixed(1);
+      }
+      if (reactionNameDisplay) {
+        reactionNameDisplay.innerText = '';
+      }
     };
     toolbox.appendChild(resetButton);
     scrollToBottom(true);
@@ -1042,12 +1055,12 @@ function findnode(nodeid) {
     formElement.classList.remove('shifted-form');
 
     if (window.activeTempInterval) {
-        clearInterval(window.activeTempInterval);
-        window.activeTempInterval = null;
+      clearInterval(window.activeTempInterval);
+      window.activeTempInterval = null;
     }
   }
   window.closelab = closelab;
-  
+
   // update the game
   async function updategame(e) {
     console.log("updategame called");
@@ -1055,9 +1068,9 @@ function findnode(nodeid) {
     if (e && typeof e.preventDefault === 'function') {
       e.preventDefault();
     }
-    
+
     // if typing in progress, stop it
-    if (currentTypingContext && !currentTypingContext.finished) { 
+    if (currentTypingContext && !currentTypingContext.finished) {
       currentTypingContext.finish();
       console.log('Typing interrupted by user.');
     }
@@ -1089,23 +1102,23 @@ function findnode(nodeid) {
     }
     let splitnewText = newText.split("--");
     const newContainer = document.createElement('div');
-      // insert newText above the form as a question element
+    // insert newText above the form as a question element
     if (formElement) {
       if (splitnewText[0] == 'interrupt') {
         console.log("interrupt detected, no new question rendered");
         if (typeof MathJax !== 'undefined') MathJax.typesetPromise();
         return;
       } else {
-        previoustext= newText;
+        previoustext = newText;
         formElement.parentNode.insertBefore(newContainer, formElement);
         previouscontainer = newContainer;
-        for (var j=0; j<splitnewText.length;) {
+        for (var j = 0; j < splitnewText.length;) {
           const newTextDiv = document.createElement('div');
           newTextDiv.className = 'question';
-            
+
           // cleanup function to run after typing is done
           const finishQuestionTyping = () => {
-              // reload html 
+            // reload html 
             newTextDiv.innerHTML = splitnewText[j];
             newTextDiv.insertAdjacentHTML('afterend', emptyLine.outerHTML);
             // Final cleanup for the input field
@@ -1114,7 +1127,7 @@ function findnode(nodeid) {
             //   inputField.value = '';
             //   inputField.focus(); 
             // }
-              // Ensure final scroll is smooth
+            // Ensure final scroll is smooth
             scrollToBottom(true);
             ready = true;
             j++;
