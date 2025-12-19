@@ -522,8 +522,17 @@ function findnode(nodeid) {
     tempDisplay.style.textAlign = 'center';
     flask.appendChild(tempDisplay);
 
+    // pH display div
+    const phDisplay = document.createElement('div');
+    phDisplay.id = 'ph-display';
+    phDisplay.style.marginTop = '5px';
+    phDisplay.style.fontWeight = 'bold';
+    phDisplay.style.textAlign = 'center';
+    flask.appendChild(phDisplay);
+
     let selectedBeakers = [];
     let currentTemperature = 298;
+    let currentPH = 7.0;
 
     const startCooling = () => {
         if (window.activeTempInterval) clearInterval(window.activeTempInterval);
@@ -700,15 +709,22 @@ function findnode(nodeid) {
                         }
                     }
                     
-                    // Parse temperature from outcome
+                    // Parse temperature and pH from outcome
                     if (outcome && outcome.temp) {
                         currentTemperature = parseInt(outcome.temp);
                     } else if (typeof outcome === 'string' && outcome === 'solid' && reactionData.temp) {
                         currentTemperature = parseInt(reactionData.temp);
                     }
 
+                    if (outcome && outcome.ph) {
+                        currentPH = parseFloat(outcome.ph);
+                    }
+
                     if (tempDisplay && tempDisplay.innerText !== "") {
                         tempDisplay.innerText = "Temperature: " + currentTemperature.toFixed(1) + " K";
+                    }
+                    if (phDisplay && phDisplay.innerText !== "") {
+                        phDisplay.innerText = "pH: " + currentPH.toFixed(1);
                     }
                 }, slowReactionDelay);
             }
@@ -739,6 +755,12 @@ function findnode(nodeid) {
                 currentTemperature = parseInt(attr.temp);
                 if (tempDisplay && tempDisplay.innerText !== "") {
                     tempDisplay.innerText = "Temperature: " + currentTemperature.toFixed(1) + " K";
+                }
+            }
+            if (attr && attr.ph) {
+                currentPH = parseFloat(attr.ph);
+                if (phDisplay && phDisplay.innerText !== "") {
+                    phDisplay.innerText = "pH: " + currentPH.toFixed(1);
                 }
             }
         } else if (selectedBeakers.length >= 2 && selectedBeakers.length <= 4) {
@@ -883,7 +905,14 @@ function findnode(nodeid) {
     const phMeter = document.createElement('div');
     phMeter.className = 'lab-item tool';
     phMeter.innerHTML = 'pH Meter';
-    phMeter.onclick = () => { console.log('pH Meter clicked'); };
+    phMeter.onclick = () => { 
+        console.log('pH Meter clicked');
+        if (phDisplay.innerText !== "") {
+            phDisplay.innerText = "";
+            return;
+        }
+        phDisplay.innerText = "pH: " + currentPH.toFixed(1);
+    };
     toolbox.appendChild(phMeter);
 
     const resetButton = document.createElement('div');
@@ -893,6 +922,7 @@ function findnode(nodeid) {
         console.log('Reset clicked'); 
         selectedBeakers = [];
         currentTemperature = 298;
+        currentPH = 7.0;
         startCooling();
         if (flaskSolid) {
             flaskSolid.style.opacity = '0';
@@ -905,6 +935,9 @@ function findnode(nodeid) {
         }
         if (tempDisplay) {
             tempDisplay.innerText = '';
+        }
+        if (phDisplay) {
+            phDisplay.innerText = '';
         }
     };
     toolbox.appendChild(resetButton);
