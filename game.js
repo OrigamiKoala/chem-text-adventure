@@ -991,11 +991,11 @@ function findnode(nodeid) {
             flaskGas.style.opacity = '0';
             flaskGas.style.backgroundColor = 'transparent'; 
         }
-        if (tempDisplay) {
-            tempDisplay.innerText = '';
+        if (tempDisplay && tempDisplay.innerText !== "") {
+            tempDisplay.innerText = "Temperature: " + currentTemperature.toFixed(1) + " K";
         }
-        if (phDisplay) {
-            phDisplay.innerText = '';
+        if (phDisplay && phDisplay.innerText !== "") {
+            phDisplay.innerText = "pH: " + currentPH.toFixed(1);
         }
         if (reactionNameDisplay) {
             reactionNameDisplay.innerText = '';
