@@ -429,10 +429,10 @@ function findnode(nodeid) {
       } else if (inputstring == "2") {
         nextdivid = currentobj.op2;
         previousdivid = currentdivid;
-      } else if (inputstring == "3") {
+      } else if (inputstring == "3" && currentobj.op3) {
         nextdivid = currentobj.op3;
         previousdivid = currentdivid;
-      } else if (inputstring == "4") {
+      } else if (inputstring == "4" && currentobj.op3) {
         nextdivid = currentobj.op4;
         previousdivid = currentdivid;
       } else {
