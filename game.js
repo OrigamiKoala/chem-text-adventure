@@ -617,6 +617,9 @@ function findnode(nodeid) {
     let currentTemperature = 298;
     let currentPH = 7.0;
     let currentReactionName = "";
+    let currentLiquidColors = [];
+    let currentProductType = null;
+    let currentProductColor = null;
 
     showReactionBtn.onclick = () => {
         if (reactionNameDisplay.innerHTML !== "") {
@@ -645,123 +648,6 @@ function findnode(nodeid) {
     };
 
     startCooling();
-
-    const labData = fullJSdata.labs.find(lab => lab.labid === labid);
-
-    for (let i = 1; i <= 4; i++) {
-      const beakerContainer = document.createElement('div');
-      beakerContainer.className = 'lab-item beaker';
-      
-      const beakerWrapper = document.createElement('div');
-      beakerWrapper.style.position = 'relative';
-      beakerWrapper.style.display = 'inline-block';
-
-      const beakerImage = document.createElement('img');
-      beakerImage.src = 'images/beaker.png';
-      beakerImage.alt = `Beaker ${i}`;
-      beakerImage.style.position = 'relative';
-      beakerImage.style.zIndex = '2';
-      
-      // Parse attributes if available
-      let beakerAttributes = null;
-      if (labData && labData['attributes' + i]) {
-          try {
-              beakerAttributes = (new Function("return " + labData['attributes' + i]))();
-          } catch (e) {
-              console.error("Error parsing beaker attributes:", e);
-          }
-      }
-
-      // Apply fluid color if available
-      const fluidColor = beakerAttributes ? beakerAttributes.color : null;
-      if (fluidColor) {
-        const fluidDiv = document.createElement('div');
-        fluidDiv.style.position = 'absolute';
-        fluidDiv.style.bottom = '15%';
-        fluidDiv.style.left = '15%';
-        fluidDiv.style.width = '70%';
-        fluidDiv.style.height = '50%';
-        fluidDiv.style.backgroundColor = fluidColor;
-        fluidDiv.style.zIndex = '1';
-        fluidDiv.style.borderRadius = '0 0 10% 10%';
-        beakerWrapper.appendChild(fluidDiv);
-      }
-      
-      beakerWrapper.appendChild(beakerImage);
-      beakerContainer.appendChild(beakerWrapper);
-      
-      const beakerLabel = document.createElement('div');
-      if (labData) {
-        beakerLabel.innerHTML = labData['beaker' + i] || `Beaker ${i}`;
-      } else {
-        beakerLabel.innerHTML = `Beaker ${i}`;
-      }
-      beakerContainer.appendChild(beakerLabel);
-      
-      const beakerIdx = i;
-      beakerContainer.onclick = () => { 
-        console.log(`Beaker ${beakerIdx} clicked`); 
-        
-        selectedBeakers.push(beakerIdx);
-
-        const getColors = (indices) => {
-            return indices.map(idx => {
-                let attr = null;
-                if (labData['attributes' + idx]) {
-                    try {
-                        attr = (new Function("return " + labData['attributes' + idx]))();
-                    } catch(e) {}
-                }
-                return attr ? attr.color : null;
-            }).filter(c => c);
-        };
-
-        const updateFlaskContent = (outcome, reactionData, reactingIndices) => {
-             // 1. Calculate Pre-Reaction State (All selected beakers)
-             let preLiquidColors = [];
-             selectedBeakers.forEach(bId => {
-                 const c = getColors([bId]);
-                 if (c && c.length > 0) preLiquidColors.push(c[0]);
-             });
-
-             // 2. Calculate Post-Reaction State
-             let postLiquidLayers = [];
-             let productRecency = -1;
-             let tempReactants = reactingIndices ? [...reactingIndices] : [];
-
-             selectedBeakers.forEach((bId, index) => {
-                 const rIndex = tempReactants.indexOf(bId);
-                 if (rIndex > -1) {
-                     tempReactants.splice(rIndex, 1);
-                     if (index > productRecency) productRecency = index;
-                 } else {
-                     const colors = getColors([bId]);
-                     if (colors.length > 0) {
-                         postLiquidLayers.push({ color: colors[0], recency: index });
-                     }
-                 }
-             });
-             
-             let prodType = null;
-             let prodColor = null;
-             if (outcome) {
-                if (typeof outcome === 'string') {
-                    if (outcome === 'solid') {
-                        prodType = 'solid';
-                        prodColor = reactionData.solidcolor;
-                    }
-                } else {
-                    prodType = outcome.type;
-                    prodColor = outcome.color || reactionData.solidcolor;
-                }
-                
-                if (prodType === 'liquid' && prodColor) {
-                    postLiquidLayers.push({ color: prodColor, recency: productRecency });
-                }
-             }
-
-             postLiquidLayers.sort((a, b) => a.recency - b.recency);
-             const postLiquidColors = postLiquidLayers.map(l => l.color);
 
              // Reusable Renderer
              const renderVisuals = (liquidColors, pType, pColor) => {
@@ -842,9 +728,133 @@ function findnode(nodeid) {
                  }
              };
 
+    const labData = fullJSdata.labs.find(lab => lab.labid === labid);
+
+    for (let i = 1; i <= 4; i++) {
+      const beakerContainer = document.createElement('div');
+      beakerContainer.className = 'lab-item beaker';
+      
+      const beakerWrapper = document.createElement('div');
+      beakerWrapper.style.position = 'relative';
+      beakerWrapper.style.display = 'inline-block';
+
+      const beakerImage = document.createElement('img');
+      beakerImage.src = 'images/beaker.png';
+      beakerImage.alt = `Beaker ${i}`;
+      beakerImage.style.position = 'relative';
+      beakerImage.style.zIndex = '2';
+      
+      // Parse attributes if available
+      let beakerAttributes = null;
+      if (labData && labData['attributes' + i]) {
+          try {
+              beakerAttributes = (new Function("return " + labData['attributes' + i]))();
+          } catch (e) {
+              console.error("Error parsing beaker attributes:", e);
+          }
+      }
+
+      // Apply fluid color if available
+      const fluidColor = beakerAttributes ? beakerAttributes.color : null;
+      if (fluidColor) {
+        const fluidDiv = document.createElement('div');
+        fluidDiv.style.position = 'absolute';
+        fluidDiv.style.bottom = '15%';
+        fluidDiv.style.left = '15%';
+        fluidDiv.style.width = '70%';
+        fluidDiv.style.height = '50%';
+        fluidDiv.style.backgroundColor = fluidColor;
+        fluidDiv.style.zIndex = '1';
+        fluidDiv.style.borderRadius = '0 0 10% 10%';
+        beakerWrapper.appendChild(fluidDiv);
+      }
+      
+      beakerWrapper.appendChild(beakerImage);
+      beakerContainer.appendChild(beakerWrapper);
+      
+      const beakerLabel = document.createElement('div');
+      if (labData) {
+        beakerLabel.innerHTML = labData['beaker' + i] || `Beaker ${i}`;
+      } else {
+        beakerLabel.innerHTML = `Beaker ${i}`;
+      }
+      beakerContainer.appendChild(beakerLabel);
+      
+      const beakerIdx = i;
+      beakerContainer.onclick = () => { 
+        console.log(`Beaker ${beakerIdx} clicked`); 
+        
+        selectedBeakers.push(beakerIdx);
+
+        const getColors = (indices) => {
+            return indices.map(idx => {
+                let attr = null;
+                if (labData['attributes' + idx]) {
+                    try {
+                        attr = (new Function("return " + labData['attributes' + idx]))();
+                    } catch(e) {}
+                }
+                return attr ? attr.color : null;
+            }).filter(c => c);
+        };
+
+        const updateFlaskContent = (outcome, reactionData, reactingIndices) => {
+             // 1. Calculate Pre-Reaction State
+             // Start with the current state of the flask
+             let preLiquidColors = [...currentLiquidColors];
+             
+             // Identify and add the newly added beaker's liquid (it's the last one in selectedBeakers)
+             if (selectedBeakers.length > 0) {
+                 const newBeakerId = selectedBeakers[selectedBeakers.length - 1];
+                 const newColors = getColors([newBeakerId]);
+                 if (newColors.length > 0) {
+                     preLiquidColors.push(newColors[0]);
+                 }
+             }
+
+             // 2. Calculate Post-Reaction State
+             let postLiquidLayers = [];
+             let productRecency = -1;
+             let tempReactants = reactingIndices ? [...reactingIndices] : [];
+
+             selectedBeakers.forEach((bId, index) => {
+                 const rIndex = tempReactants.indexOf(bId);
+                 if (rIndex > -1) {
+                     tempReactants.splice(rIndex, 1);
+                     if (index > productRecency) productRecency = index;
+                 } else {
+                     const colors = getColors([bId]);
+                     if (colors.length > 0) {
+                         postLiquidLayers.push({ color: colors[0], recency: index });
+                     }
+                 }
+             });
+             
+             let prodType = null;
+             let prodColor = null;
+             if (outcome) {
+                if (typeof outcome === 'string') {
+                    if (outcome === 'solid') {
+                        prodType = 'solid';
+                        prodColor = reactionData.solidcolor;
+                    }
+                } else {
+                    prodType = outcome.type;
+                    prodColor = outcome.color || reactionData.solidcolor;
+                }
+                
+                if (prodType === 'liquid' && prodColor) {
+                    postLiquidLayers.push({ color: prodColor, recency: productRecency });
+                }
+             }
+
+             postLiquidLayers.sort((a, b) => a.recency - b.recency);
+             const postLiquidColors = postLiquidLayers.map(l => l.color);
+
              // 3. Execution Logic
-             // Always render Pre-Reaction state first (simulates adding the new liquid)
-             renderVisuals(preLiquidColors, null, null);
+             // Render Pre-Reaction state (Current State + New Liquid)
+             // We pass the *current* product type/color to persist solids/gases during the pour
+             renderVisuals(preLiquidColors, currentProductType, currentProductColor);
 
              if (outcome) {
                  // Wait for the pour animation (2s) then trigger reaction
@@ -853,6 +863,11 @@ function findnode(nodeid) {
                      setTimeout(() => flask.classList.remove('flask-active'), 1000);
                      
                      renderVisuals(postLiquidColors, prodType, prodColor);
+                     
+                     // Update State to Post-Reaction
+                     currentLiquidColors = postLiquidColors;
+                     currentProductType = prodType;
+                     currentProductColor = prodColor;
 
                      // Update Info
                       if (outcome.temp || (reactionData.temp && prodType === 'solid')) {
@@ -868,6 +883,16 @@ function findnode(nodeid) {
                            if (typeof MathJax !== 'undefined') MathJax.typesetPromise();
                       }
                  }, 2000);
+             } else {
+                 // No new reaction, but we must update the state to include the added liquid
+                 // The 'post' state calculation correctly handles "just mixing" (no reactants consumed)
+                 // So we can trust postLiquidColors.
+                 // productType/Color remain as they were (or null if they were null)
+                 // However, existing logic derived prodType/prodColor only if outcome exists.
+                 // So we should preserve currentProductType/Color if no outcome.
+                 
+                 currentLiquidColors = postLiquidColors; 
+                 // currentProductType/Color remain unchanged
              }
         };
 
@@ -970,13 +995,16 @@ function findnode(nodeid) {
     resetButton.innerHTML = 'Reset';
     resetButton.onclick = () => { 
         console.log('Reset clicked'); 
-        flaskContents = [];
+        selectedBeakers = [];
         currentTemperature = 298;
         currentPH = 7.0;
         currentReactionName = "";
+        currentLiquidColors = [];
+        currentProductType = null;
+        currentProductColor = null;
         flask.classList.remove('flask-active');
         startCooling();
-        renderVisuals([]); // Clear visuals using the renderer
+        renderVisuals([], null, null); // Clear visuals using the renderer
         
         if (tempDisplay && tempDisplay.innerText !== "") {
             tempDisplay.innerText = "Temperature: " + currentTemperature.toFixed(1) + " K";
