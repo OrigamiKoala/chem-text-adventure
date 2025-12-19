@@ -482,7 +482,6 @@ function findnode(nodeid) {
     reactionNameDisplay.style.marginTop = '10px';
     reactionNameDisplay.style.fontWeight = 'bold';
     reactionNameDisplay.style.minHeight = '1.2em';
-    reactionNameDisplay.style.color = '#000';
     reactionInfoContainer.appendChild(reactionNameDisplay);
 
     // Add elements to lab table
@@ -695,8 +694,13 @@ function findnode(nodeid) {
             if (outcome) {
                 // Clear split colors/gradients before reaction
                 if (flaskSolid) flaskSolid.style.background = 'none';
+                
+                // Add glowing effect
+                flask.classList.add('flask-active');
+                
                 const slowReactionDelay = 1000; // 1 second delay
                 setTimeout(() => {
+                    flask.classList.remove('flask-active');
                     let type = null;
                     let color = null;
 
@@ -714,7 +718,7 @@ function findnode(nodeid) {
                         if (type === 'solid') {
                             flaskSolid.style.width = '40%';
                             flaskSolid.style.height = '40%';
-                            flaskSolid.style.bottom = '10%';
+                            flaskSolid.style.bottom = '15%';
                             flaskSolid.style.left = '30%';
                             flaskSolid.style.borderRadius = '0';
                             flaskSolid.style.clipPath = 'none';
@@ -723,7 +727,7 @@ function findnode(nodeid) {
                         } else if (type === 'liquid') {
                             flaskSolid.style.width = '90%';
                             flaskSolid.style.height = '50%';
-                            flaskSolid.style.bottom = '8%';
+                            flaskSolid.style.bottom = '12%';
                             flaskSolid.style.left = '5%';
                             flaskSolid.style.borderRadius = '0 0 10% 10%';
                             flaskSolid.style.clipPath = 'polygon(35% 0%, 65% 0%, 100% 100%, 0% 100%)';
@@ -781,7 +785,7 @@ function findnode(nodeid) {
                 if (flaskSolid) {
                     flaskSolid.style.width = '90%';
                     flaskSolid.style.height = '50%';
-                    flaskSolid.style.bottom = '8%';
+                    flaskSolid.style.bottom = '12%';
                     flaskSolid.style.left = '5%';
                     flaskSolid.style.borderRadius = '0 0 10% 10%';
                     flaskSolid.style.clipPath = 'polygon(35% 0%, 65% 0%, 100% 100%, 0% 100%)';
@@ -849,7 +853,7 @@ function findnode(nodeid) {
                         if (flaskSolid) {
                             flaskSolid.style.width = '90%';
                             flaskSolid.style.height = '50%';
-                            flaskSolid.style.bottom = '8%';
+                            flaskSolid.style.bottom = '12%';
                             flaskSolid.style.left = '5%';
                             flaskSolid.style.borderRadius = '0 0 10% 10%';
                             flaskSolid.style.clipPath = 'polygon(35% 0%, 65% 0%, 100% 100%, 0% 100%)';
@@ -908,7 +912,7 @@ function findnode(nodeid) {
                         if (flaskSolid) {
                             flaskSolid.style.width = '90%';
                             flaskSolid.style.height = '50%';
-                            flaskSolid.style.bottom = '8%';
+                            flaskSolid.style.bottom = '12%';
                             flaskSolid.style.left = '5%';
                             flaskSolid.style.borderRadius = '0 0 10% 10%';
                             flaskSolid.style.clipPath = 'polygon(35% 0%, 65% 0%, 100% 100%, 0% 100%)';
@@ -963,6 +967,7 @@ function findnode(nodeid) {
         currentTemperature = 298;
         currentPH = 7.0;
         currentReactionName = "";
+        flask.classList.remove('flask-active');
         startCooling();
         if (flaskSolid) {
             flaskSolid.style.opacity = '0';
