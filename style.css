@@ -410,6 +410,7 @@ button:focus, input:focus{box-shadow:0 0 0 3px rgba(125,211,252,0.12); border-ra
 .lab-item.flask {
     cursor: default; /* Not clickable */
     min-width: 240px; /* Doubled from 120px */
+    margin-top: 50px;
 }
 
 .lab-item.flask img {

@@ -525,11 +525,30 @@ function findnode(nodeid) {
     flaskGas.style.zIndex = '1'; 
     flaskGas.style.opacity = '0';
     flaskGas.style.transition = 'all 2s ease-in-out';
-    flaskGas.style.mask = 'url(images/gas.png) no-repeat center / contain';
-    flaskGas.style.mask = 'url(images/gas.png) no-repeat center / contain';
-    flaskGas.style.webkitMaskMode = 'alpha';
-    flaskGas.style.maskMode = 'alpha';
+    flaskGas.style.maskImage = "url('images/gas.png')";
+    flaskGas.style.webkitMaskImage = "url('images/gas.png')";
+    flaskGas.style.maskSize = "contain";
+    flaskGas.style.webkitMaskSize = "contain";
+    flaskGas.style.maskRepeat = "no-repeat";
+    flaskGas.style.webkitMaskRepeat = "no-repeat";
+    flaskGas.style.maskPosition = "center";
+    flaskGas.style.webkitMaskPosition = "center";
     flaskWrapper.appendChild(flaskGas);
+
+    const flaskLiquid = document.createElement('div');
+    flaskLiquid.id = 'flask-liquid';
+    flaskLiquid.style.position = 'absolute';
+    flaskLiquid.style.bottom = '10%';
+    flaskLiquid.style.left = '5%';
+    flaskLiquid.style.width = '90%';
+    flaskLiquid.style.height = '0%';
+    flaskLiquid.style.backgroundColor = 'transparent';
+    flaskLiquid.style.zIndex = '2'; 
+    flaskLiquid.style.borderRadius = '0 0 10% 10%';
+    flaskLiquid.style.clipPath = 'polygon(35% 0%, 65% 0%, 100% 100%, 0% 100%)';
+    flaskLiquid.style.opacity = '0';
+    flaskLiquid.style.transition = 'all 2s ease-in-out';
+    flaskWrapper.appendChild(flaskLiquid);
 
     const flaskImage = document.createElement('img');
     flaskImage.src = 'images/flask.png';
@@ -653,36 +672,8 @@ function findnode(nodeid) {
         
         selectedBeakers.push(beakerIdx);
 
-        const mixColors = (beakerIndices) => {
-            let r = 0, g = 0, b = 0, a = 0;
-            let count = 0;
-            beakerIndices.forEach(idx => {
-                let attr = null;
-                if (labData['attributes' + idx]) {
-                    try {
-                        attr = (new Function("return " + labData['attributes' + idx]))();
-                    } catch(e) {}
-                }
-                const colorStr = attr ? attr.color : null;
-                if (colorStr) {
-                    const match = colorStr.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
-                    if (match) {
-                        r += parseInt(match[1]);
-                        g += parseInt(match[2]);
-                        b += parseInt(match[3]);
-                        a += match[4] ? parseFloat(match[4]) : 1;
-                        count++;
-                    }
-                }
-            });
-            if (count > 0) {
-                return `rgba(${Math.round(r/count)}, ${Math.round(g/count)}, ${Math.round(b/count)}, ${a/count})`;
-            }
-            return 'white';
-        };
-
-        const getSplitColor = (beakerIndices) => {
-            const colors = beakerIndices.map(idx => {
+        const getColors = (indices) => {
+            return indices.map(idx => {
                 let attr = null;
                 if (labData['attributes' + idx]) {
                     try {
@@ -691,254 +682,225 @@ function findnode(nodeid) {
                 }
                 return attr ? attr.color : null;
             }).filter(c => c);
-            if (colors.length === 0) return 'white';
-            if (colors.length === 1) return colors[0];
-            
-            let gradientParts = [];
-            const step = 100 / colors.length;
-            colors.forEach((color, i) => {
-                gradientParts.push(`${color} ${i * step}%`);
-                gradientParts.push(`${color} ${(i + 1) * step}%`);
-            });
-            return `linear-gradient(to right, ${gradientParts.join(', ')})`;
         };
 
-        const handleReaction = (outcome, reactionData) => {
-            if (outcome) {
-                // Clear split colors/gradients before reaction
-                if (flaskSolid) flaskSolid.style.background = 'none';
+        const updateFlaskContent = (outcome, reactionData, reactingIndices) => {
+             // 1. Calculate Pre-Reaction State (All selected beakers)
+             let preLiquidColors = [];
+             selectedBeakers.forEach(bId => {
+                 const c = getColors([bId]);
+                 if (c && c.length > 0) preLiquidColors.push(c[0]);
+             });
+
+             // 2. Calculate Post-Reaction State
+             let postLiquidLayers = [];
+             let productRecency = -1;
+             let tempReactants = reactingIndices ? [...reactingIndices] : [];
+
+             selectedBeakers.forEach((bId, index) => {
+                 const rIndex = tempReactants.indexOf(bId);
+                 if (rIndex > -1) {
+                     tempReactants.splice(rIndex, 1);
+                     if (index > productRecency) productRecency = index;
+                 } else {
+                     const colors = getColors([bId]);
+                     if (colors.length > 0) {
+                         postLiquidLayers.push({ color: colors[0], recency: index });
+                     }
+                 }
+             });
+             
+             let prodType = null;
+             let prodColor = null;
+             if (outcome) {
+                if (typeof outcome === 'string') {
+                    if (outcome === 'solid') {
+                        prodType = 'solid';
+                        prodColor = reactionData.solidcolor;
+                    }
+                } else {
+                    prodType = outcome.type;
+                    prodColor = outcome.color || reactionData.solidcolor;
+                }
                 
-                // Add glowing effect
-                flask.classList.add('flask-active');
-                
-                const slowReactionDelay = 1000; // 1 second delay
-                setTimeout(() => {
-                    flask.classList.remove('flask-active');
-                    let type = null;
-                    let color = null;
+                if (prodType === 'liquid' && prodColor) {
+                    postLiquidLayers.push({ color: prodColor, recency: productRecency });
+                }
+             }
 
-                    if (typeof outcome === 'string') {
-                        if (outcome === 'solid') {
-                            type = 'solid';
-                            color = reactionData.solidcolor;
-                        }
-                    } else if (typeof outcome === 'object') {
-                         type = outcome.type;
-                         color = outcome.color || reactionData.solidcolor;
-                    }
+             postLiquidLayers.sort((a, b) => a.recency - b.recency);
+             const postLiquidColors = postLiquidLayers.map(l => l.color);
 
-                    if (flaskSolid) {
-                        if (type === 'solid') {
-                            flaskSolid.style.width = '40%';
-                            flaskSolid.style.height = '35%';
-                            flaskSolid.style.bottom = '12%';
-                            flaskSolid.style.left = '30%';
-                            flaskSolid.style.borderRadius = '0';
-                            flaskSolid.style.clipPath = 'none';
-                            flaskSolid.style.background = color || 'white';
-                            flaskSolid.style.opacity = '1';
-                        } else if (type === 'liquid') {
-                            flaskSolid.style.width = '90%';
-                            flaskSolid.style.height = '45%';
-                            flaskSolid.style.bottom = '10%';
-                            flaskSolid.style.left = '5%';
-                            flaskSolid.style.borderRadius = '0 0 10% 10%';
-                            flaskSolid.style.clipPath = 'polygon(35% 0%, 65% 0%, 100% 100%, 0% 100%)';
-                            flaskSolid.style.background = color || 'white';
-                            flaskSolid.style.opacity = '1';
-                            if (flaskGas) flaskGas.style.opacity = '0';
-                        } else if (type === 'gas') {
-                            flaskSolid.style.opacity = '0';
-                            if (flaskGas) {
-                                flaskGas.style.background = color || 'white';
-                                flaskGas.style.opacity = '1';
-                            }
-                        }
-                    }
-                    
-                    // Parse temperature and pH from outcome
-                    if (outcome && outcome.temp) {
-                        currentTemperature = parseInt(outcome.temp);
-                    } else if (typeof outcome === 'string' && outcome === 'solid' && reactionData.temp) {
-                        currentTemperature = parseInt(reactionData.temp);
-                    }
+             // Reusable Renderer
+             const renderVisuals = (liquidColors, pType, pColor) => {
+                                 // Solid Layer
+                                 if (flaskSolid) {
+                                     if (pType === 'solid') {
+                                         flaskSolid.style.width = '40%';
+                                         flaskSolid.style.height = '35%';
+                                         flaskSolid.style.bottom = '12%';
+                                         flaskSolid.style.left = '30%';
+                                         flaskSolid.style.borderRadius = '0';
+                                         flaskSolid.style.clipPath = 'none';
+                                         flaskSolid.style.background = pColor || 'white';
+                                         flaskSolid.style.transitionDelay = '0s';
+                                         flaskSolid.style.opacity = '1';
+                                     } else {
+                                         flaskSolid.style.transitionDelay = '0s';
+                                         flaskSolid.style.opacity = '0';
+                                     }
+                                 }
+                 // Liquid Layer
+                 if (flaskLiquid) {
+                     if (liquidColors.length > 0) {
+                         // Reset dimensions in case they were morphed to solid
+                         flaskLiquid.style.width = '90%';
+                         flaskLiquid.style.left = '5%';
+                         flaskLiquid.style.bottom = '10%';
+                         
+                         let targetHeight = '45%';
+                         let targetClip = 'polygon(35% 0%, 65% 0%, 100% 100%, 0% 100%)';
+                         
+                         if (liquidColors.length === 1) {
+                             flaskLiquid.style.background = liquidColors[0];
+                             targetHeight = '22.5%';
+                             targetClip = 'polygon(17.5% 0%, 82.5% 0%, 100% 100%, 0% 100%)';
+                         } else {
+                             let gradientParts = [];
+                             const step = 100 / liquidColors.length;
+                             liquidColors.forEach((color, i) => {
+                                 gradientParts.push(`${color} ${i * step}%`);
+                                 gradientParts.push(`${color} ${(i + 1) * step}%`);
+                             });
+                             flaskLiquid.style.background = `linear-gradient(to top, ${gradientParts.join(', ')})`;
+                             targetHeight = '45%';
+                             targetClip = 'polygon(35% 0%, 65% 0%, 100% 100%, 0% 100%)';
+                         }
+                         
+                         if (flaskLiquid.style.opacity === '0' && flaskLiquid.style.width === '90%') {
+                             flaskLiquid.style.height = '0%';
+                             flaskLiquid.style.clipPath = 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)';
+                             void flaskLiquid.offsetWidth;
+                             flaskLiquid.style.height = targetHeight;
+                             flaskLiquid.style.clipPath = targetClip;
+                         } else {
+                             flaskLiquid.style.height = targetHeight;
+                             flaskLiquid.style.clipPath = targetClip;
+                         }
+                         flaskLiquid.style.opacity = '0.7';
+                     } else {
+                         // No liquids
+                         flaskLiquid.style.opacity = '0';
+                         
+                                                 if (pType === 'solid') {
+                                                     // shape of the liquid never changes
+                                                 } else {
+                                                     flaskLiquid.style.height = '0%';
+                                                 }                     }
+                 }
+                 
+                 // Gas Layer
+                 if (flaskGas) {
+                     if (pType === 'gas') {
+                         flaskGas.style.background = pColor || 'white';
+                         flaskGas.style.opacity = '1';
+                     } else {
+                         flaskGas.style.opacity = '0';
+                     }
+                 }
+             };
 
-                    if (outcome && outcome.ph) {
-                        currentPH = parseFloat(outcome.ph);
-                    } else {
-                        currentPH = 7.0;
-                    }
+             // 3. Execution Logic
+             // Always render Pre-Reaction state first (simulates adding the new liquid)
+             renderVisuals(preLiquidColors, null, null);
 
-                    // Store the reaction name
-                    currentReactionName = outcome.name || "Unknown Reaction";
+             if (outcome) {
+                 // Wait for the pour animation (2s) then trigger reaction
+                 setTimeout(() => {
+                     flask.classList.add('flask-active');
+                     setTimeout(() => flask.classList.remove('flask-active'), 1000);
+                     
+                     renderVisuals(postLiquidColors, prodType, prodColor);
 
-                    if (tempDisplay && tempDisplay.innerText !== "") {
-                        tempDisplay.innerText = "Temperature: " + currentTemperature.toFixed(1) + " K";
-                    }
-                    if (phDisplay && phDisplay.innerText !== "") {
-                        phDisplay.innerText = "pH: " + currentPH.toFixed(1);
-                    }
-                    if (reactionNameDisplay && reactionNameDisplay.innerHTML !== "") {
-                        reactionNameDisplay.innerHTML = "Reaction: " + currentReactionName;
-                        if (typeof MathJax !== 'undefined') MathJax.typeset();
-                    }
-                }, slowReactionDelay);
-            }
+                     // Update Info
+                      if (outcome.temp || (reactionData.temp && prodType === 'solid')) {
+                          currentTemperature = parseInt(outcome.temp || reactionData.temp);
+                      }
+                      if (outcome.ph) currentPH = parseFloat(outcome.ph);
+                      currentReactionName = outcome.name || "Unknown Reaction";
+                      
+                      if (tempDisplay && tempDisplay.innerText !== "") tempDisplay.innerText = "Temperature: " + currentTemperature.toFixed(1) + " K";
+                      if (phDisplay && phDisplay.innerText !== "") phDisplay.innerText = "pH: " + currentPH.toFixed(1);
+                      if (reactionNameDisplay && reactionNameDisplay.innerHTML !== "") {
+                           reactionNameDisplay.innerHTML = "Reaction: " + currentReactionName;
+                           if (typeof MathJax !== 'undefined') MathJax.typeset();
+                      }
+                 }, 2000);
+             }
         };
 
-        if (selectedBeakers.length === 1) {
-            let attr = null;
-            if (labData['attributes' + beakerIdx]) {
-                try {
-                    attr = (new Function("return " + labData['attributes' + beakerIdx]))();
-                } catch(e) {}
-            }
-            const fluidColor = attr ? attr.color : null;
-            if (fluidColor) {
-                if (flaskSolid) {
-                    flaskSolid.style.width = '90%';
-                    flaskSolid.style.height = '45%';
-                    flaskSolid.style.bottom = '10%';
-                    flaskSolid.style.left = '5%';
-                    flaskSolid.style.borderRadius = '0 0 10% 10%';
-                    flaskSolid.style.clipPath = 'polygon(35% 0%, 65% 0%, 100% 100%, 0% 100%)';
-                    flaskSolid.style.background = fluidColor;
-                    flaskSolid.style.opacity = '1';
-                }
-                if (flaskGas) flaskGas.style.opacity = '0';
-            }
-            if (attr && attr.temp) {
-                currentTemperature = parseInt(attr.temp);
-                if (tempDisplay && tempDisplay.innerText !== "") {
-                    tempDisplay.innerText = "Temperature: " + currentTemperature.toFixed(1) + " K";
-                }
-            }
-            if (attr && attr.ph) {
-                currentPH = parseFloat(attr.ph);
-                if (phDisplay && phDisplay.innerText !== "") {
-                    phDisplay.innerText = "pH: " + currentPH.toFixed(1);
-                }
-            }
-        } else if (selectedBeakers.length >= 2 && selectedBeakers.length <= 4) {
-             if (labData && labData.reaction) {
-                let reactionData = null;
-                try {
-                    reactionData = (new Function("return " + labData.reaction))();
-                } catch (e) {
-                    console.error("Error parsing reaction data:", e);
-                }
-                
-                if (reactionData) {
-                    const getCombinations = (arr, size) => {
-                        let result = [];
-                        const f = (prefix, chars) => {
-                            for (let i = 0; i < chars.length; i++) {
-                                let newPrefix = [...prefix, chars[i]];
-                                if (newPrefix.length === size) {
-                                    result.push(newPrefix);
-                                } else {
-                                    f(newPrefix, chars.slice(i + 1));
-                                }
-                            }
-                        };
-                        f([], arr);
-                        return result;
-                    };
-
-                    let outcome = null;
-                    for (let size = selectedBeakers.length; size >= 2; size--) {
-                        const combos = getCombinations(selectedBeakers, size);
-                        for (const combo of combos) {
-                            const key = combo.sort((a, b) => a - b).join("_");
-                            if (reactionData[key]) {
-                                outcome = reactionData[key];
-                                break;
-                            }
-                        }
-                        if (outcome) break;
-                    }
-                    
-                    if (outcome) {
-                        handleReaction(outcome, reactionData);
-                    } else {
-                        // Split colors if no reaction found
-                        const splitColor = getSplitColor(selectedBeakers);
-                        if (flaskSolid) {
-                            flaskSolid.style.width = '90%';
-                            flaskSolid.style.height = '45%';
-                            flaskSolid.style.bottom = '10%';
-                            flaskSolid.style.left = '5%';
-                            flaskSolid.style.borderRadius = '0 0 10% 10%';
-                            flaskSolid.style.clipPath = 'polygon(35% 0%, 65% 0%, 100% 100%, 0% 100%)';
-                            flaskSolid.style.background = splitColor; 
-                            flaskSolid.style.opacity = '1';
-                            if (flaskGas) flaskGas.style.opacity = '0';
-                        }
-                    }
-                }
-             }
-        } else if (selectedBeakers.length === 5) {
-             if (labData && labData.reaction) {
-                let reactionData = null;
-                try {
-                    reactionData = (new Function("return " + labData.reaction))();
-                } catch (e) {
-                    console.error("Error parsing reaction data:", e);
-                }
-                
-                if (reactionData) {
-                    const getCombinations = (arr, size) => {
-                        let result = [];
-                        const f = (prefix, chars) => {
-                            for (let i = 0; i < chars.length; i++) {
-                                let newPrefix = [...prefix, chars[i]];
-                                if (newPrefix.length === size) {
-                                    result.push(newPrefix);
-                                } else {
-                                    f(newPrefix, chars.slice(i + 1));
-                                }
-                            }
-                        };
-                        f([], arr);
-                        return result;
-                    };
-
-                    let outcome = null;
-                    // Check for reactions starting from the full set down to pairs
-                    for (let size = selectedBeakers.length; size >= 2; size--) {
-                        const combos = getCombinations(selectedBeakers, size);
-                        for (const combo of combos) {
-                            const key = combo.sort((a, b) => a - b).join("_");
-                            if (reactionData[key]) {
-                                outcome = reactionData[key];
-                                break;
-                            }
-                        }
-                        if (outcome) break;
-                    }
-                    
-                    if (outcome) {
-                        handleReaction(outcome, reactionData);
-                    } else {
-                        // Split colors if no reaction found
-                        const splitColor = getSplitColor(selectedBeakers);
-                        if (flaskSolid) {
-                            flaskSolid.style.width = '90%';
-                            flaskSolid.style.height = '45%';
-                            flaskSolid.style.bottom = '10%';
-                            flaskSolid.style.left = '5%';
-                            flaskSolid.style.borderRadius = '0 0 10% 10%';
-                            flaskSolid.style.clipPath = 'polygon(35% 0%, 65% 0%, 100% 100%, 0% 100%)';
-                            flaskSolid.style.background = splitColor; 
-                            flaskSolid.style.opacity = '1';
-                            if (flaskGas) flaskGas.style.opacity = '0';
-                        }
-                    }
-                }
-             }
-        } else if (selectedBeakers.length === 5) {
-          alert("Please reset the flask");
+        if (selectedBeakers.length === 5) {
+             alert("Please reset the flask");
+             return;
         }
+
+        let outcome = null;
+        let reactionData = null;
+        let reactingIndices = [];
+
+        if (labData && labData.reaction && selectedBeakers.length >= 2) {
+             try {
+                reactionData = (new Function("return " + labData.reaction))();
+             } catch(e) {}
+             
+             if (reactionData) {
+                 const getCombinations = (arr, size) => {
+                        let result = [];
+                        const f = (prefix, chars) => {
+                            for (let i = 0; i < chars.length; i++) {
+                                let newPrefix = [...prefix, chars[i]];
+                                if (newPrefix.length === size) {
+                                    result.push(newPrefix);
+                                } else {
+                                    f(newPrefix, chars.slice(i + 1));
+                                }
+                            }
+                        };
+                        f([], arr);
+                        return result;
+                 };
+
+                 for (let size = selectedBeakers.length; size >= 2; size--) {
+                     const combos = getCombinations(selectedBeakers, size);
+                     for (const combo of combos) {
+                         const key = combo.sort((a, b) => a - b).join("_");
+                         if (reactionData[key]) {
+                             outcome = reactionData[key];
+                             reactingIndices = combo;
+                             break;
+                         }
+                     }
+                     if (outcome) break;
+                 }
+             }
+        }
+        
+        if (selectedBeakers.length === 1) {
+             let attr = null;
+             if (labData['attributes' + beakerIdx]) {
+                 try {
+                    attr = (new Function("return " + labData['attributes' + beakerIdx]))();
+                 } catch(e) {}
+             }
+             if (attr) {
+                 if (attr.temp) currentTemperature = parseInt(attr.temp);
+                 if (attr.ph) currentPH = parseFloat(attr.ph);
+             }
+             if (tempDisplay && tempDisplay.innerText !== "") tempDisplay.innerText = "Temperature: " + currentTemperature.toFixed(1) + " K";
+             if (phDisplay && phDisplay.innerText !== "") phDisplay.innerText = "pH: " + currentPH.toFixed(1);
+        }
+        
+        updateFlaskContent(outcome, reactionData, reactingIndices);
       };
       beakersContainer.appendChild(beakerContainer);
     }
@@ -986,10 +948,16 @@ function findnode(nodeid) {
             flaskSolid.style.opacity = '0';
             flaskSolid.style.backgroundColor = 'transparent'; 
             flaskSolid.style.background = 'none'; 
+            flaskSolid.style.transitionDelay = '0s';
         }
         if (flaskGas) {
             flaskGas.style.opacity = '0';
             flaskGas.style.backgroundColor = 'transparent'; 
+        }
+        if (flaskLiquid) {
+            flaskLiquid.style.opacity = '0';
+            flaskLiquid.style.backgroundColor = 'transparent';
+            flaskLiquid.style.height = '0%';
         }
         if (tempDisplay && tempDisplay.innerText !== "") {
             tempDisplay.innerText = "Temperature: " + currentTemperature.toFixed(1) + " K";
