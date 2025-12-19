@@ -731,6 +731,13 @@ function findnode(nodeid) {
     const labData = fullJSdata.labs.find(lab => lab.labid === labid);
 
     for (let i = 1; i <= 4; i++) {
+      // Check if beaker exists in data (except for beakers 1 and 2 which we might want to default, 
+      // but usually if 3 and 4 are empty we just don't show them).
+      // Assuming if label is missing for 3 or 4, we skip.
+      if (i > 2 && labData && !labData['beaker' + i]) {
+          continue;
+      }
+      
       const beakerContainer = document.createElement('div');
       beakerContainer.className = 'lab-item beaker';
       
