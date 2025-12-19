@@ -284,12 +284,12 @@ button:focus, input:focus{box-shadow:0 0 0 3px rgba(125,211,252,0.12); border-ra
     backdrop-filter: blur(10px);
     border-radius: 12px;
     margin-bottom: 30px;
-    padding: 20px;
+    padding: 30px;
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    gap: 20px;
+    gap: 30px;
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
     position: relative;
 }
@@ -314,7 +314,6 @@ button:focus, input:focus{box-shadow:0 0 0 3px rgba(125,211,252,0.12); border-ra
 
 .lab-item.flask {
     flex: 0 0 auto;
-    margin-right: 40px;
 }
 
 /* Container for beakers to keep them grouped */
@@ -322,8 +321,8 @@ button:focus, input:focus{box-shadow:0 0 0 3px rgba(125,211,252,0.12); border-ra
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
-    justify-content: flex-end;
-    gap: 15px;
+    justify-content: center; /* Center beakers in their group */
+    gap: 30px; 
     flex: 1;
 }
 
@@ -350,12 +349,12 @@ button:focus, input:focus{box-shadow:0 0 0 3px rgba(125,211,252,0.12); border-ra
     border: 1px solid rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);
     border-radius: 8px;
-    padding: 15px;
+    padding: 30px; /* Equalized */
     display: flex;
     justify-content: center;
     align-items: center;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 30px; /* Equalized */
     box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 }
 
@@ -455,10 +454,10 @@ button:focus, input:focus{box-shadow:0 0 0 3px rgba(125,211,252,0.12); border-ra
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);
-    padding: 15px;
+    padding: 30px; /* Equalized */
     border-radius: 10px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    margin-top: 20px;
+    margin-top: 30px; /* Equalized */
     display: flex;
     flex-direction: column;
     align-items: center;
