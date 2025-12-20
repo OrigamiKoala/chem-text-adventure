@@ -68,6 +68,8 @@ body {
     margin-bottom: 6px;
     font-family: 'JetBrains Mono', monospace;
     letter-spacing: 0.2px;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
 
     /* --- NEW ALIGNMENT CODE --- */
     align-self: flex-start;
@@ -100,6 +102,8 @@ body {
     /* Ensures it sticks to the right */
     max-width: 85%;
     /* Reduces width so you can see the alignment */
+    overflow-wrap: break-word;
+    word-wrap: break-word;
     text-align: right;
     /* Aligns the text inside to the right */
     border-bottom-right-radius: 2px;
@@ -226,6 +230,8 @@ button[type=submit]:active {
     color: var(--text);
     font-family: 'JetBrains Mono', monospace;
     letter-spacing: 0.2px;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
     margin-left: 0;
     margin-right: auto;
     max-width: 85%;
@@ -250,6 +256,54 @@ img {
     .response,
     form#responseform {
         padding: 12px
+    }
+
+    /* --- MOBILE LAB LAYOUT (VERTICAL STACK) --- */
+
+    /* Override default transition to animate height instead of width */
+    .lab-container {
+        width: 100% !important;
+        height: 0 !important;
+        top: 0;
+        left: 0;
+        right: auto;
+        bottom: auto;
+        transition: height 0.5s ease, padding 0.5s ease !important;
+        overflow-y: hidden;
+        padding: 0 !important;
+        /* Hide padding when closed */
+        border-bottom: none;
+        z-index: 1000;
+        /* Ensure it sits on top of chat */
+    }
+
+    .lab-container.visible {
+        height: 50vh !important;
+        padding: 15px !important;
+        /* Restore padding */
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 5px 25px rgba(0, 0, 0, 0.4);
+        overflow-y: auto;
+    }
+
+    /* Chat container slides down */
+    .chat-container {
+        transition: margin-top 0.5s ease !important;
+    }
+
+    .chat-container.shifted {
+        width: 100% !important;
+        margin-top: 50vh;
+        /* Ensure we still have full height available roughly, 
+           or allow body scroll to handle it. 
+           With margin-top, it pushes content down. */
+    }
+
+    /* Ensure form stays centered and full width at bottom */
+    form#responseform.shifted-form {
+        width: calc(100% - 36px) !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
     }
 }
 
