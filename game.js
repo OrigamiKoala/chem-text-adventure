@@ -543,7 +543,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const flaskSolid = document.createElement('div');
     flaskSolid.id = 'flask-solid';
     flaskSolid.style.position = 'absolute';
-    flaskSolid.style.bottom = '0';
+    flaskSolid.style.bottom = '14.5%';
     flaskSolid.style.left = '0';
     flaskSolid.style.width = '0';
     flaskSolid.style.height = '0';
@@ -664,7 +664,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (pType === 'solid') {
           flaskSolid.style.width = '40%';
           flaskSolid.style.height = '35%';
-          flaskSolid.style.bottom = '12%';
+          flaskSolid.style.bottom = '14.5%';
           flaskSolid.style.left = '30%';
           flaskSolid.style.borderRadius = '0';
           flaskSolid.style.clipPath = 'none';
