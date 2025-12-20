@@ -551,7 +551,7 @@ document.addEventListener('DOMContentLoaded', () => {
     flaskSolid.style.zIndex = '1';
     flaskSolid.style.borderRadius = '0';
     flaskSolid.style.opacity = '0';
-    flaskSolid.style.transition = 'all 2s ease-in-out, width 0s ease-in-out, left 0s ease-in-out';
+    flaskSolid.style.transition = 'opacity 2s ease-in-out, height 2s ease-in-out, background 2s ease-in-out, background-color 2s ease-in-out, border-radius 2s ease-in-out, clip-path 2s ease-in-out, width 0s ease-in-out, left 0s ease-in-out, bottom 0s ease-in-out';
     flaskWrapper.appendChild(flaskSolid);
 
     const flaskGas = document.createElement('div');
@@ -663,7 +663,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (flaskSolid) {
         if (pType === 'solid') {
           flaskSolid.style.width = '40%';
-          flaskSolid.style.height = '35%';
+          flaskSolid.style.height = '25%';
           flaskSolid.style.bottom = '14.5%';
           flaskSolid.style.left = '30%';
           flaskSolid.style.borderRadius = '0';
