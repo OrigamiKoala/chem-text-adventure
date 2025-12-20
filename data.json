@@ -1381,6 +1381,18 @@
       "beaker4": "D",
       "attributes4": "{\"color\":\"rgba(255, 255, 0, 0.3)\"}",
       "reaction": "{\"1_2\":{\"name\":\"$$\\ce{A -> B}$$\", \"type\":\"solid\", \"color\":\"#ffffff\", \"temp\":\"200 K\", \"ph\":\"6.0\"}, \"2_3_4\":{\"name\":\"\\(\\ce{B + C + D -> F}\\)\",\"type\":\"liquid\", \"color\":\"#32a852\", \"temp\":\"300 K\"}, \"1_2_3\":{\"name\":\"\\(\\ce{A + B + C -> G}\\)\", \"type\":\"gas\", \"color\":\"#eb4034\", \"temp\":\"500 K\"}}"
+    },
+    {
+      "labid": "test",
+      "beaker1": "$$\\ce{0.1 M AgNO3}$$",
+      "attributes1": "{\"temp\":\"1200 K\", \"ph\":\"8\"}",
+      "beaker2": "$$\\ce{NaCl}$$",
+      "attributes2": "{\"temp\":\"0 K\"}",
+      "beaker3": null,
+      "attributes3": null,
+      "beaker4": null,
+      "attributes4": null,
+      "reaction": "{\"1_2\":{\"name\":\"$$\\ce{AgNO3 + 2 NaCl -> AgCl2}$$\", \"type\":\"solid\", \"color\":\"#ffffff\", \"temp\":\"200 K\"}}"
     }
   ]
 }
