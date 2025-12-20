@@ -587,7 +587,7 @@ document.addEventListener('DOMContentLoaded', () => {
     flaskLiquid.style.borderRadius = '0 0 10% 10%';
     flaskLiquid.style.clipPath = 'polygon(35% 0%, 65% 0%, 100% 100%, 0% 100%)';
     flaskLiquid.style.opacity = '0';
-    flaskLiquid.style.transition = 'all 2s ease-in-out';
+    flaskLiquid.style.transition = 'opacity 2s ease-in-out';
     flaskWrapper.appendChild(flaskLiquid);
 
     const flaskImage = document.createElement('img');
@@ -682,59 +682,62 @@ document.addEventListener('DOMContentLoaded', () => {
           // Reset dimensions in case they were morphed to solid
           // Static layout: flaskLiquid fixed at max visual size; clip-path reveals bottom-up to prevent child distortion.
 
-          flaskLiquid.style.width = '90%';
-          flaskLiquid.style.left = '5%';
-          flaskLiquid.style.bottom = '10%';
-          flaskLiquid.style.height = '90%'; // Fixed max height
+          // Refined Geometry for PERFECTLY PARALLEL SIDES and NATURAL SMOOTH CORNERS:
+          // Spacing: Perfectly equalized gaps on all sides (13% uniform).
+          flaskLiquid.style.width = '74%';
+          flaskLiquid.style.left = '13%';
+          flaskLiquid.style.bottom = '14.5%';
+          flaskLiquid.style.height = '82.5%';
           flaskLiquid.style.background = 'none';
-          flaskLiquid.style.display = 'flex';
-          flaskLiquid.style.flexDirection = 'column-reverse'; // Stack bottom-up
-          flaskLiquid.style.borderRadius = '0 0 40px 40px'; // Strongly rounded bottom to fit flask
+          flaskLiquid.style.display = 'block';
 
-          // Fill level: 4 liquids fill to neck (50% of container), so 1 liquid = 12.5%.
+          // Outer Shape (High-Fidelity 50-Point Polygon for Precision Alignment)
+          // Refined: Absolute Parallel Precision (60.5% right, 39.5% left top) for flawless gap consistency.
+          const staticShape = `polygon(
+            44% 0%, 56% 0%,                       /* Neck Top */
+            56% 20%, 56.5% 25%, 58% 30%, 61% 35%, 61% 40%, 51% 45%, /* Right Shoulder Flare & Parallel Start */
+            100% 95%,                             /* Parallel Wall End */
+            99.8% 97.5%, 99% 99%, 97% 99.8%, 91% 100%, 85% 100%,    /* Natural Right Corner */
+            15% 100%, 9% 100%, 3% 99.8%, 1% 99%, 0.2% 97.5%, 0% 95%, /* Natural Left Corner */
+            47% 45%,                            /* Parallel Wall Start & Flare End */
+            39% 40%, 39% 35%, 42% 30%, 43.5% 25%, 44% 20%           /* Left Shoulder Flare */
+          )`;
+          flaskLiquid.style.clipPath = staticShape;
+          flaskLiquid.style.borderRadius = '0';
+          flaskLiquid.style.overflow = 'hidden';
+
+          // Nested Level Clipper (Handles the "rise" without distorting the shape)
+          let clipper = flaskLiquid.querySelector('.level-clipper');
+          if (!clipper) {
+            clipper = document.createElement('div');
+            clipper.className = 'level-clipper';
+            clipper.style.width = '100%';
+            clipper.style.height = '100%';
+            clipper.style.display = 'flex';
+            clipper.style.flexDirection = 'column-reverse';
+            flaskLiquid.appendChild(clipper);
+          }
+
           const heightPerLiquid = 12.5;
           const fillPerc = Math.min(liquidColors.length * heightPerLiquid, 100);
+          const targetClip = `inset(${100 - fillPerc}% 0 0 0)`;
 
-          // Calculate clip window: show bottom fillPerc% (visible Y range [100-fillPerc, 100]).
-
-          const clipY = 100 - fillPerc;
-
-          // Calculate horizontal inset at top edge based on flask shape (body tapers 0-35%, neck fixed at 35%).
-
-          const neckLevel = 50;
-          const maxInset = 35;
-          let inset = 0;
-
-          if (fillPerc <= neckLevel) {
-            // Conical body
-            inset = (fillPerc / neckLevel) * maxInset;
+          // Animate Level
+          if (flaskLiquid.style.opacity === '0') {
+            clipper.style.transition = 'none';
+            clipper.style.clipPath = `inset(100% 0 0 0)`;
+            void clipper.offsetWidth;
+            clipper.style.transition = 'clip-path 1s ease-in-out';
+            clipper.style.clipPath = targetClip;
           } else {
-            // Neck
-            inset = maxInset;
+            clipper.style.transition = 'clip-path 1s ease-in-out';
+            clipper.style.clipPath = targetClip;
           }
 
-          // Define clip polygon: top-left, top-right, bottom-right, bottom-left.
-          const targetClip = `polygon(${inset}% ${clipY}%, ${100 - inset}% ${clipY}%, 100% 100%, 0% 100%)`;
-
-          if (flaskLiquid.style.opacity === '0' || flaskLiquid.style.clipPath.includes('100% 100%, 100% 100%')) {
-            // Initial State: Clipped completely to bottom
-            flaskLiquid.style.transition = 'none';
-            flaskLiquid.style.clipPath = `polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)`;
-            void flaskLiquid.offsetWidth; // Force Reflow
-
-            flaskLiquid.style.transition = 'clip-path 1s ease-in-out, opacity 0.5s';
-            flaskLiquid.style.clipPath = targetClip;
-          } else {
-            flaskLiquid.style.transition = 'clip-path 1s ease-in-out, opacity 0.5s';
-            flaskLiquid.style.clipPath = targetClip;
-          }
-
-          // Render layers: reuse divs by index for color morphing; bottom layer is index 0.
-
-          const currentLayers = Array.from(flaskLiquid.children);
+          // Render layers inside the clipper
+          const currentLayers = Array.from(clipper.children);
           const layerHeight = heightPerLiquid + '%';
 
-          // Update or Add
           liquidColors.forEach((color, i) => {
             let layer;
             if (i < currentLayers.length) {
@@ -743,28 +746,28 @@ document.addEventListener('DOMContentLoaded', () => {
               layer = document.createElement('div');
               layer.style.width = '100%';
               layer.style.flexShrink = '0';
-              layer.style.transition = 'background-color 2s ease, height 1s ease'; // Morph color slowly
-              flaskLiquid.appendChild(layer);
+              layer.style.transition = 'background-color 2s ease, height 1s ease';
+              clipper.appendChild(layer);
             }
-
-            // Update Props
             layer.style.height = layerHeight;
             layer.style.backgroundColor = color;
           });
 
-          // Remove Excess
-          while (flaskLiquid.children.length > liquidColors.length) {
-            flaskLiquid.removeChild(flaskLiquid.lastChild);
+          while (clipper.children.length > liquidColors.length) {
+            clipper.removeChild(clipper.lastChild);
           }
 
           flaskLiquid.style.opacity = '0.7';
 
+          // Clear any artifacts from previous mask attempts
+          flaskLiquid.style.maskImage = '';
+          flaskLiquid.style.webkitMaskImage = '';
+
         } else {
           // No liquids
           flaskLiquid.style.opacity = '0';
-          // flaskLiquid.style.height = '0%'; // Don't animate height, animate clip?
-          // To fade out reset, clip to bottom.
-          flaskLiquid.style.clipPath = `polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)`;
+          let clipper = flaskLiquid.querySelector('.level-clipper');
+          if (clipper) clipper.style.clipPath = `inset(100% 0 0 0)`;
         }
       }
 
