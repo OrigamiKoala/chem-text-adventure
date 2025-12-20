@@ -680,9 +680,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (flaskLiquid) {
         if (liquidColors.length > 0) {
           // Reset dimensions in case they were morphed to solid
-          // New Static Layout Logic:
-          // The container `flaskLiquid` is ALWAYS fixed at the max visual size (90% width, 90% height of flask).
-          // We use `clip-path` to reveal it from bottom up. This prevents children from resizing/squashing.
+          // Static layout: flaskLiquid fixed at max visual size; clip-path reveals bottom-up to prevent child distortion.
 
           flaskLiquid.style.width = '90%';
           flaskLiquid.style.left = '5%';
@@ -693,26 +691,15 @@ document.addEventListener('DOMContentLoaded', () => {
           flaskLiquid.style.flexDirection = 'column-reverse'; // Stack bottom-up
           flaskLiquid.style.borderRadius = '0 0 40px 40px'; // Strongly rounded bottom to fit flask
 
-          // Determine Fill Level (0-100% of the container)
-          // User wants 4 liquids to fill "up to the neck".
-          // Neck starts at ~50% of this container (45% of flask).
-          // So 4 liquids = 50%. 1 liquid = 12.5%.
+          // Fill level: 4 liquids fill to neck (50% of container), so 1 liquid = 12.5%.
           const heightPerLiquid = 12.5;
           const fillPerc = Math.min(liquidColors.length * heightPerLiquid, 100);
 
-          // Calculate Clip Window
-          // We want to show the bottom `fillPerc` % of the container.
-          // In clip-path coords (y=0 is top):
-          // Visible Y range is [100 - fillPerc, 100].
-          // Top Edge Y = 100 - fillPerc.
+          // Calculate clip window: show bottom fillPerc% (visible Y range [100-fillPerc, 100]).
 
           const clipY = 100 - fillPerc;
 
-          // Calculate Inset at the Top Edge Y
-          // Flask Shape Model (relative to container height 0-100):
-          // 0 -> 50% (Body): Taper 0% -> 35% inset.
-          // 50 -> 100% (Neck): Fixed 35% inset.
-          // Note: Inset is horizontal % from Left/Right edges.
+          // Calculate horizontal inset at top edge based on flask shape (body tapers 0-35%, neck fixed at 35%).
 
           const neckLevel = 50;
           const maxInset = 35;
@@ -726,11 +713,7 @@ document.addEventListener('DOMContentLoaded', () => {
             inset = maxInset;
           }
 
-          // Clip Polygon:
-          // Top Left: (inset, clipY)
-          // Top Right: (100-inset, clipY)
-          // Bottom Right: (100, 100)
-          // Bottom Left: (0, 100)
+          // Define clip polygon: top-left, top-right, bottom-right, bottom-left.
           const targetClip = `polygon(${inset}% ${clipY}%, ${100 - inset}% ${clipY}%, 100% 100%, 0% 100%)`;
 
           if (flaskLiquid.style.opacity === '0' || flaskLiquid.style.clipPath.includes('100% 100%, 100% 100%')) {
@@ -746,10 +729,7 @@ document.addEventListener('DOMContentLoaded', () => {
             flaskLiquid.style.clipPath = targetClip;
           }
 
-          // Render Layers
-          // To enable color morphing (transition), we must REUSE existing divs.
-          // We match by index. Since flex-direction is column-reverse, first child is bottom.
-          // liquidColors[0] is bottom (first added).
+          // Render layers: reuse divs by index for color morphing; bottom layer is index 0.
 
           const currentLayers = Array.from(flaskLiquid.children);
           const layerHeight = heightPerLiquid + '%';
@@ -923,8 +903,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       state.outcome = outcome;
       state.reactingIndices = reactingIndices;
-      // We didn't store the key, but we can assume reactingIndices joined is the key if needed.
-      // Or just use reactingIndices for identity.
+      // Assume reactingIndices joined forms the key (used for identity).
       state.reactionKey = outcome ? reactingIndices.sort((a, b) => a - b).join('_') : null;
 
       let visualColors = [];
@@ -980,14 +959,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const renderVisualStack = () => {
       // Map visualStack items to colors for the renderer
       const liquidColors = visualStack.filter(v => v.type === 'liquid' || !v.type).map(v => v.color);
-      // Determine product type/color from global or last item?
-      // Actually, renderVisuals accepts (liquidColors, pType, pColor).
-      // pType/pColor controls the "Solid/Gas" visuals.
-      // We need to determine if there is a *current* solid/gas state based on the visual stack?
-      // Or keep tracking "currentProductType" globally?
-      // Let's use the last item in visualStack or a global override?
-      // If a reaction produced a solid, the visualStack should reflect it?
-      // My visualStack design: { ids, color, type }.
+      // Determine product type/color based on visualStack items (solid/gas presence).
 
       let pType = null;
       let pColor = null;
@@ -1010,15 +982,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // Pass to renderer
       renderVisuals(liquidColors, pType, pColor);
 
-      // Update Displays based on LATEST logical state (calculated elsewhere? or derivate?)
-      // The displays should match the VISUAL state.
-      // If visual stack is [A, B] (pre-reaction), pH should be mix of A, B?
-      // If visual stack is [Red] (post-reaction), pH should be product pH.
-      // This suggests we need to recalculate State from Visual Stack?
-      // Complex: visualStack items don't store pH.
-      // But reactionQueue updates globals like currentPH.
-      // So we just update displays with current globals?
-      // Yes, but globals update when reaction *executes*.
+      // Update displays to match visual state using current globals (which update upon reaction execution).
 
       if (tempDisplay && tempDisplay.innerText !== "") tempDisplay.innerText = "Temperature: " + currentTemperature.toFixed(1) + " K";
       if (phDisplay && phDisplay.innerText !== "") {
@@ -1038,9 +1002,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // Iterate through new beakers
       for (let i = processedBeakersCount + 1; i <= selectedBeakers.length; i++) {
         const subset = selectedBeakers.slice(0, i);
-        // We want to see if the NEW subset triggers a NEW reaction.
-        // If we just check getFlaskState(subset), it might return the SAME reaction as prevSubset (e.g. R1).
-        // So we explicitly ask getFlaskState to ignore the previous reaction key.
+        // Check if new subset triggers a *new* reaction, ignoring valid reactions from previous subsets.
         const prevSubset = selectedBeakers.slice(0, i - 1);
         const prevState = getFlaskState(prevSubset);
 
@@ -1063,12 +1025,7 @@ document.addEventListener('DOMContentLoaded', () => {
       processedBeakersCount = selectedBeakers.length;
     };
 
-    // Helper to identify reacting IDs (simplified from getFlaskState logic)
-    // Actually getFlaskState doesn't return indices.
-    // We rely on the fact that the subset *caused* the reaction.
-    // If [A, B, C] -> reaction, it implies A,B,C (or subset) reacted.
-    // For simplicity, we assume the Reaction consumes *the inputs*.
-    // We will clean up the visual stack by verifying what IDs are "consumed".
+    // Identify reacting IDs assuming the subset causing the reaction consumes its inputs.
 
     const queueReaction = (rData) => {
       reactionQueue = reactionQueue.then(async () => {
@@ -1076,24 +1033,11 @@ document.addEventListener('DOMContentLoaded', () => {
         await new Promise(r => setTimeout(r, 2000));
 
         // Perform Visual Update
-        // 1. Identify reacting beakers from rData.subsetIds?
-        // Actually, we just want to look at `visualStack`.
-        // We need to find items in `visualStack` whose IDs are in `rData.subsetIds`.
-        // And replace them with Product.
-        // CAREFUL: `rData.subsetIds` is [A, B]. VisualStack has [A], [B].
-        // We remove [A], [B], insert [Product].
+        // Replace responding visualStack items with product (match by ID).
 
         const idsToconsume = new Set(rData.subsetIds);
 
-        // Filter visualStack
-        // Keep items that are NOT fully consumed?
-        // Actually `getFlaskState` assumes everything mixes.
-        // So for [A, B] -> Product, both A and B are consumed.
-        // We replace ALL tokens that match these IDs.
-
-        // But what if C was added later? [A, B, C].
-        // C is NOT in `subsetIds` (if R1 was A+B).
-        // So C should remain.
+        // Filter visualStack: consume participating items, retain non-participating ones.
 
         let newStack = [];
         let consumed = false;
@@ -1104,10 +1048,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let totalLiquidLayersConsumed = 0;
         let solidConsumed = false;
 
-        // "Consume" items
-        // We iterate visualStack. If item has reactant, we mark it.
-        // visualStack items: { ids, color, type }.
-        // If type is liquid, it contributes 1 layer.
+        // Iterate visualStack to mark reactants and count liquid layers.
 
         visualStack.forEach((item, idx) => {
           const hasReactant = item.ids.some(id => idsToconsume.has(id));
@@ -1126,26 +1067,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (consumed) {
-          // Determine Target Layers
-          // User Rule 1: Liquid + Liquid -> Liquid (No Volume Change).
-          //   Input: 2 Liquid items. Output: 2 Liquid items.
-          // User Rule 2: Solid + Liquid -> Liquid (Volume Increases).
-          //   Input: 1 Liquid item + 1 Solid item (0 vol). Output: 1 L + 1 L (Increase).
-          // Logic: New Layers = totalLiquidLayersConsumed + (solidConsumed ? 1 : 0).
-          // But wait, if 2 Liquids + 1 Solid -> Liquid.
-          //   Input: 2 L. Output: 2+1 = 3 L. (Volume increases). Correct.
+          // Determine target layers: preserve volume for L+L, increase for S+L.
 
           let targetLayers = totalLiquidLayersConsumed;
           if (solidConsumed) targetLayers += 1;
 
-          // If outcome is Solid or Gas?
-          // User only specified Liquid Logic.
-          // If outcome is Solid (Precipitate): Volume?
-          // Usually L+L -> Solid + L (Supernatant).
-          // Our model is simplified. We replace everything with Product.
-          // If Product is Solid, it has 0 volume in our model (just a graphic).
-          // So we don't add layers.
-          // If Product is Gas, 0 volume.
+          // Handle non-liquid products: solid/gas products have 0 volume layers.
 
           const prodType = rData.state.productType || 'liquid';
 
@@ -1153,8 +1080,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Create N tokens of product
             const pColor = rData.state.productColor || rData.state.visualColors[0];
 
-            // If targetLayers is 0 (e.g. Solid+Solid->Liquid?), ensure at least 1?
-            // Unlikely scenario.
+            // Ensure targetLayers >= 1 (unlikely scenario where S+S->L results in 0 layers).
 
             for (let k = 0; k < targetLayers; k++) {
               const prodToken = {
@@ -1162,17 +1088,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 color: pColor,
                 type: 'liquid'
               };
-              // Insert in order
               if (insertIdx !== -1) {
                 newStack.splice(insertIdx + k, 0, prodToken);
-                // Start inserting next ones AFTER this one?
-                // No, splice insert pushes others down. 
-                // We want them consecutive.
-                // Actually, just pushing to a temp array and inserting the block is easier.
-                // But here we modify newStack effectively.
-                // We should just use splice once or increment index?
-                // Since we are iterating k:
-                // splice(insertIdx + k, 0, token).
+                // Insert in order: splice consecutively at insertIdx.
               } else {
                 newStack.push(prodToken);
               }
@@ -1233,17 +1151,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // Immediate Render
       renderVisualStack();
 
-      // Initial pH/Temp update for purely mix (non-reaction)?
-      // If we want immediate feedback for mixing:
-      // Calculate State for current set.
-      // If NO reaction in future queue, update immediately?
-      // This is complex. Let's rely on queue for reactions, but immediate mix pH?
-      // User said "first reaction finishes before second...".
-      // Implies state updates should follow the visual.
-      // So we DO NOT update pH immediately if a reaction is pending?
-      // But for simple "Add Liquid", we should.
-      // Simplification: Only update globals inside the Queue/Render routine if logic is pending.
-      // We'll leave globals as is for now until queue processes.
+      // Defer global updates to queue processing to ensure state matches visual timing.
 
       processLogicUpdates();
     };
@@ -1312,10 +1220,8 @@ document.addEventListener('DOMContentLoaded', () => {
       selectedBeakers = [];
       visualStack = [];
       processedBeakersCount = 0;
-      reactionQueue = Promise.resolve(); // Clear queue? Actually creates new chain branch. Old branch still runs?
-      // To truly cancel, we need cancelable tokens.
-      // For this app, simply checking `selectedBeakers.length === 0` inside the queue job?
-      // We can add a check inside queueReaction.
+      reactionQueue = Promise.resolve(); // Clear queue reference (old chains continue independently).
+      // Reset queue logic (active jobs check selectedBeakers state).
 
       currentPH = 7.0;
       currentTemperature = 298;
