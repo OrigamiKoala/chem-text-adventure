@@ -75,13 +75,16 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log("jumpTo completed");
   }
   window.jumpTo = jumpTo; // expose jumpTo to global scope for button onclick
-
+  let textbookdata = "null";
+  let narrativedata = "null";
   // load data from json and render initial prompt
   fetch('data.json')
     .then(response => response.json())
     .then(async data => {
       fullJSdata = data;
-      JSdata = data.pchem_nodes;
+      textbookdata = data.pchem_nodes;
+      narrativedata = data.narrative_nodes;
+      JSdata = textbookdata;
       let initialText = findnode("initial").text;
       previoustext = initialText;
       let splitinitialText = initialText.split("--");
@@ -359,6 +362,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // handle special commands
     if (inputstring == "help") {
       return [helpText || 'Loading help... please wait', currentdivid];
+    } else if (inputstring == "condensed") {
+      JSdata = textbookdata;
+      currentdivid = "atomscover";
+      return [findnode(currentdivid).text || 'Loading condensed... please wait', currentdivid];
+    } else if (inputstring == "narrative") {
+      JSdata = narrativedata;
+      currentdivid = "atomscover";
+      return [findnode("atomscover").text || 'Loading narrative... please wait', "atomscover"];
     } else if (inputstring == "outline") {
       return [outlineText || 'Loading outline... please wait', currentdivid];
     } else if (inputstring == "undo") {
