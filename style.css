@@ -1,109 +1,137 @@
 @import url('https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&family=JetBrains+Mono:wght@300;400;700&display=swap');
 
-:root{
-    --bg: #0f1724; /* dark navy */
-    --card: #0f1724; /* same as bg for seamless look */
+:root {
+    --bg: #0f1724;
+    /* dark navy */
+    --card: #0f1724;
+    /* same as bg for seamless look */
     --muted: #9aa4b2;
     --text: #e6eef6;
-    --accent: #7dd3fc; /* cyan-ish */
-    --accent-2: #60a5fa; /* blue */
-    --glass: rgba(255,255,255,0.04);
+    --accent: #7dd3fc;
+    /* cyan-ish */
+    --accent-2: #60a5fa;
+    /* blue */
+    --glass: rgba(255, 255, 255, 0.04);
 }
 
 /* Elegant serif + monospaced 'geeky' fonts */
 /* Base */
-*{box-sizing:border-box}
-html,body{height:100%}
-body{
-    margin:0;
+* {
+    box-sizing: border-box
+}
+
+html,
+body {
+    height: 100%
+}
+
+body {
+    margin: 0;
     font-family: 'Merriweather', Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
     background-color: var(--bg);
-    color:var(--text);
-    -webkit-font-smoothing:antialiased;
-    -moz-osx-font-smoothing:grayscale;
-    padding:32px;
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    padding: 32px;
     /* leave room at bottom for the fixed input */
-    padding-bottom:200px;
+    padding-bottom: 200px;
 }
 
 /* App layout */
-.container#previous{
-    max-width:900px;
-    margin:0 auto 18px auto;
-    display:flex;
-    flex-direction:column; /* newest at bottom (just above the form) */
-    gap:12px;
+.container#previous {
+    max-width: 900px;
+    margin: 0 auto 18px auto;
+    display: flex;
+    flex-direction: column;
+    /* newest at bottom (just above the form) */
+    gap: 12px;
     /* leave extra padding so items aren't covered by fixed form */
     padding-bottom: 120px;
 }
 
-.question, .response, .response .previoustext {
-    max-width:900px;
+.question,
+.response,
+.response .previoustext {
+    max-width: 900px;
 }
 
 .question {
     /* Keep your existing visual styles (background, border, etc.) */
-    background: linear-gradient(180deg, rgba(125,211,252,0.06), rgba(96,165,250,0.04));
-    border: 1px solid rgba(125,211,252,0.08);
+    background: linear-gradient(180deg, rgba(125, 211, 252, 0.06), rgba(96, 165, 250, 0.04));
+    border: 1px solid rgba(125, 211, 252, 0.08);
     padding: 16px 20px;
     border-radius: 12px;
     color: var(--text);
     font-size: 1rem;
     line-height: 1.45;
-    box-shadow: 0 6px 20px rgba(2,6,23,0.6);
+    box-shadow: 0 6px 20px rgba(2, 6, 23, 0.6);
     margin-bottom: 6px;
     font-family: 'JetBrains Mono', monospace;
     letter-spacing: 0.2px;
-    
+
     /* --- NEW ALIGNMENT CODE --- */
-    align-self: flex-start;  /* Aligns the box to the left flex start */
-    margin-left: 0;          /* Ensures it sticks to the left */
-    margin-right: auto;      /* Pushes against the right */
-    max-width: 85%;          /* Reduces width so you can see the alignment */
-    border-top-left-radius: 2px; /* Optional: adds a "chat bubble" corner */
+    align-self: flex-start;
+    /* Aligns the box to the left flex start */
+    margin-left: 0;
+    /* Ensures it sticks to the left */
+    margin-right: auto;
+    /* Pushes against the right */
+    max-width: 85%;
+    /* Reduces width so you can see the alignment */
+    border-top-left-radius: 2px;
+    /* Optional: adds a "chat bubble" corner */
 }
 
 .response {
     /* Keep your existing visual styles */
-    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
     border-radius: 10px;
     padding: 10px 14px;
     color: var(--accent-2);
     font-weight: 600;
-    border: 1px solid rgba(255,255,255,0.03);
-    
+    border: 1px solid rgba(255, 255, 255, 0.03);
+
     /* --- NEW ALIGNMENT CODE --- */
-    align-self: flex-end;    /* Aligns the box to the right flex end */
-    margin-left: auto;       /* Pushes against the left */
-    margin-right: 0;         /* Ensures it sticks to the right */
-    max-width: 85%;          /* Reduces width so you can see the alignment */
-    text-align: right;       /* Aligns the text inside to the right */
-    border-bottom-right-radius: 2px; /* Optional: adds a "chat bubble" corner */
+    align-self: flex-end;
+    /* Aligns the box to the right flex end */
+    margin-left: auto;
+    /* Pushes against the left */
+    margin-right: 0;
+    /* Ensures it sticks to the right */
+    max-width: 85%;
+    /* Reduces width so you can see the alignment */
+    text-align: right;
+    /* Aligns the text inside to the right */
+    border-bottom-right-radius: 2px;
+    /* Optional: adds a "chat bubble" corner */
 }
 
-.response div{color:var(--muted); font-weight:500}
+.response div {
+    color: var(--muted);
+    font-weight: 500
+}
 
 /* form area */
-form#responseform{
-    position:fixed;
-    left:50%;
-    transform:translateX(-50%);
-    bottom:18px;
-    z-index:1200;
-    width:calc(100% - 64px);
-    max-width:900px;
-    height:42px;
-    margin:0 auto;
-    display:flex;
-    gap:0;
-    align-items:center;
-    padding:4px 4px 4px 4px;
-    box-sizing:border-box;
-    overflow:hidden;
-    background: linear-gradient(180deg, rgb(20, 40, 62), rgba(10,30,52,1));
-    border-radius:12px;
-    border:1px solid rgba(255,255,255,0.03);
-    box-shadow: 0 8px 30px rgba(2,6,23,0.6);
+form#responseform {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 18px;
+    z-index: 1200;
+    width: calc(100% - 64px);
+    max-width: 900px;
+    height: 42px;
+    margin: 0 auto;
+    display: flex;
+    gap: 0;
+    align-items: center;
+    padding: 4px 4px 4px 4px;
+    box-sizing: border-box;
+    overflow: hidden;
+    background: linear-gradient(180deg, rgb(20, 40, 62), rgba(10, 30, 52, 1));
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    box-shadow: 0 8px 30px rgba(2, 6, 23, 0.6);
     transition: width 0.5s ease, left 0.5s ease, transform 0.5s ease;
 }
 
@@ -113,116 +141,165 @@ form#responseform.shifted-form {
     transform: translateX(-50%);
 }
 
-input#response{
-    flex:1;
-    height:100%;
-    background:transparent;
-    border:0;
-    outline:0;
-    color:var(--text);
-    padding:6px 8px;
-    font-size:1rem;
+input#response {
+    flex: 1;
+    height: 100%;
+    background: transparent;
+    border: 0;
+    outline: 0;
+    color: var(--text);
+    padding: 6px 8px;
+    font-size: 1rem;
     font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, 'Courier New', monospace;
 }
 
-input#response::placeholder{color:var(--muted)}
-
-button[type=submit]{
-    background:linear-gradient(180deg,var(--accent),var(--accent-2));
-    color:#03203a;
-    border:none;
-    padding:8px 10px;
-    border-radius:10px;
-    font-weight:700;
-    cursor:pointer;
-    transition:transform .12s ease, box-shadow .12s ease;
+input#response::placeholder {
+    color: var(--muted)
 }
 
-button[type=submit]:active{transform:translateY(1px)}
+button[type=submit] {
+    background: linear-gradient(180deg, var(--accent), var(--accent-2));
+    color: #03203a;
+    border: none;
+    padding: 8px 10px;
+    border-radius: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform .12s ease, box-shadow .12s ease;
+}
+
+button[type=submit]:active {
+    transform: translateY(1px)
+}
 
 /* spacing helper */
-.spacer{height:1em}
+.spacer {
+    height: 1em
+}
 
 /* Outline buttons (match app look) */
-.outline{
-    -webkit-appearance:none;
-    appearance:none;
-    display:inline;
-    text-align:left;
-    padding:0 4px;
-    margin:2px 4px;
+.outline {
+    -webkit-appearance: none;
+    appearance: none;
+    display: inline;
+    text-align: left;
+    padding: 0 4px;
+    margin: 2px 4px;
     background: transparent;
     border: none;
     color: var(--muted);
-    border-radius:4px;
+    border-radius: 4px;
     font-family: inherit;
-    font-size:0.98rem;
-    cursor:pointer;
+    font-size: 0.98rem;
+    cursor: pointer;
     text-decoration: none;
 }
-.outline:hover{ color: var(--accent); text-decoration: underline; }
-.outline:active{ opacity:0.9 }
-.outline:focus{ outline: 2px solid rgba(125,211,252,0.12); outline-offset: 2px; }
 
-:link{
-    color:rgb(99, 99, 255)
+.outline:hover {
+    color: var(--accent);
+    text-decoration: underline;
 }
 
-:visited{
-    color:rgb(208, 15, 208)
+.outline:active {
+    opacity: 0.9
+}
+
+.outline:focus {
+    outline: 2px solid rgba(125, 211, 252, 0.12);
+    outline-offset: 2px;
+}
+
+:link {
+    color: rgb(99, 99, 255)
+}
+
+:visited {
+    color: rgb(208, 15, 208)
 }
 
 .lab {
     background-color: rgb(0, 57, 119);
-    border: 1px solid rgba(255,255,255,0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     padding: 12px 16px;
     border-radius: 8px;
-    box-shadow: 0 4px 15px rgba(2,6,23,0.4);
+    box-shadow: 0 4px 15px rgba(2, 6, 23, 0.4);
     color: var(--text);
-    font-family: 'Georgia', serif;
+    font-family: 'JetBrains Mono', monospace;
     letter-spacing: 0.2px;
     margin-left: 0;
     margin-right: auto;
-    max-width: 85%; 
+    max-width: 85%;
     color: #ffffff;
     text-decoration: none;
 }
 
-img{
-    max-width:100%;
-    height:auto;
-    border-radius:8px;
-    margin-top:8px;
+img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin-top: 8px;
 }
 
 /* small screens */
-@media (max-width:600px){
-    body{padding:18px}
-    .question,.response, form#responseform{padding:12px}
+@media (max-width:600px) {
+    body {
+        padding: 18px
+    }
+
+    .question,
+    .response,
+    form#responseform {
+        padding: 12px
+    }
 }
 
 /* accessibility focus */
-button:focus, input:focus{box-shadow:0 0 0 3px rgba(125,211,252,0.12); border-radius:8px}
+button:focus,
+input:focus {
+    box-shadow: 0 0 0 3px rgba(125, 211, 252, 0.12);
+    border-radius: 8px
+}
 
 /* utility to ensure scrolled-to element isn't obscured */
-[id]{scroll-margin-bottom:140px}
+[id] {
+    scroll-margin-bottom: 140px
+}
 
 /* Print styles: remove app styling but preserve previous-user-input color */
 @media print {
+
     /* Reset our custom layout and visual styles to defaults */
-    body, .container#previous, .question, .response, form#responseform, input#response, button, .spacer, .outline, .lab {
+    body,
+    .container#previous,
+    .question,
+    .response,
+    form#responseform,
+    input#response,
+    button,
+    .spacer,
+    .outline,
+    .lab {
         all: initial !important;
         display: block !important;
     }
 
     /* Ensure a white page background and readable text color */
-    body { background: #fff !important; color: #000 !important; }
+    body {
+        background: #fff !important;
+        color: #000 !important;
+    }
 
     /* Hide interactive form controls, but allow buttons to be visible as text */
-    form#responseform, input, button[type=submit] { display: none !important; }
+    form#responseform,
+    input,
+    button[type=submit] {
+        display: none !important;
+    }
 
     /* Style buttons to appear as plain text */
-    .lab, .outline, button {
+    .lab,
+    .outline,
+    button {
         background: none !important;
         border: none !important;
         padding: 0 !important;
@@ -233,18 +310,38 @@ button:focus, input:focus{box-shadow:0 0 0 3px rgba(125,211,252,0.12); border-ra
         font-size: inherit !important;
         font-family: inherit !important;
         font-weight: normal !important;
-        display: inline !important; /* Display them inline with text */
+        display: inline !important;
+        /* Display them inline with text */
     }
 
     /* Preserve the color styling for previous user inputs only */
-    .response { color: red !important; font-weight: 600 !important; }
-    .response div { color: red !important; font-weight: 500 !important; }
+    .response {
+        color: red !important;
+        font-weight: 600 !important;
+    }
+
+    .response div {
+        color: red !important;
+        font-weight: 500 !important;
+    }
 
     /* Make questions and responses plain blocks with default font sizing */
-    .question, .response { background: transparent !important; box-shadow: none !important; border: none !important; padding: 0 !important; margin: 0 0 8px 0 !important; font-size: 12pt !important; color: inherit !important; }
+    .question,
+    .response {
+        background: transparent !important;
+        box-shadow: none !important;
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 0 8px 0 !important;
+        font-size: 12pt !important;
+        color: inherit !important;
+    }
 
     /* Avoid breaking individual items across pages */
-    .question, .response { page-break-inside: avoid; }
+    .question,
+    .response {
+        page-break-inside: avoid;
+    }
 }
 
 .chat-container {
@@ -268,7 +365,7 @@ button:focus, input:focus{box-shadow:0 0 0 3px rgba(125,211,252,0.12); border-ra
     box-sizing: border-box;
     overflow-y: auto;
     display: none;
-    box-shadow: -5px 0 25px rgba(0,0,0,0.4);
+    box-shadow: -5px 0 25px rgba(0, 0, 0, 0.4);
 }
 
 .lab-container.visible {
@@ -300,12 +397,12 @@ button:focus, input:focus{box-shadow:0 0 0 3px rgba(125,211,252,0.12); border-ra
         align-items: center;
         overflow-x: hidden;
     }
-    
+
     .lab-item.flask {
         margin-right: 0;
         margin-bottom: 30px;
     }
-    
+
     .beakers-container {
         justify-content: center;
         width: 100%;
@@ -321,8 +418,9 @@ button:focus, input:focus{box-shadow:0 0 0 3px rgba(125,211,252,0.12); border-ra
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
-    justify-content: center; /* Center beakers in their group */
-    gap: 30px; 
+    justify-content: center;
+    /* Center beakers in their group */
+    gap: 30px;
     flex: 1;
 }
 
@@ -338,7 +436,7 @@ button:focus, input:focus{box-shadow:0 0 0 3px rgba(125,211,252,0.12); border-ra
     left: 5%;
     width: 90%;
     height: 20%;
-    background: linear-gradient(to bottom, rgba(255,255,255,0.05), transparent);
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.05), transparent);
     pointer-events: none;
     border-radius: 10px;
 }
@@ -349,35 +447,39 @@ button:focus, input:focus{box-shadow:0 0 0 3px rgba(125,211,252,0.12); border-ra
     border: 1px solid rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);
     border-radius: 8px;
-    padding: 30px; /* Equalized */
+    padding: 30px;
+    /* Equalized */
     display: flex;
     justify-content: center;
     align-items: center;
     flex-wrap: wrap;
-    gap: 30px; /* Equalized */
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    gap: 30px;
+    /* Equalized */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .lab-item {
     border: 1px solid rgba(255, 255, 255, 0.2);
     padding: 12px 18px;
     border-radius: 8px;
-    background: #1e293b; /* Medium dark blue */
+    background: #1e293b;
+    /* Medium dark blue */
     cursor: pointer;
     text-align: center;
-    color: #ffffff; /* White text */
+    color: #ffffff;
+    /* White text */
     font-weight: 600;
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.9rem;
     transition: all 0.2s ease;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
     flex: 0 1 auto;
     min-width: 110px;
 }
 
 .lab-item:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
     background-color: #2d3748;
     border-color: var(--accent);
 }
@@ -396,7 +498,8 @@ button:focus, input:focus{box-shadow:0 0 0 3px rgba(125,211,252,0.12); border-ra
     transition: all 0.3s ease;
 }
 
-.lab-item.beaker, .lab-item.flask {
+.lab-item.beaker,
+.lab-item.flask {
     background: transparent;
     border: none;
     box-shadow: none;
@@ -404,17 +507,21 @@ button:focus, input:focus{box-shadow:0 0 0 3px rgba(125,211,252,0.12); border-ra
     flex-direction: column;
     align-items: center;
     min-width: 120px;
-    color: #ffffff; /* Ensure white text */
+    color: #ffffff;
+    /* Ensure white text */
 }
 
 .lab-item.flask {
-    cursor: default; /* Not clickable */
-    min-width: 240px; /* Doubled from 120px */
+    cursor: default;
+    /* Not clickable */
+    min-width: 240px;
+    /* Doubled from 120px */
     margin-top: 50px;
 }
 
 .lab-item.flask img {
-    max-height: 220px; /* Doubled from 110px */
+    max-height: 220px;
+    /* Doubled from 110px */
 }
 
 .lab-item.beaker:hover {
@@ -423,21 +530,32 @@ button:focus, input:focus{box-shadow:0 0 0 3px rgba(125,211,252,0.12); border-ra
 }
 
 .lab-item.flask:hover {
-    transform: none; /* No scaling on hover for flask */
+    transform: none;
+    /* No scaling on hover for flask */
 }
 
-.lab-item.beaker img, .lab-item.flask img {
+.lab-item.beaker img,
+.lab-item.flask img {
     opacity: 0.4;
     pointer-events: none;
     filter: invert(1) brightness(2);
-    transition: filter 0s, opacity 0.3s ease; /* Ensure filter doesn't lag or change */
+    transition: filter 0s, opacity 0.3s ease;
+    /* Ensure filter doesn't lag or change */
 }
 
 /* Glass glow effect for active reactions */
 @keyframes glass-glow {
-    0% { filter: invert(1) brightness(2) drop-shadow(0 0 5px rgba(125,211,252,0.2)); }
-    50% { filter: invert(1) brightness(2) drop-shadow(0 0 15px rgba(125,211,252,0.5)); }
-    100% { filter: invert(1) brightness(2) drop-shadow(0 0 5px rgba(125,211,252,0.2)); }
+    0% {
+        filter: invert(1) brightness(2) drop-shadow(0 0 5px rgba(125, 211, 252, 0.2));
+    }
+
+    50% {
+        filter: invert(1) brightness(2) drop-shadow(0 0 15px rgba(125, 211, 252, 0.5));
+    }
+
+    100% {
+        filter: invert(1) brightness(2) drop-shadow(0 0 5px rgba(125, 211, 252, 0.2));
+    }
 }
 
 .flask-active img {
@@ -447,7 +565,7 @@ button:focus, input:focus{box-shadow:0 0 0 3px rgba(125,211,252,0.12); border-ra
 .beaker div {
     font-weight: bold;
     color: var(--text);
-    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     margin-top: 5px;
 }
 
@@ -455,16 +573,20 @@ button:focus, input:focus{box-shadow:0 0 0 3px rgba(125,211,252,0.12); border-ra
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);
-    padding: 30px; /* Equalized */
+    padding: 30px;
+    /* Equalized */
     border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    margin-top: 30px; /* Equalized */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    margin-top: 30px;
+    /* Equalized */
     display: flex;
     flex-direction: column;
     align-items: center;
 }
 
-#temp-display, #ph-display, #reaction-name-display {
+#temp-display,
+#ph-display,
+#reaction-name-display {
     padding: 6px 12px;
     background: rgba(255, 255, 255, 0.05);
     border-radius: 6px;
@@ -474,7 +596,8 @@ button:focus, input:focus{box-shadow:0 0 0 3px rgba(125,211,252,0.12); border-ra
     border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-#temp-display:empty, #ph-display:empty, #reaction-name-display:empty {
+#temp-display:empty,
+#ph-display:empty,
+#reaction-name-display:empty {
     display: none;
 }
-
