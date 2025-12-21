@@ -102,9 +102,15 @@ document.addEventListener('DOMContentLoaded', () => {
       finalRoll = r1.sum;
       resultObj = r1;
     }
-
+    let passed = false;
+    if (finalRoll === 20) {
+      passed = true;
+    } else if (finalRoll === 1) {
+      passed = false;
+    } else {
+      passed = (typeof dc === 'number') ? finalRoll + modifier >= dc : null;
+    }
     const total = finalRoll + modifier;
-    const passed = (typeof dc === 'number') ? total >= dc : null;
 
     // 4. UI Animation
     const chatContainer = document.getElementById('previous'); // Or previouscontainer
