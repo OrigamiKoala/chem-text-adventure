@@ -986,8 +986,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentPH = 7.0;
     let currentReactionName = "";
     let currentLiquidColors = [];
-    let currentProductType = null;
-    let currentProductColor = null;
+    // Globals used instead of locals for product state
+    // let currentProductType = null;
+    // let currentProductColor = null;
 
     showReactionBtn.onclick = () => {
       if (reactionNameDisplay.innerHTML !== "") {
@@ -1320,22 +1321,93 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       if (outcome) {
-        if (typeof outcome === 'string') {
-          if (outcome === 'solid') {
-            prodType = 'solid';
-            prodColor = reactionData.solidcolor;
+        // Normalize to array
+        const outcomes = Array.isArray(outcome) ? outcome : [outcome];
+        state.products = outcomes;
+
+        let productNames = [];
+        let productScripts = [];
+        let primaryType = null;
+        let primaryColor = null;
+
+        outcomes.forEach(prod => {
+          // Visuals: If any product is solid/gas, tracking it might be useful for rendering override?
+          // Currently, 'visualColors' tracks LIQUIDS. 
+          // 'prodType'/'prodColor' tracks the SPECIAL state (solid block/gas).
+          // If we have multiple, we need a strategy.
+          // For now, let's say if ANY is solid, we show solid. If ANY is gas, we show gas (or maybe both?).
+          // The renderer uses 'productType' and 'productColor'.
+          // Let's stick to the FIRST non-liquid type found for the 'productType' state used by partial renderers,
+          // OR better: Just grab data for names/scripts here. Visuals are handled by 'visualColors' 
+          // and specific tokens.
+
+          if (typeof prod === 'string') {
+            if (prod === 'solid') {
+              if (!primaryType) { primaryType = 'solid'; primaryColor = reactionData.solidcolor; }
+            }
+            productNames.push("Unknown Product");
+          } else {
+            productNames.push(prod.name || "Unknown Product");
+            if (prod.script) productScripts.push(prod.script);
+
+            // Simple priority for single-state legacy renderers: Solid > Gas > Liquid
+            if (prod.type === 'solid') {
+              primaryType = 'solid';
+              primaryColor = prod.color;
+            } else if (prod.type === 'gas' && primaryType !== 'solid') {
+              primaryType = 'gas';
+              primaryColor = prod.color;
+            } else if (prod.type === 'liquid' && !primaryType) {
+              primaryType = 'liquid';
+              primaryColor = prod.color;
+            }
+
+            // If it's a liquid, add to the visualColors list so it mingles with other liquids
+            if (prod.type === 'liquid' && prod.color) {
+              visualColors.push(prod.color);
+            }
           }
-        } else {
-          prodType = outcome.type;
-          prodColor = outcome.color || reactionData.solidcolor;
+        });
+
+        // Temperature Averaging
+        let totalTemp = 0;
+        let tempCount = 0;
+        outcomes.forEach(o => {
+          if (o.temp) { totalTemp += parseInt(o.temp); tempCount++; }
+        });
+        if (tempCount > 0) {
+          state.temp = Math.floor(totalTemp / tempCount);
+        } else if (reactionData && reactionData.temp) {
+          state.temp = parseInt(reactionData.temp);
         }
 
-        if (outcome.temp || (reactionData.temp && prodType === 'solid')) {
-          state.temp = parseInt(outcome.temp || reactionData.temp);
-        }
-        if (outcome.ph) state.ph = parseFloat(outcome.ph);
+        // pH Mixture Logic (Treating products as equal volume mix)
+        let totalH_prod = 0;
+        let phCount = 0;
+        outcomes.forEach(o => {
+          if (o.ph !== undefined) {
+            let ph = parseFloat(o.ph);
+            let molesH = Math.pow(10, -ph);
+            let molesOH = Math.pow(10, -(14 - ph));
+            totalH_prod += (molesH - molesOH);
+            phCount++;
+          }
+        });
 
-        // Format Reaction Name: $$\ce{Reactant1 + Reactant2 -> Product}$$
+        if (phCount > 0) {
+          let avgNetH = totalH_prod / phCount;
+          if (avgNetH > 0) {
+            state.ph = -Math.log10(avgNetH);
+          } else if (avgNetH < 0) {
+            state.ph = 14 - (-Math.log10(-avgNetH));
+          } else {
+            state.ph = 7.0;
+          }
+          state.ph = Math.round(state.ph * 100) / 100;
+        }
+
+
+        // Format Reaction Name: $$\ce{Reactant1 + Reactant2 -> Product1 + Product2}$$
         let reactantNames = [];
         reactingIndices.forEach(idx => {
           let name = null;
@@ -1348,21 +1420,60 @@ document.addEventListener('DOMContentLoaded', () => {
           if (name) reactantNames.push(name);
         });
 
-        const reactantsStr = reactantNames.join(" + ");
-        const productsStr = (outcome && outcome.name) ? outcome.name : "Unknown Product";
+        // Helper to strip LaTeX wrappers for the reaction string
+        const cleanForReaction = (name) => {
+          let s = name;
+          // Recursively strip wrappers to handle nested cases like $$\ce{...}$$
+          while (true) {
+            let changed = false;
+            // Remove wrapping $$
+            if (s.startsWith('$$') && s.endsWith('$$')) {
+              s = s.substring(2, s.length - 2);
+              changed = true;
+            }
+            // Remove wrapping \ce{...}
+            if (s.startsWith('\\ce{') && s.endsWith('}')) {
+              s = s.substring(4, s.length - 1);
+              changed = true;
+            }
+            // Remove wrapping \text{...} (if used)
+            if (s.startsWith('\\text{') && s.endsWith('}')) {
+              s = s.substring(6, s.length - 1);
+              changed = true;
+            }
+            // Remove wrapping \(...\)
+            if (s.startsWith('\\(') && s.endsWith('\\)')) {
+              s = s.substring(2, s.length - 2);
+              changed = true;
+            }
+            if (!changed) break;
+          }
+          return s;
+        };
+
+        const reactantsStr = reactantNames.map(cleanForReaction).join(" + ");
+        const productsStr = productNames.map(cleanForReaction).join(" + ");
 
         state.reactionName = `$$\\ce{${reactantsStr} -> ${productsStr}}$$`;
-        state.productName = productsStr; // Store raw name for inventory
-        state.script = (outcome && outcome.script) ? outcome.script : "";
+        state.productName = productsStr;
+        state.script = productScripts.join(";");
+
+        // Legacy single-state support (best guess)
+        if (primaryType) {
+          state.productType = primaryType;
+          state.productColor = primaryColor;
+        } else if (outcomes.length > 0 && typeof outcomes[0] === 'object') {
+          state.productType = outcomes[0].type;
+          state.productColor = outcomes[0].color;
+        }
+
       }
 
-      if (prodType === 'liquid' && prodColor) {
-        visualColors.push(prodColor);
-      }
+      // Note: 'visualColors' was already pushed with liquid products above.
 
       state.visualColors = visualColors;
-      state.productType = prodType;
-      state.productColor = prodColor;
+      // state.productType is set above
+      // state.productColor is set above
 
       return state;
     };
@@ -1372,7 +1483,10 @@ document.addEventListener('DOMContentLoaded', () => {
     let reactionQueue = Promise.resolve();
     let processedBeakersCount = 0;
     let currentReactionScript = ""; // Global for addToInventory
-
+    let currentProductName = ""; // Global for addToInventory name
+    let currentProductType = "liquid"; // Global for type
+    let currentProductColor = "white"; // Global for color
+    let currentProducts = []; // Global array for multiple products
     const renderVisualStack = () => {
       // Map visualStack items to colors for the renderer
       const liquidColors = visualStack.filter(v => v.type === 'liquid' || !v.type).map(v => v.color);
@@ -1449,24 +1563,18 @@ document.addEventListener('DOMContentLoaded', () => {
         // Wait 2s
         await new Promise(r => setTimeout(r, 2000));
 
-        // Perform Visual Update
-        // Replace responding visualStack items with product (match by ID).
-
+        // Identify Reagents & Products
+        // console.log("Processing Reaction:", rData);
         const idsToconsume = new Set(rData.subsetIds);
-
-        // Filter visualStack: consume participating items, retain non-participating ones.
-
         let newStack = [];
-        let consumed = false;
-
-        // We need to insert the Product *at the position of the first reactant*?
         let insertIdx = -1;
-
+        let consumed = false;
         let totalLiquidLayersConsumed = 0;
         let solidConsumed = false;
 
-        // Iterate visualStack to mark reactants and count liquid layers.
+        // console.log("Current Visual Stack:", JSON.parse(JSON.stringify(visualStack)));
 
+        // Iterate visualStack to mark reactants and count liquid layers.
         visualStack.forEach((item, idx) => {
           const hasReactant = item.ids.some(id => idsToconsume.has(id));
           if (hasReactant) {
@@ -1484,45 +1592,74 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (consumed) {
+          // console.log("Reaction Consumed Reactants. SubsetIds:", rData.subsetIds);
+
           // Determine target layers: preserve volume for L+L, increase for S+L.
-
           let targetLayers = totalLiquidLayersConsumed;
-          if (solidConsumed) targetLayers += 1;
+          // Check for MULTIPLE products vs Single Legacy Product
+          const products = rData.state.products || [];
+          // console.log("Products found in state:", products);
 
-          // Handle non-liquid products: solid/gas products have 0 volume layers.
-
-          const prodType = rData.state.productType || 'liquid';
-
-          if (prodType === 'liquid') {
-            // Create N tokens of product
-            const pColor = rData.state.productColor || rData.state.visualColors[0];
-
-            // Ensure targetLayers >= 1 (unlikely scenario where S+S->L results in 0 layers).
-
-            for (let k = 0; k < targetLayers; k++) {
-              const prodToken = {
-                ids: rData.subsetIds, // Shared ID reference
-                color: pColor,
-                type: 'liquid'
-              };
-              if (insertIdx !== -1) {
-                newStack.splice(insertIdx + k, 0, prodToken);
-                // Insert in order: splice consecutively at insertIdx.
-              } else {
-                newStack.push(prodToken);
-              }
-            }
-          } else {
-            // Solid/Gas Product
-            const prodToken = {
-              ids: rData.subsetIds,
-              color: rData.state.productColor,
-              type: prodType
-            };
-            if (insertIdx !== -1) newStack.splice(insertIdx, 0, prodToken);
-            else newStack.push(prodToken);
+          // If single legacy product exists but no array, wrap it (fallback, though getFlaskState handles this)
+          if (products.length === 0 && rData.state.productType) {
+            products.push({
+              type: rData.state.productType,
+              color: rData.state.productColor
+            });
           }
 
+
+          let newStack = [...visualStack]; // Initialize newStack here, outside the products.length check.
+
+          if (products.length > 0) {
+            // REMOVE consumed reactants
+            // rData.subsetIds contains the IDs of items that reacted.
+            // visualStack contains tokens with 'ids' array.
+            // We need to filter out tokens whose IDs were fully consumed.
+            // NOTE: visualStack logic is complex because 'ids' can be an array (for mixed liquids).
+            // Current simplified approach:
+            // This logic assumes we replace the reacted items with products.
+            // BUT `visualStack` structure is: [ {ids: [1], color:..}, {ids:[2], color:..} ]
+            // Re-building the stack is safer.
+
+            // 1. Remove consumed items from stack
+            // Filter out any visual token where *all* its ids are in subsetIds
+            // If partial, it's tricky. Simplest: Remove all tokens containing ANY of the reacting IDs.
+            newStack = newStack.filter(token => {
+              // If token.ids has an intersection with rrData.subsetIds, remove it
+              const intersection = token.ids.filter(id => rData.subsetIds.includes(id));
+              return intersection.length === 0;
+            });
+
+            // 2. Add ALL Products
+            products.forEach(prod => {
+              if (prod.type === 'liquid') {
+                // Liquids usually merge.
+                // Add as new token. Renderer handles merging.
+                newStack.push({
+                  ids: [], // Products don't have beakerIDs yet
+                  color: prod.color,
+                  type: 'liquid'
+                });
+              } else {
+                // Solid/Gas
+                newStack.push({
+                  ids: [],
+                  color: prod.color,
+                  type: prod.type
+                });
+              }
+            });
+          } else {
+            // If no products, just remove consumed items from the stack.
+            // This path is taken if products.length is 0, but consumed is true.
+            newStack = newStack.filter(token => {
+              const intersection = token.ids.filter(id => rData.subsetIds.includes(id));
+              return intersection.length === 0;
+            });
+          }
+
+          // console.log("New Visual Stack BEFORE assignment:", newStack);
           visualStack = newStack;
         }
 
@@ -1534,6 +1671,7 @@ document.addEventListener('DOMContentLoaded', () => {
         currentReactionScript = rData.state.script || ""; // Update global script
         currentProductType = rData.state.productType || 'liquid'; // Update global product type
         currentProductColor = rData.state.productColor || 'white'; // Update global product color
+        currentProducts = rData.state.products || []; // Update global products LIST
         currentProductType = rData.state.productType || 'liquid'; // Update global product type
 
         // Animate Flask
@@ -1541,6 +1679,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => flask.classList.remove('flask-active'), 1000); // Shake
 
         renderVisualStack();
+        return rData.state;
 
       });
     };
@@ -1713,58 +1852,68 @@ document.addEventListener('DOMContentLoaded', () => {
     addToInvBtn.innerHTML = 'Add to 🎒';
     addToInvBtn.onclick = () => {
       // Find reaction name
-      const reactionName = currentProductName; // Use raw name (e.g. "Substance1")
+      const reactionName = currentProductName; // Still used for check (concatenated name)
 
       // 1. Handle Product Addition
-      if (reactionName && reactionName !== "Unknown Reaction" && reactionName !== "") {
-        // Look for existing item
-        let item = window.itemsData.find(i => i.name === reactionName);
-        if (!item) {
-          let generatedId = reactionName.toLowerCase().replace(/[^a-z0-9]/g, '_');
-          item = {
-            id: generatedId,
-            name: reactionName,
-            attributes: JSON.stringify({
-              type: currentProductType || 'liquid',
-              color: currentProductColor || 'white',
-              ph: currentPH,
-              temp: currentTemperature
-            }),
-            script: currentReactionScript || "" // Use the global script
-          };
-          window.itemsData.push(item);
-        }
+      // If we have a products array, use it. Fallback to legacy single globals if array is empty but name exists.
 
-        if (window.inventory[item.id]) window.inventory[item.id]++;
-        else window.inventory[item.id] = 1;
-        alert(`Added ${reactionName} to inventory!`);
+      const productsToAdd = (currentProducts && currentProducts.length > 0) ? currentProducts : [];
+      // Fallback for single product (legacy)
+      if (productsToAdd.length === 0 && currentProductName && currentProductName !== "Unknown Product") {
+        productsToAdd.push({
+          name: currentProductName,
+          type: currentProductType || 'liquid',
+          color: currentProductColor || 'white',
+          script: currentReactionScript || ""
+        });
+      }
+
+      if (productsToAdd.length > 0) {
+        productsToAdd.forEach(prod => {
+          const prodName = prod.name || "Unknown Product";
+          if (prodName === "Unknown Product") return;
+
+          // Look for existing item
+          let item = window.itemsData.find(i => i.name === prodName);
+          if (!item) {
+            let generatedId = prodName.toLowerCase().replace(/[^a-z0-9]/g, '_');
+            item = {
+              id: generatedId,
+              name: prodName,
+              attributes: JSON.stringify({
+                type: prod.type || 'liquid',
+                color: prod.color || 'white',
+                // pH/Temp might be uniform or specific. Use global/uniform for now from state.
+                ph: prod.ph ? parseFloat(prod.ph) : currentPH,
+                temp: prod.temp ? parseInt(prod.temp) : currentTemperature
+              }),
+              script: prod.script || ""
+            };
+            window.itemsData.push(item);
+          }
+
+          if (window.inventory[item.id]) window.inventory[item.id]++;
+          else window.inventory[item.id] = 1;
+        });
+
+        alert(`Added ${productsToAdd.map(p => p.name).join(", ")} to inventory!`);
       } else {
         if (selectedBeakers.length > 0) alert("Returning content to inventory.");
         else alert("Flask is empty.");
       }
 
       // 2. Return Unreacted Items & Clear Flask
-      // The simplest way to return unreacted items is to trigger the reset logic,
-      // which iterates 'selectedBeakers' and returns any strings (inventory IDs) back to inventory.
-      // Since we already added the Product (if any), consuming reactants is the tricky part.
-      // BUT, 'selectedBeakers' still contains the reactants.
-      // If we blindly reset, we get reactants back!
-      // 'getFlaskState' knows what reacted.
-      // To properly IMPLEMENT "consumed", we must filter selectedBeakers.
-      // Re-calculate state to get reacting indices.
+      // ... (Rest of logic unchanged) ...
       const currentState = getFlaskState(selectedBeakers);
       const consumedIndices = currentState.reactingIndices || [];
-
-      // Return items that were NOT consumed
       selectedBeakers.forEach((id, index) => {
-        // If it's an inventory item (string) AND it is NOT in consumedIndices
         if (typeof id === 'string' && !consumedIndices.includes(index)) {
           if (window.inventory[id]) window.inventory[id]++;
           else window.inventory[id] = 1;
         }
       });
 
-      // Clear Flask State (Consumed items are gone, Unreacted returned, Product added)
+      // Clear Flask State
       selectedBeakers = [];
       visualStack = [];
       processedBeakersCount = 0;
@@ -1772,6 +1921,7 @@ document.addEventListener('DOMContentLoaded', () => {
       currentTemperature = 298;
       currentReactionName = "";
       currentReactionScript = "";
+      currentProducts = []; // Clear
       renderVisualStack();
       renderInventory();
     };
@@ -2044,6 +2194,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const htmlContent = generateHtml();
     if (listDesktop) listDesktop.innerHTML = htmlContent;
     if (listMobile) listMobile.innerHTML = htmlContent;
+    MathJax.typesetPromise();
   }
 
 
