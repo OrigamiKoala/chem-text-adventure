@@ -637,6 +637,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return [findnode(currentdivid).text || 'Loading condensed... please wait', currentdivid];
     } else if (inputstring == "narrative") {
       JSdata = narrativedata;
+      window.isNarrativeMode = true; // Flag for inventory tracking
       currentdivid = "atomscover";
       const uiTopLeft = document.getElementById('ui-top-left');
       if (uiTopLeft) uiTopLeft.style.display = 'flex';
@@ -797,6 +798,7 @@ document.addEventListener('DOMContentLoaded', () => {
       invSidebar.style.position = 'static';
       invSidebar.style.width = '100%';
       invSidebar.style.marginTop = '20px';
+      invSidebar.style.display = 'block'; // Force display in Lab
       labContainer.appendChild(invSidebar);
     }
     if (invTrigger) invTrigger.style.display = 'none';
@@ -1684,7 +1686,7 @@ document.addEventListener('DOMContentLoaded', () => {
               ph: currentPH,
               temp: currentTemperature
             }),
-            script: ''
+            script: ""
           };
           window.itemsData.push(item);
         }
@@ -1767,6 +1769,12 @@ document.addEventListener('DOMContentLoaded', () => {
       invSidebar.style.position = '';
       invSidebar.style.width = '';
       invSidebar.style.marginTop = '';
+      // Conditional hiding based on mode
+      if (window.isNarrativeMode) {
+        invSidebar.style.display = ''; // Restore default (CSS handles it, or block)
+      } else {
+        invSidebar.style.display = 'none';
+      }
       document.body.appendChild(invSidebar);
     }
     if (invTrigger) invTrigger.style.display = '';
