@@ -420,7 +420,6 @@ document.addEventListener('DOMContentLoaded', () => {
               newinterruptTextDiv.innerHTML = splitnewText[n];
               runScripts(newinterruptTextDiv);
               newContainer.appendChild(newinterruptTextDiv);
-              newinterruptTextDiv.insertAdjacentHTML('afterend', emptyLine.outerHTML);
               scrollToBottom(true);
               n++;
             }
@@ -1863,12 +1862,6 @@ document.addEventListener('DOMContentLoaded', () => {
           previousdiv.insertBefore(container, formElement);
         } else {
           previousdiv.appendChild(container);
-        }
-        // insert an empty line after user input
-        if (formElement && previousdiv === formElement.parentNode) {
-          previousdiv.insertBefore(emptyLine, formElement);
-        } else {
-          previousdiv.appendChild(emptyLine);
         }
       }
     }

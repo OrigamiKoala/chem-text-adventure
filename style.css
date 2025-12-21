@@ -82,6 +82,8 @@ body {
     /* Reduces width so you can see the alignment */
     border-top-left-radius: 2px;
     /* Optional: adds a "chat bubble" corner */
+    margin-bottom: 20px;
+    /* Equalized spacing */
 }
 
 .response {
@@ -108,6 +110,8 @@ body {
     /* Aligns the text inside to the right */
     border-bottom-right-radius: 2px;
     /* Optional: adds a "chat bubble" corner */
+    margin-bottom: 20px;
+    /* Equalized spacing */
 }
 
 .response div {
