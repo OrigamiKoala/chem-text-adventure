@@ -600,11 +600,20 @@ input:focus {
 
 /* Solid Block Styling in Toolbox */
 .lab-item.solid-block {
-    width: 80px;
-    height: 100px;
+    width: 100px;
+    height: 60px;
+    /* Shorter for a pile */
     display: inline-block;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-radius: 4px;
+    border: none;
+    /* Powders don't include containers usually */
+    border-radius: 0;
+    clip-path: polygon(5% 100%,
+            10% 85%, 18% 80%, 25% 70%, 32% 65%,
+            40% 55%, 50% 50%, 60% 55%, 68% 65%,
+            75% 70%, 82% 80%, 90% 85%,
+            95% 100%);
+    margin-top: 50px;
+    /* Push down to align bottom with beakers roughly */
     margin-bottom: 8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
     transition: all 0.2s ease;

@@ -1023,12 +1023,12 @@ document.addEventListener('DOMContentLoaded', () => {
       // Solid Layer
       if (flaskSolid) {
         if (pType === 'solid') {
-          flaskSolid.style.width = '40%';
-          flaskSolid.style.height = '25%';
+          flaskSolid.style.width = '50%';
+          flaskSolid.style.height = '15%'; // Low pile
           flaskSolid.style.bottom = '14.5%';
-          flaskSolid.style.left = '30%';
+          flaskSolid.style.left = '25%'; // Centered (100 - 50 / 2)
           flaskSolid.style.borderRadius = '0';
-          flaskSolid.style.clipPath = 'none';
+          flaskSolid.style.clipPath = 'polygon(5% 100%, 10% 85%, 18% 80%, 25% 70%, 32% 65%, 40% 55%, 50% 50%, 60% 55%, 68% 65%, 75% 70%, 82% 80%, 90% 85%, 95% 100%)';
           flaskSolid.style.background = pColor || 'rgba(255, 255, 255, 0.2)';
           flaskSolid.style.transitionDelay = '0s';
           flaskSolid.style.opacity = '1';
@@ -1860,11 +1860,6 @@ document.addEventListener('DOMContentLoaded', () => {
           if (window.inventory[item.id]) window.inventory[item.id]++;
           else window.inventory[item.id] = 1;
         });
-
-        alert(`Added ${productsToAdd.map(p => p.name).join(", ")} to inventory!`);
-      } else {
-        if (selectedBeakers.length > 0) alert("Returning content to inventory.");
-        else alert("Flask is empty.");
       }
 
       // 2. Return Unreacted Items & Clear Flask
