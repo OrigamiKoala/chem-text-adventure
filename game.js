@@ -985,7 +985,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentTemperature = 298;
     let currentPH = 7.0;
     let currentReactionName = "";
-    let currentLiquidColors = [];
     // Globals used instead of locals for product state
     // let currentProductType = null;
     // let currentProductColor = null;
@@ -1526,13 +1525,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (newReaction) {
           // Schedule Reaction
-          const reactionData = {
-            outcome: state.outcome,
-            state: state,
-            subsetIds: state.reactingIndices // Precise reactants
-          };
-
-          queueReaction(reactionData);
+          queueReaction(state);
         }
       }
       processedBeakersCount = selectedBeakers.length;
@@ -1540,128 +1533,77 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Identify reacting IDs assuming the subset causing the reaction consumes its inputs.
 
-    const queueReaction = (rData) => {
+    const queueReaction = (state) => {
       reactionQueue = reactionQueue.then(async () => {
         // Wait 2s
         await new Promise(r => setTimeout(r, 2000));
 
         // Identify Reagents & Products
-        // console.log("Processing Reaction:", rData);
-        const idsToconsume = new Set(rData.subsetIds);
-        let newStack = [];
-        let insertIdx = -1;
+        const idsToconsume = new Set(state.reactingIndices);
         let consumed = false;
         let totalLiquidLayersConsumed = 0;
-        let solidConsumed = false;
-
-        // console.log("Current Visual Stack:", JSON.parse(JSON.stringify(visualStack)));
 
         // Iterate visualStack to mark reactants and count liquid layers.
         visualStack.forEach((item, idx) => {
           const hasReactant = item.ids.some(id => idsToconsume.has(id));
           if (hasReactant) {
-            if (insertIdx === -1) insertIdx = idx;
             consumed = true;
             // Count consumed volume
             if (item.type === 'liquid' || !item.type) {
               totalLiquidLayersConsumed++;
-            } else if (item.type === 'solid') {
-              solidConsumed = true;
             }
-          } else {
-            newStack.push(item);
           }
         });
 
         if (consumed) {
-          // console.log("Reaction Consumed Reactants. SubsetIds:", rData.subsetIds);
+          const products = state.products || [];
 
-          // Determine target layers: preserve volume for L+L, increase for S+L.
-          let targetLayers = totalLiquidLayersConsumed;
-          // Check for MULTIPLE products vs Single Legacy Product
-          const products = rData.state.products || [];
-          // console.log("Products found in state:", products);
-
-          // If single legacy product exists but no array, wrap it (fallback, though getFlaskState handles this)
-          if (products.length === 0 && rData.state.productType) {
+          // If single legacy product exists but no array, wrap it
+          if (products.length === 0 && state.productType) {
             products.push({
-              type: rData.state.productType,
-              color: rData.state.productColor
+              type: state.productType,
+              color: state.productColor
             });
           }
 
+          // 1. Filter out tokens whose IDs were fully consumed.
+          let newStack = visualStack.filter(token => {
+            const intersection = token.ids.filter(id => idsToconsume.has(id)); // intersection with set
+            // If any ID in token is being consumed, remove the token.
+            // Simplification: if intersection > 0, remove.
+            return intersection.length === 0;
+          });
 
-          let newStack = [...visualStack]; // Initialize newStack here, outside the products.length check.
-
+          // 2. Add ALL Products
           if (products.length > 0) {
-            // REMOVE consumed reactants
-            // rData.subsetIds contains the IDs of items that reacted.
-            // visualStack contains tokens with 'ids' array.
-            // We need to filter out tokens whose IDs were fully consumed.
-            // NOTE: visualStack logic is complex because 'ids' can be an array (for mixed liquids).
-            // Current simplified approach:
-            // This logic assumes we replace the reacted items with products.
-            // BUT `visualStack` structure is: [ {ids: [1], color:..}, {ids:[2], color:..} ]
-            // Re-building the stack is safer.
-
-            // 1. Remove consumed items from stack
-            // Filter out any visual token where *all* its ids are in subsetIds
-            // If partial, it's tricky. Simplest: Remove all tokens containing ANY of the reacting IDs.
-            newStack = newStack.filter(token => {
-              // If token.ids has an intersection with rrData.subsetIds, remove it
-              const intersection = token.ids.filter(id => rData.subsetIds.includes(id));
-              return intersection.length === 0;
-            });
-
-            // 2. Add ALL Products
             products.forEach(prod => {
-              if (prod.type === 'liquid') {
-                // Liquids usually merge.
-                // Add as new token. Renderer handles merging.
-                newStack.push({
-                  ids: [], // Products don't have beakerIDs yet
-                  color: prod.color,
-                  type: 'liquid'
-                });
-              } else {
-                // Solid/Gas
-                newStack.push({
-                  ids: [],
-                  color: prod.color,
-                  type: prod.type
-                });
-              }
-            });
-          } else {
-            // If no products, just remove consumed items from the stack.
-            // This path is taken if products.length is 0, but consumed is true.
-            newStack = newStack.filter(token => {
-              const intersection = token.ids.filter(id => rData.subsetIds.includes(id));
-              return intersection.length === 0;
+              newStack.push({
+                ids: [],
+                color: prod.color,
+                type: prod.type || 'liquid'
+              });
             });
           }
 
-          // console.log("New Visual Stack BEFORE assignment:", newStack);
           visualStack = newStack;
         }
 
         // Update Globals (Trigger Visual Change)
-        currentPH = rData.state.ph;
-        currentTemperature = rData.state.temp;
-        currentReactionName = rData.state.reactionName;
-        currentProductName = rData.state.productName || ""; // Update global product name
-        currentReactionScript = rData.state.script || ""; // Update global script
-        currentProductType = rData.state.productType || 'liquid'; // Update global product type
-        currentProductColor = rData.state.productColor || 'white'; // Update global product color
-        currentProducts = rData.state.products || []; // Update global products LIST
-        currentProductType = rData.state.productType || 'liquid'; // Update global product type
+        currentPH = state.ph;
+        currentTemperature = state.temp;
+        currentReactionName = state.reactionName;
+        currentProductName = state.productName || "";
+        currentReactionScript = state.script || "";
+        currentProductType = state.productType || 'liquid';
+        currentProductColor = state.productColor || 'white';
+        currentProducts = state.products || [];
 
         // Animate Flask
         flask.classList.add('flask-active');
         setTimeout(() => flask.classList.remove('flask-active'), 1000); // Shake
 
         renderVisualStack();
-        return rData.state;
+        return state;
 
       });
     };
