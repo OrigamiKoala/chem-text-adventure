@@ -1561,7 +1561,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const beakerWrapper = document.createElement('div');
       beakerWrapper.style.position = 'relative';
-      beakerWrapper.style.display = 'inline-block';
+      beakerWrapper.style.display = 'flex';
+      beakerWrapper.style.flexDirection = 'column';
+      beakerWrapper.style.justifyContent = 'flex-end';
+      beakerWrapper.style.alignItems = 'center';
+      beakerWrapper.style.height = '120px'; // Slightly larger than beaker max-height (110px)
+      beakerWrapper.style.width = '100%';
 
       const beakerImage = document.createElement('img');
       beakerImage.src = 'images/beaker.png';
