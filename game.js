@@ -1651,7 +1651,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Add To Inventory
     const addToInvBtn = document.createElement('div');
     addToInvBtn.className = 'lab-item tool';
-    addToInvBtn.innerHTML = 'Add to Inv.';
+    addToInvBtn.innerHTML = 'Add to 🎒';
     addToInvBtn.onclick = () => {
       // Find reaction name
       const reactionName = currentReactionName;
