@@ -26,12 +26,28 @@ document.addEventListener('DOMContentLoaded', () => {
   let wrongcounter = 0;
   let periodictableversion = 1
   let hintcount = 1;
-  window.STR = 10;
-  window.DEX = 10;
-  window.CON = 10;
-  window.INT = 10;
-  window.WIS = 10;
-  window.CHA = 10;
+  const generateStatsTo72 = () => {
+    let stats = [12, 12, 12, 12, 12, 12];
+    for (let i = 0; i < 150; i++) {
+      let i1 = Math.floor(Math.random() * 6);
+      let i2 = Math.floor(Math.random() * 6);
+      if (i1 === i2) continue;
+      let dir = Math.random() > 0.5 ? 1 : -1;
+      if (stats[i1] + dir >= 1 && stats[i1] + dir <= 20 &&
+        stats[i2] - dir >= 1 && stats[i2] - dir <= 20) {
+        stats[i1] += dir;
+        stats[i2] -= dir;
+      }
+    }
+    return stats;
+  };
+  const [s1, s2, s3, s4, s5, s6] = generateStatsTo72();
+  window.STR = s1;
+  window.DEX = s2;
+  window.CON = s3;
+  window.INT = s4;
+  window.WIS = s5;
+  window.CHA = s6;
   window.rollingActive = false;
 
   window.roll = function (diceType, stat, dc, advantage) {
@@ -112,7 +128,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const duration = 2000;
 
     const modSign = modifier >= 0 ? '+' : '';
-    const statLabel = `${stat} ${statValue} (${modSign}${modifier})`;
+    let statLabel = '';
+    if (stat) {
+      statLabel = `${stat} ${statValue} (${modSign}${modifier})`;
+    }
 
     const animate = () => {
       const now = Date.now();
@@ -126,9 +145,12 @@ document.addEventListener('DOMContentLoaded', () => {
           flashSum += r;
         }
 
-        let displayText = `Rolling ${diceType} for ${statLabel}... `;
+        let displayText = `Rolling ${diceType} `;
+        if (stat) {
+          displayText += `for ${statLabel}`;
+        }
         if (numDice > 1) {
-          displayText += `(${flashText.join('+')}) = ${flashSum}`;
+          displayText += ` (${flashText.join('+')}) = ${flashSum}`;
         } else {
           displayText += `${flashSum}`;
         }
@@ -148,7 +170,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (passed === true) resultHTML += `<span class="dice-success">Success!</span> `;
         if (passed === false) resultHTML += `<span class="dice-failure">Failure!</span> `;
 
-        resultHTML += `Rolled ${total} for ${statLabel}`;
+        resultHTML += `Rolled ${total}`;
+        if (stat) {
+          resultHTML += ` for ${statLabel}`;
+        }
         resultHTML += `</div>`;
 
         let detailHTML = `<div class="dice-detail">`;
