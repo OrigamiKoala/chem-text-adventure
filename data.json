@@ -1662,7 +1662,7 @@
     {
       "id": "no infinite small fly",
       "text": "Well, a fly must be made of something, right? And at some point, you have to reach the smallest thing in existence, right?\n--\nTo test this out, grab a piece of paper and tear it in half. Then tear each piece into smaller pieces, and repeat until you can't anymore.\n--\nWas it easier to tear the large pieces, or the smaller pieces?",
-      "type": "mcq",
+      "type": "fr",
       "next": null,
       "correct": null,
       "hint": null,
