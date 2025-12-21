@@ -27,6 +27,24 @@ document.addEventListener('DOMContentLoaded', () => {
   let periodictableversion = 1
   let hintcount = 1;
 
+  // Helper to execute scripts in a container
+  function runScripts(container) {
+    const scripts = container.querySelectorAll('script');
+    scripts.forEach(oldScript => {
+      try {
+        const newScript = document.createElement('script');
+        newScript.textContent = oldScript.textContent;
+        // Copy attributes if any
+        Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+        document.body.appendChild(newScript);
+        document.body.removeChild(newScript);
+      } catch (e) {
+        console.error("Error executing script:", e);
+      }
+    });
+  }
+
+
   currentlab = "reactions";
 
   // HP System
@@ -51,13 +69,13 @@ document.addEventListener('DOMContentLoaded', () => {
   updateHPDisplay();
 
   // Passive HP Loss Logic
-  window.HPloss = 1; // Default loss per minute
+  window.HPloss = 0; // Default loss per minute
   setInterval(() => {
     if (window.HPloss > 0) {
       window.changeHP(-window.HPloss);
       console.log(`Passive HP loss: -${window.HPloss}. Current HP: ${playerHP}`);
     }
-  }, 60000); // 60 seconds
+  }, 6000); // 10 seconds
 
 
 
@@ -215,6 +233,7 @@ document.addEventListener('DOMContentLoaded', () => {
               const newinterruptTextDiv = document.createElement('div');
               newinterruptTextDiv.className = 'question';
               newinterruptTextDiv.innerHTML = splitnewText[n];
+              runScripts(newinterruptTextDiv);
               newContainer.appendChild(newinterruptTextDiv);
               newinterruptTextDiv.insertAdjacentHTML('afterend', emptyLine.outerHTML);
               scrollToBottom(true);
@@ -297,6 +316,34 @@ document.addEventListener('DOMContentLoaded', () => {
                   i = closingTagStart + 5;
                   delay = 1; // Tiny delay before next Qtext character 
                 } else {
+                  element.innerHTML += tagContent;
+                  i = tagEnd + 1;
+                  delay = 1;
+                }
+              } else if (tagContent.startsWith('<script')) {
+                console.log("<script> tag detected at index " + i);
+                let scriptEnd = text.indexOf('</script>', i);
+                if (scriptEnd !== -1) {
+                  // Extract body: everything between the opening tag's closing > and </script>
+                  let scriptBodyContentStart = text.indexOf('>', i) + 1;
+                  let scriptBody = text.substring(scriptBodyContentStart, scriptEnd);
+
+                  // Execute script immediately
+                  try {
+                    const scriptElement = document.createElement('script');
+                    scriptElement.textContent = scriptBody;
+                    document.body.appendChild(scriptElement);
+                    document.body.removeChild(scriptElement);
+                    console.log("Successfully executed script from qtext typewriter loop.");
+                  } catch (err) {
+                    console.error("Error executing script from qtext typewriter loop:", err);
+                  }
+
+                  // Skip index i to after the closing </script> tag
+                  i = scriptEnd + 9;
+                  delay = 1; // Tiny delay before next Qtext character
+                } else {
+                  // Fallback for an unmatched opening tag (treat as a simple tag)
                   element.innerHTML += tagContent;
                   i = tagEnd + 1;
                   delay = 1;
@@ -402,6 +449,9 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (inputstring == "narrative") {
       JSdata = narrativedata;
       currentdivid = "atomscover";
+      if (typeof hpContainer !== 'undefined' && hpContainer) {
+        hpContainer.style.display = 'flex';
+      }
       return [findnode("atomscover").text || 'Loading narrative... please wait', "atomscover"];
     } else if (inputstring == "outline") {
       return [outlineText || 'Loading outline... please wait', currentdivid];
@@ -1406,6 +1456,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const finishQuestionTyping = () => {
             // reload html 
             newTextDiv.innerHTML = splitnewText[j];
+            runScripts(newTextDiv);
             newTextDiv.insertAdjacentHTML('afterend', emptyLine.outerHTML);
             // Final cleanup for the input field
             // const inputField = document.getElementById('response');
