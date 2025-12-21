@@ -50,6 +50,16 @@ document.addEventListener('DOMContentLoaded', () => {
   // Initialize HP Display
   updateHPDisplay();
 
+  // Passive HP Loss Logic
+  window.HPloss = 1; // Default loss per minute
+  setInterval(() => {
+    if (window.HPloss > 0) {
+      window.changeHP(-window.HPloss);
+      console.log(`Passive HP loss: -${window.HPloss}. Current HP: ${playerHP}`);
+    }
+  }, 60000); // 60 seconds
+
+
 
   const safeTypeset = (elements) => {
     if (typeof MathJax !== 'undefined' && MathJax.typesetPromise) {
