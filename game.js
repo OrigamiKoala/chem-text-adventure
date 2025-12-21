@@ -1,6 +1,14 @@
 // once the DOM is fully loaded
 document.addEventListener('DOMContentLoaded', () => {
 
+  // Stat Constants for `eval` support in JSON scripts
+  window.STR = "STR";
+  window.DEX = "DEX";
+  window.CON = "CON";
+  window.INT = "INT";
+  window.WIS = "WIS";
+  window.CHA = "CHA";
+
   // defining global variables
   const qtext = document.getElementById('text');
   const previousdiv = document.getElementById('previous');
@@ -666,7 +674,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let nextdivid = currentdivid;
 
     // handle special commands
-    if (inputstring == "help") {
+    if (inputstring.startsWith("_auto_jump_")) {
+      const targetId = inputstring.replace("_auto_jump_", "");
+      const targetNode = findnode(targetId);
+      return [targetNode ? targetNode.text : "Error jumping", targetId];
+    } else if (inputstring == "help") {
       return [helpText || 'Loading help... please wait', currentdivid];
     } else if (inputstring == "condensed") {
       JSdata = textbookdata;
@@ -1890,7 +1902,8 @@ document.addEventListener('DOMContentLoaded', () => {
     inputField.value = '';
 
     // append only the user's response to the history (do not re-insert the previous question text)
-    if (previousdiv) {
+    // SKIP history if it's an auto-jump command
+    if (previousdiv && !userInput.startsWith("_auto_jump_")) {
       if (userInput.trim() !== '') {
         const container = document.createElement('div');
         container.className = 'response';
@@ -1928,6 +1941,25 @@ document.addEventListener('DOMContentLoaded', () => {
             scrollToBottom(true);
             ready = true;
             j++;
+
+            // --- ROLL TYPE HANDLING ---
+            const currentNode = findnode(currentid);
+            if (currentNode && currentNode.type === 'roll') {
+              // Execute Roll
+              let result = false;
+              try {
+                result = eval(currentNode.roll);
+              } catch (e) { console.error("Roll failed:", e); }
+
+              // Wait for animation (approx 2s + buffer)
+              setTimeout(() => {
+                const nextTarget = result ? currentNode.success : currentNode.fail;
+                if (inputField) {
+                  inputField.value = "_auto_jump_" + nextTarget;
+                  updategame();
+                }
+              }, 2200);
+            }
           };
           console.log("Typing part " + j + ": " + splitnewText[j]);
           newContainer.appendChild(newTextDiv, formElement);
