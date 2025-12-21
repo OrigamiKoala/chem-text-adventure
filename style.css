@@ -564,14 +564,21 @@ input:focus {
     display: flex;
     flex-direction: column;
     align-items: center;
-    min-width: 120px;
+    width: 120px;
+    /* Fixed width */
+    max-width: 120px;
     color: #ffffff;
     /* Ensure white text */
+    word-wrap: break-word;
+    /* Wrap long text */
 }
 
 .lab-item.flask {
     cursor: default;
     /* Not clickable */
+    width: 240px;
+    /* Fixed width */
+    max-width: 240px;
     min-width: 240px;
     /* Doubled from 120px */
     margin-top: 50px;
