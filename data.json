@@ -1760,7 +1760,7 @@
       "attributes3": "{\"type\":\"solid\", \"color\":\"rgba(0, 255, 255, 0.3)\"}",
       "beaker4": "D",
       "attributes4": "{\"type\":\"liquid\", \"color\":\"rgba(255, 255, 0, 0.3)\"}",
-      "reaction": "{\"1_2\":{\"name\":\"$$\\ce{A -> B}$$\", \"type\":\"solid\", \"color\":\"#ffffff\", \"temp\":\"200 K\", \"ph\":\"6.0\"}, \"2_3_4\":{\"name\":\"$$\\ce{B + C + D -> F}$$\",\"type\":\"liquid\", \"color\":\"#32a852\", \"temp\":\"300 K\"}, \"1_2_3\":{\"name\":\"$$\\ce{A + B + C -> G}$$\", \"type\":\"gas\", \"color\":\"#eb4034\", \"temp\":\"500 K\"}}"
+      "reaction": "{\"1_2\":{\"name\":\"Substance1\", \"type\":\"solid\", \"color\":\"#ffffff\", \"temp\":\"200 K\", \"ph\":\"6.0\"}, \"2_3_4\":{\"name\":\"Substance2\",\"type\":\"liquid\", \"color\":\"#32a852\", \"temp\":\"300 K\"}, \"1_2_3\":{\"name\":\"Substance3\", \"type\":\"gas\", \"color\":\"#eb4034\", \"temp\":\"500 K\"}}"
     },
     {
       "labid": "test",
@@ -1772,14 +1772,15 @@
       "attributes3": null,
       "beaker4": null,
       "attributes4": null,
-      "reaction": "{\"1_2\":{\"name\":\"$$\\ce{AgNO3 + 2 NaCl -> AgCl2}$$\", \"type\":\"solid\", \"color\":\"#ffffff\", \"temp\":\"200 K\"}}"
+      "reaction": "{\"1_2\":{\"name\":\"Substance4\", \"type\":\"solid\", \"color\":\"#ffffff\", \"temp\":\"200 K\"}}"
     }
   ],
   "items": [
     {
       "id": "hppotion",
       "name": "Healing Potion",
-      "script": "playerHP=maxHP;"
+      "attributes": "{\"type\":\"liquid\", \"ph\":\"6.0\", \"temp\":\"320 K\", \"color\":\"#ec42f5\"}",
+      "script": "playerHP=maxHP"
     }
   ]
 }

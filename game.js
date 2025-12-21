@@ -784,29 +784,50 @@ document.addEventListener('DOMContentLoaded', () => {
     const labContainer = document.getElementById('lab-container');
     const formElement = document.getElementById('responseform');
 
+    const invSidebar = document.getElementById('inventory-sidebar');
+    const invTrigger = document.getElementById('inventory-trigger');
+
     chatContainer.classList.add('shifted');
     labContainer.classList.add('visible');
     formElement.classList.add('shifted-form');
 
-    // Clear any previous lab content
-    labContainer.innerHTML = '';
+    // Move Inventory Sidebar to Lab Container
+    if (invSidebar) {
+      invSidebar.classList.remove('desktop-only');
+      invSidebar.style.position = 'static';
+      invSidebar.style.width = '100%';
+      invSidebar.style.marginTop = '20px';
+      labContainer.appendChild(invSidebar);
+    }
+    if (invTrigger) invTrigger.style.display = 'none';
 
+    // Clear any previous lab content
+    // Note: Do NOT clear labContainer.innerHTML blindly because we just appended inventory-sidebar
+    // Instead, clear children EXCEPT inventory-sidebar
+    const children = Array.from(labContainer.children);
+    children.forEach(child => {
+      if (child.id !== 'inventory-sidebar') {
+        labContainer.removeChild(child);
+      }
+    });
+
+    // Ensure inventory is last, so prepend table
     // Create lab table
     const labTable = document.createElement('div');
     labTable.className = 'lab-table';
-    labContainer.appendChild(labTable);
+    labContainer.insertBefore(labTable, invSidebar);
 
     // Create toolbox
     const toolbox = document.createElement('div');
     toolbox.className = 'toolbox';
-    labContainer.appendChild(toolbox);
+    labContainer.insertBefore(toolbox, invSidebar);
 
     // Reaction info container
     const reactionInfoContainer = document.createElement('div');
     reactionInfoContainer.id = 'reaction-info-container';
     reactionInfoContainer.style.textAlign = 'center';
     reactionInfoContainer.style.marginTop = '10px';
-    labContainer.appendChild(reactionInfoContainer);
+    labContainer.insertBefore(reactionInfoContainer, invSidebar);
 
     const showReactionBtn = document.createElement('button');
     showReactionBtn.className = 'lab-item tool';
@@ -1075,13 +1096,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const getColors = (indices) => {
       return indices.map(idx => {
         let attr = null;
-        if (labData['attributes' + idx]) {
-          try {
-            // Sanitize string to preserve backslashes for invalid escapes (like \ce)
-            const sanitizedAttributes = labData['attributes' + idx].replace(/\\(?!["\\/bfnrtu])/g, "\\\\");
-            attr = JSON.parse(sanitizedAttributes);
-          } catch (e) {
-            console.error("Error parsing attributes for beaker " + idx, e);
+        if (typeof idx === 'number') {
+          if (labData['attributes' + idx]) {
+            try {
+              // Sanitize string to preserve backslashes for invalid escapes (like \ce)
+              const sanitizedAttributes = labData['attributes' + idx].replace(/\\(?!["\\/bfnrtu])/g, "\\\\");
+              attr = JSON.parse(sanitizedAttributes);
+            } catch (e) {
+              console.error("Error parsing attributes for beaker " + idx, e);
+            }
+          }
+        } else {
+          // Inventory Item
+          const item = window.itemsData.find(i => i.id === idx);
+          if (item && item.attributes) {
+            try {
+              let parsedAttr;
+              if (typeof item.attributes === 'string') {
+                const sanitizedAttributes = item.attributes.replace(/\\(?!["\\/bfnrtu])/g, "\\\\");
+                parsedAttr = JSON.parse(sanitizedAttributes);
+              } else {
+                parsedAttr = item.attributes;
+              }
+              attr = parsedAttr;
+            } catch (e) { console.error("Error parsing item attributes", e); }
           }
         }
         return (attr && attr.color) ? attr.color : 'rgba(255, 255, 255, 0.2)';
@@ -1095,16 +1133,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
       indices.forEach(idx => {
         let ph = 7.0;
-        if (labData['attributes' + idx]) {
-          try {
-            const sanitizedAttributes = labData['attributes' + idx].replace(/\\(?!["\\/bfnrtu])/g, "\\\\");
-            const attr = JSON.parse(sanitizedAttributes);
-            if (attr && attr.ph !== undefined) {
-              ph = parseFloat(attr.ph);
-            }
-          } catch (e) {
-            console.error("Error parsing attributes for pH calc", e);
+        let attr = null;
+        if (typeof idx === 'number') {
+          if (labData['attributes' + idx]) {
+            try {
+              const sanitizedAttributes = labData['attributes' + idx].replace(/\\(?!["\\/bfnrtu])/g, "\\\\");
+              attr = JSON.parse(sanitizedAttributes);
+            } catch (e) { console.error("Error parsing attributes for pH calc", e); }
           }
+        } else {
+          // Inventory item
+          const item = window.itemsData.find(i => i.id === idx);
+          if (item && item.attributes) {
+            try {
+              let parsedAttr;
+              if (typeof item.attributes === 'string') {
+                const sanitizedAttributes = item.attributes.replace(/\\(?!["\\/bfnrtu])/g, "\\\\");
+                parsedAttr = JSON.parse(sanitizedAttributes);
+              } else {
+                parsedAttr = item.attributes;
+              }
+              attr = parsedAttr;
+            } catch (e) { console.error("Error parsing item attributes", e); }
+          }
+        }
+
+        if (attr && attr.ph !== undefined) {
+          ph = parseFloat(attr.ph);
         }
 
         const molesH = Math.pow(10, -ph);
@@ -1228,7 +1283,24 @@ document.addEventListener('DOMContentLoaded', () => {
           state.temp = parseInt(outcome.temp || reactionData.temp);
         }
         if (outcome.ph) state.ph = parseFloat(outcome.ph);
-        state.reactionName = outcome.name || "Unknown Reaction";
+
+        // Format Reaction Name: $$\ce{Reactant1 + Reactant2 -> Product}$$
+        let reactantNames = [];
+        reactingIndices.forEach(idx => {
+          let name = null;
+          if (typeof idx === 'number') {
+            if (labData && labData['beaker' + idx]) name = labData['beaker' + idx];
+          } else {
+            const item = window.itemsData.find(i => i.id === idx);
+            if (item) name = item.name;
+          }
+          if (name) reactantNames.push(name);
+        });
+
+        const reactantsStr = reactantNames.join(" + ");
+        const productsStr = (outcome && outcome.name) ? outcome.name : "Unknown Product";
+
+        state.reactionName = `$$\\ce{${reactantsStr} -> ${productsStr}}$$`;
       }
 
       if (prodType === 'liquid' && prodColor) {
@@ -1432,13 +1504,31 @@ document.addEventListener('DOMContentLoaded', () => {
       const colors = getColors([id]);
       let itemType = 'liquid';
 
-      // Parse type from attributes if available
-      if (labData && labData['attributes' + id]) {
-        try {
-          const sanitizedAttributes = labData['attributes' + id].replace(/\\(?!["\\/bfnrtu])/g, "\\\\");
-          const attr = JSON.parse(sanitizedAttributes);
-          if (attr && attr.type) itemType = attr.type;
-        } catch (e) { console.error(e); }
+      if (typeof id === 'number') {
+        // Parse type from attributes if available
+        if (labData && labData['attributes' + id]) {
+          try {
+            const sanitizedAttributes = labData['attributes' + id].replace(/\\(?!["\\/bfnrtu])/g, "\\\\");
+            const attr = JSON.parse(sanitizedAttributes);
+            if (attr && attr.type) itemType = attr.type;
+          } catch (e) { console.error(e); }
+        }
+      } else {
+        // Inventory Item
+        const item = window.itemsData.find(i => i.id === id);
+        if (item && item.attributes) {
+          try {
+            // Check if it's already an object (if parsed by other logic) or string
+            let attr;
+            if (typeof item.attributes === 'string') {
+              const sanitizedAttributes = item.attributes.replace(/\\(?!["\\/bfnrtu])/g, "\\\\");
+              attr = JSON.parse(sanitizedAttributes);
+            } else {
+              attr = item.attributes;
+            }
+            if (attr && attr.type) itemType = attr.type;
+          } catch (e) { console.error("Error parsing item attributes", e); }
+        }
       }
 
       // Immediate Visual Add
@@ -1457,6 +1547,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       processLogicUpdates();
     };
+    window.labAddLiquid = addLiquid; // Expose for useItem
+    console.log("Lab Launched. window.labAddLiquid set.");
 
     // Modified click loop (Replacing lines 977-1047)
     for (let i = 1; i <= 4; i++) {
@@ -1530,6 +1622,15 @@ document.addEventListener('DOMContentLoaded', () => {
     resetButton.className = 'lab-item tool';
     resetButton.innerHTML = 'Reset';
     resetButton.onclick = () => {
+      // Return items to inventory
+      selectedBeakers.forEach(id => {
+        if (typeof id === 'string') {
+          if (window.inventory[id]) window.inventory[id]++;
+          else window.inventory[id] = 1;
+        }
+      });
+      renderInventory();
+
       selectedBeakers = [];
       visualStack = [];
       processedBeakersCount = 0;
@@ -1541,6 +1642,70 @@ document.addEventListener('DOMContentLoaded', () => {
       currentReactionName = "";
       renderVisualStack();
     };
+
+    // Add To Inventory
+    const addToInvBtn = document.createElement('div');
+    addToInvBtn.className = 'lab-item tool';
+    addToInvBtn.innerHTML = 'Add to Inv.';
+    addToInvBtn.onclick = () => {
+      // Find reaction name
+      const reactionName = currentReactionName;
+      // If we have a reaction name, try to add it.
+      // Assuming the name matches an item name or we create one.
+      // Simplified: Search for item with name == reactionName
+
+      if (reactionName && reactionName !== "Unknown Reaction" && reactionName !== "") {
+        // Look for existing item
+        let item = window.itemsData.find(i => i.name === reactionName);
+        if (!item) {
+          // Or create new item? For now, we only support if it exists.
+          // Actually requirement says: "the "name" attribute of each reaction has been changed to the name of the product"
+          // And "add adds all items in the flask into the inventory".
+
+          // If it's a known item, add it.
+          // If not, maybe create a temporary one?
+          // Let's create a temporary object if not found to support dynamic items?
+          // But wait, window.inventory stores IDs.
+          // So we must have an ID.
+          // Let's generate an ID from name.
+
+          let generatedId = reactionName.toLowerCase().replace(/[^a-z0-9]/g, '_');
+          item = {
+            id: generatedId,
+            name: reactionName,
+            attributes: JSON.stringify({
+              type: currentProductType || 'liquid',
+              color: currentProductColor || 'white',
+              ph: currentPH,
+              temp: currentTemperature
+            }),
+            script: ''
+          };
+          window.itemsData.push(item);
+        }
+
+        if (window.inventory[item.id]) window.inventory[item.id]++;
+        else window.inventory[item.id] = 1;
+
+        // Clear flask
+        selectedBeakers = [];
+        visualStack = [];
+        processedBeakersCount = 0;
+        currentPH = 7.0;
+        currentTemperature = 298;
+        currentReactionName = "";
+        renderVisualStack();
+        renderInventory();
+        alert(`Added ${reactionName} to inventory!`);
+      } else {
+        // If no reaction, just return unreacted items?
+        // "adds all items in the flask into the inventory"
+        // If unreacted, maybe we just reset (which returns items).
+        // Let's alert if nothing to add.
+        alert("No reaction product to add.");
+      }
+    };
+    toolbox.appendChild(addToInvBtn);
     // ... (Keep other tools) ...
 
     if (typeof MathJax !== 'undefined') MathJax.typesetPromise();
@@ -1588,8 +1753,58 @@ document.addEventListener('DOMContentLoaded', () => {
       clearInterval(window.activeTempInterval);
       window.activeTempInterval = null;
     }
+
+    const invSidebar = document.getElementById('inventory-sidebar');
+    const invTrigger = document.getElementById('inventory-trigger');
+
+    if (invSidebar) {
+      invSidebar.classList.add('desktop-only');
+      invSidebar.style.position = '';
+      invSidebar.style.width = '';
+      invSidebar.style.marginTop = '';
+      document.body.appendChild(invSidebar);
+    }
+    if (invTrigger) invTrigger.style.display = '';
+
+    window.labAddLiquid = null;
   }
   window.closelab = closelab;
+
+  window.useItem = function (itemId) {
+    // Check if lab is open
+    console.log("useItem called for " + itemId + ". LabOpen: " + !!window.labAddLiquid);
+    if (window.labAddLiquid) {
+      if (window.inventory[itemId] > 0) {
+        window.labAddLiquid(itemId);
+        window.inventory[itemId]--;
+        if (window.inventory[itemId] <= 0) delete window.inventory[itemId];
+        renderInventory(); // Refresh UI
+      }
+      return;
+    }
+
+    const item = window.itemsData.find(i => i.id === itemId);
+    if (item && window.inventory[itemId] > 0) {
+      // Execute script
+      try {
+        const func = new Function(item.script);
+        func();
+
+        // Decrement logic
+        window.inventory[itemId]--;
+        if (window.inventory[itemId] <= 0) {
+          delete window.inventory[itemId];
+        }
+
+        // Update Displays
+        updateHPDisplay();
+        renderInventory();
+
+      } catch (e) {
+        console.error("Error using item:", e);
+      }
+    }
+  };
 
   // update the game
   async function updategame(e) {
@@ -1652,13 +1867,6 @@ document.addEventListener('DOMContentLoaded', () => {
             newTextDiv.innerHTML = splitnewText[j];
             runScripts(newTextDiv);
             newTextDiv.insertAdjacentHTML('afterend', emptyLine.outerHTML);
-            // Final cleanup for the input field
-            // const inputField = document.getElementById('response');
-            // if (inputField) { 
-            //   inputField.value = '';
-            //   inputField.focus(); 
-            // }
-            // Ensure final scroll is smooth
             scrollToBottom(true);
             ready = true;
             j++;
@@ -1748,29 +1956,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (listMobile) listMobile.innerHTML = htmlContent;
   }
 
-  window.useItem = function (itemId) {
-    const item = window.itemsData.find(i => i.id === itemId);
-    if (item && window.inventory[itemId] > 0) {
-      // Execute script
-      try {
-        const func = new Function(item.script);
-        func();
 
-        // Decrement logic
-        window.inventory[itemId]--;
-        if (window.inventory[itemId] <= 0) {
-          delete window.inventory[itemId];
-        }
-
-        // Update Displays
-        updateHPDisplay();
-        renderInventory();
-
-      } catch (e) {
-        console.error("Error using item:", e);
-      }
-    }
-  };
 
   // Mobile Inventory Toggles
   const invTrigger = document.getElementById('inventory-trigger');
