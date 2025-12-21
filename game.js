@@ -26,7 +26,30 @@ document.addEventListener('DOMContentLoaded', () => {
   let wrongcounter = 0;
   let periodictableversion = 1
   let hintcount = 1;
+
   currentlab = "reactions";
+
+  // HP System
+  let playerHP = 100;
+  let maxHP = 100;
+  const hpContainer = document.getElementById('hp-container');
+
+  window.changeHP = function (amount) {
+    playerHP += amount;
+    if (playerHP > maxHP) playerHP = maxHP;
+    if (playerHP < 0) playerHP = 0;
+    updateHPDisplay();
+  };
+
+  function updateHPDisplay() {
+    if (hpContainer) {
+      hpContainer.innerHTML = `❤️: ${playerHP}/${maxHP}`;
+    }
+  }
+
+  // Initialize HP Display
+  updateHPDisplay();
+
 
   const safeTypeset = (elements) => {
     if (typeof MathJax !== 'undefined' && MathJax.typesetPromise) {
@@ -1152,13 +1175,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
       selectedBeakers.push(id);
 
-      // Immediate Visual Add
       const colors = getColors([id]);
+      let itemType = 'liquid';
+
+      // Parse type from attributes if available
+      if (labData && labData['attributes' + id]) {
+        try {
+          const sanitizedAttributes = labData['attributes' + id].replace(/\\(?!["\\/bfnrtu])/g, "\\\\");
+          const attr = JSON.parse(sanitizedAttributes);
+          if (attr && attr.type) itemType = attr.type;
+        } catch (e) { console.error(e); }
+      }
+
+      // Immediate Visual Add
       if (colors.length > 0) {
         visualStack.push({
           ids: [id],
           color: colors[0],
-          type: 'liquid'
+          type: itemType
         });
       }
 
@@ -1198,20 +1232,31 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       const fluidColor = (beakerAttributes && beakerAttributes.color) ? beakerAttributes.color : 'rgba(255, 255, 255, 0.2)';
-      if (fluidColor) {
-        const fluidDiv = document.createElement('div');
-        fluidDiv.style.position = 'absolute';
-        fluidDiv.style.bottom = '15%';
-        fluidDiv.style.left = '15%';
-        fluidDiv.style.width = '70%';
-        fluidDiv.style.height = '50%';
-        fluidDiv.style.backgroundColor = fluidColor;
-        fluidDiv.style.zIndex = '1';
-        fluidDiv.style.borderRadius = '0 0 10% 10%';
-        beakerWrapper.appendChild(fluidDiv);
+      const itemType = (beakerAttributes && beakerAttributes.type) ? beakerAttributes.type : 'liquid';
+
+      if (itemType === 'solid') {
+        // Render as Solid Block
+        const solidBlock = document.createElement('div');
+        solidBlock.className = 'lab-item solid-block';
+        solidBlock.style.backgroundColor = fluidColor;
+        beakerWrapper.appendChild(solidBlock);
+      } else {
+        // Render as Beaker (Default)
+        if (fluidColor) {
+          const fluidDiv = document.createElement('div');
+          fluidDiv.style.position = 'absolute';
+          fluidDiv.style.bottom = '15%';
+          fluidDiv.style.left = '15%';
+          fluidDiv.style.width = '70%';
+          fluidDiv.style.height = '50%';
+          fluidDiv.style.backgroundColor = fluidColor;
+          fluidDiv.style.zIndex = '1';
+          fluidDiv.style.borderRadius = '0 0 10% 10%';
+          beakerWrapper.appendChild(fluidDiv);
+        }
+        beakerWrapper.appendChild(beakerImage);
       }
 
-      beakerWrapper.appendChild(beakerImage);
       beakerContainer.appendChild(beakerWrapper);
 
       const beakerLabel = document.createElement('div');

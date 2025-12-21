@@ -588,6 +588,24 @@ input:focus {
     /* No scaling on hover for flask */
 }
 
+/* Solid Block Styling in Toolbox */
+.lab-item.solid-block {
+    width: 80px;
+    height: 80px;
+    display: inline-block;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    margin-bottom: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    transition: all 0.2s ease;
+}
+
+.lab-item.solid-block:hover {
+    transform: scale(1.05);
+    border-color: var(--accent);
+}
+
+
 .lab-item.beaker img,
 .lab-item.flask img {
     opacity: 0.4;
@@ -654,4 +672,34 @@ input:focus {
 #ph-display:empty,
 #reaction-name-display:empty {
     display: none;
+}
+
+/* HP Stat Block */
+#hp-container {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 2000;
+    background: rgba(15, 23, 36, 0.85);
+    /* Matches --bg with opacity */
+    border: 1px solid rgba(125, 211, 252, 0.2);
+    /* Matches --accent with low opacity */
+    padding: 10px 16px;
+    border-radius: 8px;
+    color: #e6eef6;
+    /* Matches --text */
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: bold;
+    font-size: 1.1rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+#hp-container:hover {
+    border-color: rgba(125, 211, 252, 0.5);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
 }
