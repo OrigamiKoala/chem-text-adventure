@@ -638,12 +638,13 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (inputstring == "narrative") {
       JSdata = narrativedata;
       currentdivid = "atomscover";
-      if (typeof hpContainer !== 'undefined' && hpContainer) {
-        hpContainer.style.display = 'flex';
-      }
-      const invTrigger = document.getElementById('inventory-trigger');
+      const uiTopLeft = document.getElementById('ui-top-left');
+      if (uiTopLeft) uiTopLeft.style.display = 'flex';
+
+      const hpContainer = document.getElementById('hp-container');
+      if (hpContainer) hpContainer.style.display = 'flex';
+
       const invSidebar = document.getElementById('inventory-sidebar');
-      if (invTrigger) invTrigger.style.display = '';
       if (invSidebar) invSidebar.style.display = '';
       return [findnode("atomscover").text || 'Loading narrative... please wait', "atomscover"];
     } else if (inputstring == "outline") {
@@ -1778,7 +1779,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (invTrigger && invModal) {
     invTrigger.onclick = () => {
-      invModal.classList.remove('hidden');
+      invModal.classList.toggle('hidden');
     };
     invClose.onclick = () => {
       invModal.classList.add('hidden');

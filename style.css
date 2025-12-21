@@ -675,11 +675,18 @@ input:focus {
 }
 
 /* HP Stat Block */
-#hp-container {
+#ui-top-left {
     position: fixed;
     top: 20px;
     left: 20px;
     z-index: 2000;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+#hp-container {
+    position: static;
     background: rgba(15, 23, 36, 0.85);
     /* Matches --bg with opacity */
     border: 1px solid rgba(125, 211, 252, 0.2);
@@ -841,23 +848,23 @@ input:focus {
     }
 
     #inventory-trigger {
-        position: fixed;
-        top: 65px;
-        /* Below HP container */
-        left: 20px;
-        z-index: 2000;
+        position: static;
+        z-index: 3001;
         background: rgba(15, 23, 36, 0.85);
         border: 1px solid rgba(125, 211, 252, 0.2);
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
+        padding: 8px 14px;
+        border-radius: 8px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.2rem;
+        font-size: 0.9rem;
         cursor: pointer;
         backdrop-filter: blur(5px);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        color: #e6eef6;
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: bold;
+        gap: 8px;
     }
 
     #inventory-modal {
