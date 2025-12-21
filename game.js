@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
       window.changeHP(-window.HPloss);
       console.log(`Passive HP loss: -${window.HPloss}. Current HP: ${playerHP}`);
     }
-  }, 6000); // 10 seconds
+  }, 30000); // 30 seconds
 
 
 
