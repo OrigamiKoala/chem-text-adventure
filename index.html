@@ -1,28 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
-  <meta name = "viewport" content = "width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie-edge">
   <link rel="stylesheet" href="style.css">
   <script>
     window.MathJax = {
-      loader: {load: ['[tex]/mhchem']},
-      tex: {packages: {'[+]': ['mhchem']}}
+      loader: { load: ['[tex]/mhchem'] },
+      tex: { packages: { '[+]': ['mhchem'] } }
     };
   </script>
   <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
   <script defer src="game.js"></script>
   <title>Choose Your Own Adventure - Chemistry</title>
 </head>
+
 <body>
   <base target="_blank">
   <div id="hp-container"></div>
+  <div id="inventory-trigger" class="mobile-only" style="display: none;">🎒</div>
+  <div id="inventory-sidebar" class="desktop-only" style="display: none;">
+    <h3>Inventory</h3>
+    <div id="inventory-list"></div>
+  </div>
+  <div id="inventory-modal" class="mobile-only overlay hidden">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <h3>Inventory</h3>
+      <div id="inventory-list-mobile"></div>
+    </div>
+  </div>
   <div id="chat-container" class="chat-container">
     <div class="container" id="previous">
       <div id="text"></div>
       <form id="responseform">
-        <input type="text" alt = "response" id="response" name="response" placeholder="Response" size="100">
+        <input type="text" alt="response" id="response" name="response" placeholder="Response" size="100">
         <button type="submit">-></button>
       </form>
     </div>

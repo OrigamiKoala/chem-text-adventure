@@ -26,6 +26,70 @@ document.addEventListener('DOMContentLoaded', () => {
   let wrongcounter = 0;
   let periodictableversion = 1
   let hintcount = 1;
+  window.STR = 10;
+  window.DEX = 10;
+  window.CON = 10;
+  window.INT = 10;
+  window.WIS = 10;
+  window.CHA = 10;
+
+  window.roll = function (diceType, stat, dc, advantage) {
+    // 1. Parse Dice
+    const [numDice, numSides] = diceType.toLowerCase().split('d').map(Number);
+
+    // 2. Get Stat Modifier
+    const statValue = window[stat] || 10;
+    const modifier = Math.floor((statValue - 10) / 2);
+
+    // Helper to roll dice
+    const doRoll = () => {
+      let sum = 0;
+      for (let i = 0; i < numDice; i++) {
+        sum += Math.floor(Math.random() * numSides) + 1;
+      }
+      return sum;
+    };
+
+    // 3. Handle Advantage/Disadvantage
+    let r1 = doRoll();
+    let r2 = doRoll();
+    let rollResult = r1;
+
+    if (advantage === true) {
+      rollResult = Math.max(r1, r2);
+    } else if (advantage === false) {
+      rollResult = Math.min(r1, r2);
+    } else {
+      // Normal roll (just use first result, don't need second)
+      rollResult = r1;
+      // Optimization: could avoid rolling r2 if normal, but this is fine.
+      // Let's optimize slightly to be cleaner:
+      if (advantage === undefined || advantage === null) {
+        // logic already holds if we re-assign, but let's rewrite clean.
+      }
+    }
+
+    // Re-doing cleaner block for clarity in replacement:
+
+    let finalRoll = 0;
+    if (advantage === true) {
+      finalRoll = Math.max(doRoll(), doRoll());
+    } else if (advantage === false) {
+      finalRoll = Math.min(doRoll(), doRoll());
+    } else {
+      finalRoll = doRoll();
+    }
+
+    // 4. Add Modifier
+    const total = finalRoll + modifier;
+
+    // 5. Check DC
+    if (typeof dc === 'number') {
+      return total >= dc;
+    } else {
+      return total;
+    }
+  };
 
   // Helper to execute scripts in a container
   function runScripts(container) {
@@ -48,55 +112,26 @@ document.addEventListener('DOMContentLoaded', () => {
   currentlab = "reactions";
 
   // HP System
-  let playerHP = 100;
-  let maxHP = 100;
+  window.playerHP = 100;
+  window.maxHP = 100;
   const hpContainer = document.getElementById('hp-container');
 
   window.changeHP = function (amount) {
     if (amount < 0) {
       spawnFallingHearts(Math.abs(amount));
     }
-    playerHP += amount;
-    if (playerHP > maxHP) playerHP = maxHP;
-    if (playerHP < 0) playerHP = 0;
+    window.playerHP += amount;
+    if (window.playerHP > window.maxHP) window.playerHP = window.maxHP;
+    if (window.playerHP < 0) window.playerHP = 0;
     updateHPDisplay();
   };
 
   function updateHPDisplay() {
     if (hpContainer) {
-      hpContainer.innerHTML = `<span id="hp-heart-icon">❤️</span>: ${playerHP}/${maxHP}`;
-    }
-  }
-
-  function spawnFallingHearts(count) {
-    const heartIcon = document.getElementById('hp-heart-icon');
-    if (!heartIcon) return;
-
-    const rect = heartIcon.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-
-    // Limit the number of hearts to avoid performance issues if loss is huge
-    const heartsToSpawn = Math.min(count, 20);
-
-    for (let i = 0; i < heartsToSpawn; i++) {
-      const heart = document.createElement('div');
-      heart.className = 'falling-heart';
-      heart.innerText = '❤️';
-
-      // Randomize initial position slightly around the center
-      const offsetX = (Math.random() - 0.5) * 20;
-      const offsetY = (Math.random() - 0.5) * 20;
-
-      heart.style.left = (centerX + offsetX) + 'px';
-      heart.style.top = (centerY + offsetY) + 'px';
-
-      document.body.appendChild(heart);
-
-      // Remove the heart after animation finishes
-      heart.addEventListener('animationend', () => {
-        heart.remove();
-      });
+      if (playerHP >= maxHP) {
+        playerHP = maxHP;
+      }
+      hpContainer.innerHTML = `<span id="hp-heart-icon">❤️</span>: ${window.playerHP}/${window.maxHP}`;
     }
   }
 
@@ -108,7 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setInterval(() => {
     if (window.HPloss > 0) {
       window.changeHP(-window.HPloss);
-      console.log(`Passive HP loss: -${window.HPloss}. Current HP: ${playerHP}`);
+      console.log(`Passive HP loss: -${window.HPloss}. Current HP: ${window.playerHP}`);
     }
   }, 30000); // 30 seconds
 
@@ -127,10 +162,16 @@ document.addEventListener('DOMContentLoaded', () => {
     .catch(error => { console.error('Error loading help text:', error); });
 
   // preload outline.json
+  window.itemsData = [];
+  window.inventory = {}; // { itemId: count }
+
   fetch('data.json')
     .then(response => response.json())
     .then(data => {
       JSoutline = data.active_pchem_outline;
+      if (data.items) {
+        window.itemsData = data.items;
+      }
       if (JSoutline) {
         outlineText = 'Click on a section to jump to it.<br>';
         for (const item of JSoutline) {
@@ -487,6 +528,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (typeof hpContainer !== 'undefined' && hpContainer) {
         hpContainer.style.display = 'flex';
       }
+      const invTrigger = document.getElementById('inventory-trigger');
+      const invSidebar = document.getElementById('inventory-sidebar');
+      if (invTrigger) invTrigger.style.display = '';
+      if (invSidebar) invSidebar.style.display = '';
       return [findnode("atomscover").text || 'Loading narrative... please wait', "atomscover"];
     } else if (inputstring == "outline") {
       return [outlineText || 'Loading outline... please wait', currentdivid];
@@ -1514,6 +1559,122 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (typeof MathJax !== 'undefined') MathJax.typesetPromise();
     console.log("updategame completed");
+  }
+
+  window.spawnFallingHearts = function (count) {
+    const heartIcon = document.getElementById('hp-heart-icon');
+    if (!heartIcon) return;
+
+    const rect = heartIcon.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    // Limit the number of hearts to avoid performance issues if loss is huge
+    const heartsToSpawn = Math.min(count, 20);
+
+    for (let i = 0; i < heartsToSpawn; i++) {
+      const heart = document.createElement('div');
+      heart.className = 'falling-heart';
+      heart.innerText = '❤️';
+
+      // Randomize initial position slightly around the center
+      const offsetX = (Math.random() - 0.5) * 20;
+      const offsetY = (Math.random() - 0.5) * 20;
+
+      heart.style.left = (centerX + offsetX) + 'px';
+      heart.style.top = (centerY + offsetY) + 'px';
+
+      document.body.appendChild(heart);
+
+      // Remove the heart after animation finishes
+      heart.addEventListener('animationend', () => {
+        heart.remove();
+      });
+    }
+  }
+
+  // Inventory System
+  window.pickup = function (itemId) {
+    if (!window.itemsData) return;
+    const item = window.itemsData.find(i => i.id === itemId);
+    if (item) {
+      if (window.inventory[itemId]) {
+        window.inventory[itemId]++;
+      } else {
+        window.inventory[itemId] = 1;
+      }
+      renderInventory();
+    } else {
+      console.warn('Item not found:', itemId);
+    }
+  };
+
+  function renderInventory() {
+    const listDesktop = document.getElementById('inventory-list');
+    const listMobile = document.getElementById('inventory-list-mobile');
+
+    // Helper to generate HTML
+    const generateHtml = () => {
+      let html = '';
+      for (const [itemId, count] of Object.entries(window.inventory)) {
+        if (count > 0) {
+          const item = window.itemsData.find(i => i.id === itemId);
+          if (item) {
+            html += `<button class="inventory-item-btn" onclick="useItem('${itemId}')">
+              ${count > 1 ? count + 'x ' : '1x '}${item.name}
+            </button>`;
+          }
+        }
+      }
+      return html || '<div style="color: var(--muted); font-size: 0.9em;">Empty</div>';
+    };
+
+    const htmlContent = generateHtml();
+    if (listDesktop) listDesktop.innerHTML = htmlContent;
+    if (listMobile) listMobile.innerHTML = htmlContent;
+  }
+
+  window.useItem = function (itemId) {
+    const item = window.itemsData.find(i => i.id === itemId);
+    if (item && window.inventory[itemId] > 0) {
+      // Execute script
+      try {
+        const func = new Function(item.script);
+        func();
+
+        // Decrement logic
+        window.inventory[itemId]--;
+        if (window.inventory[itemId] <= 0) {
+          delete window.inventory[itemId];
+        }
+
+        // Update Displays
+        updateHPDisplay();
+        renderInventory();
+
+      } catch (e) {
+        console.error("Error using item:", e);
+      }
+    }
+  };
+
+  // Mobile Inventory Toggles
+  const invTrigger = document.getElementById('inventory-trigger');
+  const invModal = document.getElementById('inventory-modal');
+  const invClose = document.querySelector('.close-modal');
+
+  if (invTrigger && invModal) {
+    invTrigger.onclick = () => {
+      invModal.classList.remove('hidden');
+    };
+    invClose.onclick = () => {
+      invModal.classList.add('hidden');
+    };
+    invModal.onclick = (e) => {
+      if (e.target === invModal) {
+        invModal.classList.add('hidden');
+      }
+    };
   }
 });
 

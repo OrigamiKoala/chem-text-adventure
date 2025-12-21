@@ -1774,5 +1774,12 @@
       "attributes4": null,
       "reaction": "{\"1_2\":{\"name\":\"$$\\ce{AgNO3 + 2 NaCl -> AgCl2}$$\", \"type\":\"solid\", \"color\":\"#ffffff\", \"temp\":\"200 K\"}}"
     }
+  ],
+  "items": [
+    {
+      "id": "hppotion",
+      "name": "Healing Potion",
+      "script": "playerHP=maxHP;"
+    }
   ]
 }
