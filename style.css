@@ -703,3 +703,23 @@ input:focus {
     border-color: rgba(125, 211, 252, 0.5);
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
 }
+
+.falling-heart {
+    position: fixed;
+    pointer-events: none;
+    z-index: 2001;
+    font-size: 1.2rem;
+    animation: fall-and-fade 1.5s ease-out forwards;
+}
+
+@keyframes fall-and-fade {
+    0% {
+        transform: translate(0, 0) scale(1);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateY(100px) scale(0.5);
+        opacity: 0;
+    }
+}

@@ -53,6 +53,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const hpContainer = document.getElementById('hp-container');
 
   window.changeHP = function (amount) {
+    if (amount < 0) {
+      spawnFallingHearts(Math.abs(amount));
+    }
     playerHP += amount;
     if (playerHP > maxHP) playerHP = maxHP;
     if (playerHP < 0) playerHP = 0;
@@ -61,7 +64,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function updateHPDisplay() {
     if (hpContainer) {
-      hpContainer.innerHTML = `❤️: ${playerHP}/${maxHP}`;
+      hpContainer.innerHTML = `<span id="hp-heart-icon">❤️</span>: ${playerHP}/${maxHP}`;
+    }
+  }
+
+  function spawnFallingHearts(count) {
+    const heartIcon = document.getElementById('hp-heart-icon');
+    if (!heartIcon) return;
+
+    const rect = heartIcon.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    // Limit the number of hearts to avoid performance issues if loss is huge
+    const heartsToSpawn = Math.min(count, 20);
+
+    for (let i = 0; i < heartsToSpawn; i++) {
+      const heart = document.createElement('div');
+      heart.className = 'falling-heart';
+      heart.innerText = '❤️';
+
+      // Randomize initial position slightly around the center
+      const offsetX = (Math.random() - 0.5) * 20;
+      const offsetY = (Math.random() - 0.5) * 20;
+
+      heart.style.left = (centerX + offsetX) + 'px';
+      heart.style.top = (centerY + offsetY) + 'px';
+
+      document.body.appendChild(heart);
+
+      // Remove the heart after animation finishes
+      heart.addEventListener('animationend', () => {
+        heart.remove();
+      });
     }
   }
 
