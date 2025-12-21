@@ -1809,7 +1809,21 @@ document.addEventListener('DOMContentLoaded', () => {
       beakerContainer.appendChild(beakerWrapper);
 
       const beakerLabel = document.createElement('div');
-      beakerLabel.innerHTML = (labData && labData['beaker' + i]) || `Beaker ${i}`;
+      let labelText = (labData && labData['beaker' + i]) || `Beaker ${i}`;
+      // Clean LaTeX for label (optional, but requested for cleanliness?) No, user asked to keep LaTeX generally but maybe prepending assumes clean text?
+      // Actually user said "display the concentration in front". 
+      // If name is "$$\ce{AgNO3}$$" and conc is "0.1 M", result: "0.1 M $$\ce{AgNO3}$$". This works fine with MathJax.
+
+      if (beakerAttributes && beakerAttributes.concentration) {
+        labelText = `${beakerAttributes.concentration} ${labelText}`;
+      }
+      beakerLabel.innerHTML = labelText;
+      // Re-trigger MathJax for the label if needed (though usually processed globally or by safeTypeset call if dynamic.
+      // Launch usually happens once. We might need to ensure MathJax typesets this new dynamic content? 
+      // Existing code doesn't seem to explicitly typeset these labels inside loop, relying on global render?
+      // Wait, `labData` usually has LaTeX. If `launch` builds DOM, does it trigger typeset?
+      // Check if there is a typeset call at end of launch.
+
       beakerContainer.appendChild(beakerLabel);
 
       const beakerIdx = i;

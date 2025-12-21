@@ -1812,9 +1812,9 @@
     },
     {
       "labid": "test",
-      "beaker1": "$$\\ce{AgNO3}$$",
+      "beaker1": "\\(\\ce{AgNO3}\\)",
       "attributes1": "{\"type\":\"liquid\", \"temp\":\"1200 K\", \"ph\":\"8\", \"concentration\":\"0.1 M\"}",
-      "beaker2": "$$\\ce{NaCl}$$",
+      "beaker2": "\\(\\ce{NaCl}\\)",
       "attributes2": "{\"type\":\"liquid\", \"temp\":\"0 K\"}",
       "beaker3": null,
       "attributes3": null,
