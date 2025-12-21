@@ -1303,6 +1303,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const productsStr = (outcome && outcome.name) ? outcome.name : "Unknown Product";
 
         state.reactionName = `$$\\ce{${reactantsStr} -> ${productsStr}}$$`;
+        state.productName = productsStr; // Store raw name for inventory
+        state.script = (outcome && outcome.script) ? outcome.script : "";
       }
 
       if (prodType === 'liquid' && prodColor) {
@@ -1320,6 +1322,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let visualStack = []; // Array of { ids: [beakerId], color: string, type: 'liquid'/'solid'/'gas' }
     let reactionQueue = Promise.resolve();
     let processedBeakersCount = 0;
+    let currentReactionScript = ""; // Global for addToInventory
 
     const renderVisualStack = () => {
       // Map visualStack items to colors for the renderer
@@ -1478,6 +1481,11 @@ document.addEventListener('DOMContentLoaded', () => {
         currentPH = rData.state.ph;
         currentTemperature = rData.state.temp;
         currentReactionName = rData.state.reactionName;
+        currentProductName = rData.state.productName || ""; // Update global product name
+        currentReactionScript = rData.state.script || ""; // Update global script
+        currentProductType = rData.state.productType || 'liquid'; // Update global product type
+        currentProductColor = rData.state.productColor || 'white'; // Update global product color
+        currentProductType = rData.state.productType || 'liquid'; // Update global product type
 
         // Animate Flask
         flask.classList.add('flask-active');
@@ -1656,26 +1664,13 @@ document.addEventListener('DOMContentLoaded', () => {
     addToInvBtn.innerHTML = 'Add to 🎒';
     addToInvBtn.onclick = () => {
       // Find reaction name
-      const reactionName = currentReactionName;
-      // If we have a reaction name, try to add it.
-      // Assuming the name matches an item name or we create one.
-      // Simplified: Search for item with name == reactionName
+      const reactionName = currentProductName; // Use raw name (e.g. "Substance1")
 
+      // 1. Handle Product Addition
       if (reactionName && reactionName !== "Unknown Reaction" && reactionName !== "") {
         // Look for existing item
         let item = window.itemsData.find(i => i.name === reactionName);
         if (!item) {
-          // Or create new item? For now, we only support if it exists.
-          // Actually requirement says: "the "name" attribute of each reaction has been changed to the name of the product"
-          // And "add adds all items in the flask into the inventory".
-
-          // If it's a known item, add it.
-          // If not, maybe create a temporary one?
-          // Let's create a temporary object if not found to support dynamic items?
-          // But wait, window.inventory stores IDs.
-          // So we must have an ID.
-          // Let's generate an ID from name.
-
           let generatedId = reactionName.toLowerCase().replace(/[^a-z0-9]/g, '_');
           item = {
             id: generatedId,
@@ -1686,31 +1681,50 @@ document.addEventListener('DOMContentLoaded', () => {
               ph: currentPH,
               temp: currentTemperature
             }),
-            script: ""
+            script: currentReactionScript || "" // Use the global script
           };
           window.itemsData.push(item);
         }
 
         if (window.inventory[item.id]) window.inventory[item.id]++;
         else window.inventory[item.id] = 1;
-
-        // Clear flask
-        selectedBeakers = [];
-        visualStack = [];
-        processedBeakersCount = 0;
-        currentPH = 7.0;
-        currentTemperature = 298;
-        currentReactionName = "";
-        renderVisualStack();
-        renderInventory();
         alert(`Added ${reactionName} to inventory!`);
       } else {
-        // If no reaction, just return unreacted items?
-        // "adds all items in the flask into the inventory"
-        // If unreacted, maybe we just reset (which returns items).
-        // Let's alert if nothing to add.
-        alert("No reaction product to add.");
+        if (selectedBeakers.length > 0) alert("Returning content to inventory.");
+        else alert("Flask is empty.");
       }
+
+      // 2. Return Unreacted Items & Clear Flask
+      // The simplest way to return unreacted items is to trigger the reset logic,
+      // which iterates 'selectedBeakers' and returns any strings (inventory IDs) back to inventory.
+      // Since we already added the Product (if any), consuming reactants is the tricky part.
+      // BUT, 'selectedBeakers' still contains the reactants.
+      // If we blindly reset, we get reactants back!
+      // 'getFlaskState' knows what reacted.
+      // To properly IMPLEMENT "consumed", we must filter selectedBeakers.
+      // Re-calculate state to get reacting indices.
+      const currentState = getFlaskState(selectedBeakers);
+      const consumedIndices = currentState.reactingIndices || [];
+
+      // Return items that were NOT consumed
+      selectedBeakers.forEach((id, index) => {
+        // If it's an inventory item (string) AND it is NOT in consumedIndices
+        if (typeof id === 'string' && !consumedIndices.includes(index)) {
+          if (window.inventory[id]) window.inventory[id]++;
+          else window.inventory[id] = 1;
+        }
+      });
+
+      // Clear Flask State (Consumed items are gone, Unreacted returned, Product added)
+      selectedBeakers = [];
+      visualStack = [];
+      processedBeakersCount = 0;
+      currentPH = 7.0;
+      currentTemperature = 298;
+      currentReactionName = "";
+      currentReactionScript = "";
+      renderVisualStack();
+      renderInventory();
     };
     toolbox.appendChild(addToInvBtn);
     // ... (Keep other tools) ...
