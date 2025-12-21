@@ -1,14 +1,6 @@
 // once the DOM is fully loaded
 document.addEventListener('DOMContentLoaded', () => {
 
-  // Stat Constants for `eval` support in JSON scripts
-  window.STR = "STR";
-  window.DEX = "DEX";
-  window.CON = "CON";
-  window.INT = "INT";
-  window.WIS = "WIS";
-  window.CHA = "CHA";
-
   // defining global variables
   const qtext = document.getElementById('text');
   const previousdiv = document.getElementById('previous');
@@ -27,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let previouscontainer = null
   let previoustext = ''
   let typespeed = 15;
+  let rollingActive = false;
   const emptyLine = document.createElement('div');
   emptyLine.className = 'spacer';
   let wrongcounter = 0;
@@ -57,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
   window.rollingActive = false;
 
   window.roll = function (diceType, stat, dc, advantage) {
-    window.rollingActive = true;
+    rollingActive = true;
     // 1. Parse Dice
     const [numDice, numSides] = diceType.toLowerCase().split('d').map(Number);
 
@@ -170,7 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
         requestAnimationFrame(animate);
       } else {
         // Final Result
-        window.rollingActive = false;
+        rollingActive = false;
 
         let resultHTML = `<div class="dice-result">`;
         if (passed === true) resultHTML += `<span class="dice-success">Success!</span> `;
@@ -227,21 +220,21 @@ document.addEventListener('DOMContentLoaded', () => {
   window.currentlab = "reactions";
 
   // HP System
-  window.playerHP = 100;
-  window.maxHP = 100;
+  let playerHP = 100;
+  let maxHP = 100;
   const hpContainer = document.getElementById('hp-container');
 
   window.changeHP = async function (amount) {
     if (amount < 0) {
       spawnFallingHearts(Math.abs(amount));
     }
-    window.playerHP += amount;
-    if (window.playerHP > window.maxHP) window.playerHP = window.maxHP;
+    playerHP += amount;
+    if (playerHP > maxHP) playerHP = maxHP;
     updateHPDisplay();
-    if (window.playerHP <= 0) {
+    if (playerHP <= 0) {
       HPloss = 0;
-      if (window.playerHP <= -1 * maxHP) {
-        window.playerHP = 0;
+      if (playerHP <= -1 * maxHP) {
+        playerHP = 0;
         updateHPDisplay();
         const newDiv = document.createElement('div');
         newDiv.className = 'question';
@@ -250,7 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
         await typeWriter(newDiv, "Unfortunately, you have sustained too much damage and have been killed instantly. Please reload the page to restart the game.", typespeed);
         inputField.remove();
       } else {
-        window.playerHP = 0;
+        playerHP = 0;
         updateHPDisplay();
         const initialDiv = document.createElement('div');
         initialDiv.className = 'question';
@@ -281,12 +274,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  window.updateHPDisplay = function () {
+  function updateHPDisplay() {
     if (hpContainer) {
       if (playerHP >= maxHP) {
         playerHP = maxHP;
       }
-      hpContainer.innerHTML = `<span id="hp-heart-icon">❤️</span>: ${window.playerHP}/${window.maxHP}`;
+      hpContainer.innerHTML = `<span id="hp-heart-icon">❤️</span>: ${playerHP}/${maxHP}`;
     }
   }
 
@@ -317,15 +310,15 @@ document.addEventListener('DOMContentLoaded', () => {
     .catch(error => { console.error('Error loading help text:', error); });
 
   // preload outline.json
-  window.itemsData = [];
-  window.inventory = {}; // { itemId: count }
+  let itemsData = [];
+  let inventory = {}; // { itemId: count }
 
   fetch('data.json')
     .then(response => response.json())
     .then(data => {
       JSoutline = data.active_pchem_outline;
       if (data.items) {
-        window.itemsData = data.items;
+        itemsData = data.items;
       }
       if (JSoutline) {
         outlineText = 'Click on a section to jump to it.<br>';
@@ -483,7 +476,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // if not finished typing
         if (i < text.length) {
-          if (window.rollingActive) {
+          if (rollingActive) {
             typingTimeoutId = setTimeout(type, 100);
             return;
           }
@@ -672,7 +665,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let output = '';
     let nextdivid = currentdivid;
-
+    let isNarrativeMode = false;
     // handle special commands
     if (inputstring.startsWith("_auto_jump_")) {
       const targetId = inputstring.replace("_auto_jump_", "");
@@ -687,7 +680,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return [findnode(currentdivid).text || 'Loading condensed... please wait', currentdivid];
     } else if (inputstring == "narrative") {
       JSdata = narrativedata;
-      window.isNarrativeMode = true; // Flag for inventory tracking
+      isNarrativeMode = true; // Flag for inventory tracking
       currentdivid = "atomscover";
       const uiTopLeft = document.getElementById('ui-top-left');
       if (uiTopLeft) uiTopLeft.style.display = 'flex';
@@ -1162,7 +1155,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       } else {
         // Inventory Item
-        const item = window.itemsData.find(i => i.id === id);
+        const item = itemsData.find(i => i.id === id);
         if (item && item.attributes) {
           if (typeof item.attributes === 'object') return item.attributes;
           rawStr = item.attributes;
@@ -1401,7 +1394,7 @@ document.addEventListener('DOMContentLoaded', () => {
           if (typeof idx === 'number') {
             if (labData && labData['beaker' + idx]) name = labData['beaker' + idx];
           } else {
-            const item = window.itemsData.find(i => i.id === idx);
+            const item = itemsData.find(i => i.id === idx);
             if (item) name = item.name;
           }
           if (name) reactantNames.push(name);
@@ -1650,8 +1643,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       processLogicUpdates();
     };
-    window.labAddLiquid = addLiquid; // Expose for useItem
-    console.log("Lab Launched. window.labAddLiquid set.");
+    let labAddLiquid = addLiquid; // Expose for useItem
+    console.log("Lab Launched. labAddLiquid set.");
 
     // Modified click loop (Replacing lines 977-1047)
     for (let i = 1; i <= 4; i++) {
@@ -1741,8 +1734,8 @@ document.addEventListener('DOMContentLoaded', () => {
       // Return items to inventory
       selectedBeakers.forEach(id => {
         if (typeof id === 'string') {
-          if (window.inventory[id]) window.inventory[id]++;
-          else window.inventory[id] = 1;
+          if (inventory[id]) inventory[id]++;
+          else inventory[id] = 1;
         }
       });
       renderInventory();
@@ -1787,7 +1780,7 @@ document.addEventListener('DOMContentLoaded', () => {
           if (prodName === "Unknown Product") return;
 
           // Look for existing item
-          let item = window.itemsData.find(i => i.name === prodName);
+          let item = itemsData.find(i => i.name === prodName);
           if (!item) {
             let generatedId = prodName.toLowerCase().replace(/[^a-z0-9]/g, '_');
             item = {
@@ -1802,11 +1795,11 @@ document.addEventListener('DOMContentLoaded', () => {
               }),
               script: prod.script || ""
             };
-            window.itemsData.push(item);
+            itemsData.push(item);
           }
 
-          if (window.inventory[item.id]) window.inventory[item.id]++;
-          else window.inventory[item.id] = 1;
+          if (inventory[item.id]) inventory[item.id]++;
+          else inventory[item.id] = 1;
         });
       }
 
@@ -1816,8 +1809,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const consumedIndices = currentState.reactingIndices || [];
       selectedBeakers.forEach((id, index) => {
         if (typeof id === 'string' && !consumedIndices.includes(index)) {
-          if (window.inventory[id]) window.inventory[id]++;
-          else window.inventory[id] = 1;
+          if (inventory[id]) inventory[id]++;
+          else inventory[id] = 1;
         }
       });
 
@@ -1877,9 +1870,9 @@ document.addEventListener('DOMContentLoaded', () => {
     labContainer.classList.remove('visible');
     formElement.classList.remove('shifted-form');
 
-    if (window.activeTempInterval) {
-      clearInterval(window.activeTempInterval);
-      window.activeTempInterval = null;
+    if (activeTempInterval) {
+      clearInterval(activeTempInterval);
+      activeTempInterval = null;
     }
 
     const invSidebar = document.getElementById('inventory-sidebar');
@@ -1891,7 +1884,7 @@ document.addEventListener('DOMContentLoaded', () => {
       invSidebar.style.width = '';
       invSidebar.style.marginTop = '';
       // Conditional hiding based on mode
-      if (window.isNarrativeMode) {
+      if (isNarrativeMode) {
         invSidebar.style.display = ''; // Restore default (CSS handles it, or block)
       } else {
         invSidebar.style.display = 'none';
@@ -1900,34 +1893,34 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (invTrigger) invTrigger.style.display = '';
 
-    window.labAddLiquid = null;
+    labAddLiquid = null;
   }
   window.closelab = closelab;
 
   window.useItem = function (itemId) {
     // Check if lab is open
-    console.log("useItem called for " + itemId + ". LabOpen: " + !!window.labAddLiquid);
-    if (window.labAddLiquid) {
-      if (window.inventory[itemId] > 0) {
-        window.labAddLiquid(itemId);
-        window.inventory[itemId]--;
-        if (window.inventory[itemId] <= 0) delete window.inventory[itemId];
+    console.log("useItem called for " + itemId + ". LabOpen: " + !!labAddLiquid);
+    if (labAddLiquid) {
+      if (inventory[itemId] > 0) {
+        labAddLiquid(itemId);
+        inventory[itemId]--;
+        if (inventory[itemId] <= 0) delete inventory[itemId];
         renderInventory(); // Refresh UI
       }
       return;
     }
 
-    const item = window.itemsData.find(i => i.id === itemId);
-    if (item && window.inventory[itemId] > 0) {
+    const item = itemsData.find(i => i.id === itemId);
+    if (item && inventory[itemId] > 0) {
       // Execute script
       try {
         const func = new Function(item.script);
         func();
 
         // Decrement logic
-        window.inventory[itemId]--;
-        if (window.inventory[itemId] <= 0) {
-          delete window.inventory[itemId];
+        inventory[itemId]--;
+        if (inventory[itemId] <= 0) {
+          delete inventory[itemId];
         }
 
         // Update Displays
@@ -2031,7 +2024,7 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log("updategame completed");
   }
 
-  window.spawnFallingHearts = function (count) {
+  function spawnFallingHearts(count) {
     const heartIcon = document.getElementById('hp-heart-icon');
     if (!heartIcon) return;
 
@@ -2065,13 +2058,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Inventory System
   window.pickup = function (itemId) {
-    if (!window.itemsData) return;
-    const item = window.itemsData.find(i => i.id === itemId);
+    if (!itemsData) return;
+    const item = itemsData.find(i => i.id === itemId);
     if (item) {
-      if (window.inventory[itemId]) {
-        window.inventory[itemId]++;
+      if (inventory[itemId]) {
+        inventory[itemId]++;
       } else {
-        window.inventory[itemId] = 1;
+        inventory[itemId] = 1;
       }
       renderInventory();
     } else {
@@ -2086,9 +2079,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Helper to generate HTML
     const generateHtml = () => {
       let html = '';
-      for (const [itemId, count] of Object.entries(window.inventory)) {
+      for (const [itemId, count] of Object.entries(inventory)) {
         if (count > 0) {
-          const item = window.itemsData.find(i => i.id === itemId);
+          const item = itemsData.find(i => i.id === itemId);
           if (item) {
             html += `<button class="inventory-item-btn" onclick="useItem('${itemId}')">
               ${count > 1 ? count + 'x ' : '1x '}${item.name}
