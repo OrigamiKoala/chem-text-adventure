@@ -780,6 +780,56 @@ input:focus {
     border-color: var(--accent);
 }
 
+/* Dice Roll Notification */
+.dice-roll-notification {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 36, 0.95));
+    border: 1px solid var(--accent);
+    color: var(--text);
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin: 10px 0;
+    font-family: 'JetBrains Mono', monospace;
+    box-shadow: 0 0 15px rgba(125, 211, 252, 0.15);
+    animation: fadeIn 0.3s ease-out;
+    max-width: 900px;
+    /* Match question width */
+    width: fit-content;
+}
+
+.dice-result {
+    font-weight: bold;
+    color: var(--accent);
+    font-size: 1.2em;
+}
+
+.dice-detail {
+    font-size: 0.9em;
+    color: var(--muted);
+    margin-top: 4px;
+}
+
+.dice-success {
+    color: #4ade80;
+    /* Green */
+}
+
+.dice-failure {
+    color: #f87171;
+    /* Red */
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* Mobile Specifics */
 @media (max-width: 800px) {
     .desktop-only {

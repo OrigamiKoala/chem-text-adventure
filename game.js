@@ -32,8 +32,10 @@ document.addEventListener('DOMContentLoaded', () => {
   window.INT = 10;
   window.WIS = 10;
   window.CHA = 10;
+  window.rollingActive = false;
 
   window.roll = function (diceType, stat, dc, advantage) {
+    window.rollingActive = true;
     // 1. Parse Dice
     const [numDice, numSides] = diceType.toLowerCase().split('d').map(Number);
 
@@ -44,48 +46,130 @@ document.addEventListener('DOMContentLoaded', () => {
     // Helper to roll dice
     const doRoll = () => {
       let sum = 0;
+      let rolls = [];
       for (let i = 0; i < numDice; i++) {
-        sum += Math.floor(Math.random() * numSides) + 1;
+        let r = Math.floor(Math.random() * numSides) + 1;
+        rolls.push(r);
+        sum += r;
       }
-      return sum;
+      return { sum, rolls };
     };
 
-    // 3. Handle Advantage/Disadvantage
-    let r1 = doRoll();
-    let r2 = doRoll();
-    let rollResult = r1;
-
-    if (advantage === true) {
-      rollResult = Math.max(r1, r2);
-    } else if (advantage === false) {
-      rollResult = Math.min(r1, r2);
-    } else {
-      // Normal roll (just use first result, don't need second)
-      rollResult = r1;
-      // Optimization: could avoid rolling r2 if normal, but this is fine.
-      // Let's optimize slightly to be cleaner:
-      if (advantage === undefined || advantage === null) {
-        // logic already holds if we re-assign, but let's rewrite clean.
-      }
-    }
-
-    // Re-doing cleaner block for clarity in replacement:
-
+    // 3. Logic
+    let resultObj;
     let finalRoll = 0;
+    let rollType = 'Normal';
+
     if (advantage === true) {
-      finalRoll = Math.max(doRoll(), doRoll());
+      rollType = 'Advantage';
+      let r1 = doRoll();
+      let r2 = doRoll();
+      if (r1.sum >= r2.sum) {
+        finalRoll = r1.sum;
+        resultObj = { ...r1, dropped: r2.sum };
+      } else {
+        finalRoll = r2.sum;
+        resultObj = { ...r2, dropped: r1.sum };
+      }
     } else if (advantage === false) {
-      finalRoll = Math.min(doRoll(), doRoll());
+      rollType = 'Disadvantage';
+      let r1 = doRoll();
+      let r2 = doRoll();
+      if (r1.sum <= r2.sum) {
+        finalRoll = r1.sum;
+        resultObj = { ...r1, dropped: r2.sum };
+      } else {
+        finalRoll = r2.sum;
+        resultObj = { ...r1, dropped: r2.sum };
+      }
     } else {
-      finalRoll = doRoll();
+      let r1 = doRoll();
+      finalRoll = r1.sum;
+      resultObj = r1;
     }
 
-    // 4. Add Modifier
     const total = finalRoll + modifier;
+    const passed = (typeof dc === 'number') ? total >= dc : null;
 
-    // 5. Check DC
+    // 4. UI Animation
+    const chatContainer = document.getElementById('previous'); // Or previouscontainer
+    // We want to insert into the flow.
+    // If we are called from typeWriter script, previouscontainer is where text is being added.
+    // If called from inventory, previouscontainer might be old.
+    // Safer to append to the end of 'previous' if typically used for chat log.
+    // But standard is appending before form.
+
+    const rollBox = document.createElement('div');
+    rollBox.className = 'dice-roll-notification';
+    if (formElement && formElement.parentNode) {
+      formElement.parentNode.insertBefore(rollBox, formElement);
+    } else {
+      document.body.appendChild(rollBox);
+    }
+    scrollToBottom();
+
+    const startTime = Date.now();
+    const duration = 2000;
+
+    const modSign = modifier >= 0 ? '+' : '';
+    const statLabel = `${stat} ${statValue} (${modSign}${modifier})`;
+
+    const animate = () => {
+      const now = Date.now();
+      if (now - startTime < duration) {
+        // Flash random numbers
+        let flashSum = 0;
+        let flashText = [];
+        for (let i = 0; i < numDice; i++) {
+          let r = Math.floor(Math.random() * numSides) + 1;
+          flashText.push(r);
+          flashSum += r;
+        }
+
+        let displayText = `Rolling ${diceType} for ${statLabel}... `;
+        if (numDice > 1) {
+          displayText += `(${flashText.join('+')}) = ${flashSum}`;
+        } else {
+          displayText += `${flashSum}`;
+        }
+
+        if (advantage !== undefined && advantage !== null) {
+          displayText += ` (${rollType})`;
+        }
+
+        rollBox.innerHTML = `<div class="dice-result">${displayText}</div>`;
+
+        requestAnimationFrame(animate);
+      } else {
+        // Final Result
+        window.rollingActive = false;
+
+        let resultHTML = `<div class="dice-result">`;
+        if (passed === true) resultHTML += `<span class="dice-success">Success!</span> `;
+        if (passed === false) resultHTML += `<span class="dice-failure">Failure!</span> `;
+
+        resultHTML += `Rolled ${total} for ${statLabel}`;
+        resultHTML += `</div>`;
+
+        let detailHTML = `<div class="dice-detail">`;
+        detailHTML += `[${resultObj.rolls.join('+')}]`;
+        if (modifier !== 0) detailHTML += ` ${modSign}${modifier} (${stat})`;
+        if (advantage !== undefined && advantage !== null) {
+          detailHTML += ` | ${rollType} (Dropped: ${resultObj.dropped})`;
+        }
+        if (typeof dc === 'number') detailHTML += ` vs DC ${dc}`;
+        detailHTML += `</div>`;
+
+        rollBox.innerHTML = resultHTML + detailHTML;
+        scrollToBottom();
+      }
+    };
+
+    animate();
+
+    // Return Logic Result Immediately
     if (typeof dc === 'number') {
-      return total >= dc;
+      return passed;
     } else {
       return total;
     }
@@ -329,6 +413,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // if not finished typing
         if (i < text.length) {
+          if (window.rollingActive) {
+            typingTimeoutId = setTimeout(type, 100);
+            return;
+          }
           let delay = speed;
           let char = text.charAt(i);
           // Check for HTML tag
