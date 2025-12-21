@@ -1,7 +1,7 @@
 List of commands:
 <br> 'help' - open up the help manual (this one)
 <br> 'outline' - open up the outline (can jump to different sections)
-<br> 'undo' - undo previous response (you can't undo more than that)
+<br> 'undo' - undo previous response (to undo further, keep typing 'undo')
 <br> 'hint' - get a hint
 <br> 'periodic table' - summon the Periodic Table
 <br> 'launch lab' - launch the previous virtual lab

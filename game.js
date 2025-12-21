@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const formElement = document.getElementById('responseform');
   const inputField = document.getElementById('response');
   let currentid = "initial";
-  let previousdivid = null;
+  let historyStack = [];
   let JSdata = null;
   let fullJSdata = null;
   let helpText = '';
@@ -347,7 +347,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // jump to div id (for outline)
   function jumpTo(divid) {
     console.log("jumpTo called with divid=" + divid);
-    previousdivid = currentid;
+    historyStack.push(currentid);
     currentid = divid;
     outlineclicked = true;
     if (formElement) {
@@ -676,6 +676,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // handle special commands
     if (inputstring.startsWith("_auto_jump_")) {
       const targetId = inputstring.replace("_auto_jump_", "");
+      historyStack.push(currentdivid);
       const targetNode = findnode(targetId);
       return [targetNode ? targetNode.text : "Error jumping", targetId];
     } else if (inputstring == "help") {
@@ -700,9 +701,14 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (inputstring == "outline") {
       return [outlineText || 'Loading outline... please wait', currentdivid];
     } else if (inputstring == "undo") {
-      output = findnode(previousdivid) ? (findnode(previousdivid).text || '') : 'Previous not found';
+      if (historyStack.length > 0) {
+        nextdivid = historyStack.pop();
+        output = findnode(nextdivid) ? (findnode(nextdivid).text || '') : 'Previous not found';
+      } else {
+        output = "Nothing to undo.";
+        nextdivid = currentdivid;
+      }
       wrongcounter = 0;
-      nextdivid = previousdivid;
     } else if (inputstring == "hint") {
       if (hintcount === 1) {
         if (currentobj.hint != null && currentobj.hint != '') {
@@ -747,8 +753,8 @@ document.addEventListener('DOMContentLoaded', () => {
       return [findnode(currentid).text, currentid];
     } else if (currentobj.type === 'frq') {
       inputstring = inputstring.trim();
-      previousdivid = currentdivid;
       if (inputstring == currentobj.correct || inputstring == currentobj.altcorrect) {
+        historyStack.push(currentdivid);
         nextdivid = currentobj.next;
         const nextobj = findnode(nextdivid);
         output = nextobj ? (nextobj.text || '') : 'Oops. I couldn\'t find the next part. Looks like you found a bug!';
@@ -764,7 +770,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
     } else if (currentobj.type === 'fr') {
-      previousdivid = currentdivid;
+      historyStack.push(currentdivid);
       nextdivid = currentobj.next;
       const nextobj = findnode(nextdivid);
       output = nextobj ? (nextobj.text || '') : 'Oops. I couldn\'t find the next part. Looks like you found a bug!';
@@ -806,8 +812,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       if (targetNodeId) {
+        historyStack.push(currentdivid);
         nextdivid = targetNodeId;
-        previousdivid = currentdivid;
         console.log(nextdivid);
       } else {
         if (["1", "2", "3", "4"].includes(inputstring)) {
