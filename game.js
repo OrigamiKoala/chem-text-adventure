@@ -1145,35 +1145,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const labData = fullJSdata.labs.find(lab => lab.labid === labid);
 
+    // Helper: Parse attributes for any item (Lab or Inventory)
+    const getAttributes = (id) => {
+      let attrData = null;
+      let rawStr = null;
+
+      if (typeof id === 'number') {
+        // Lab Beaker
+        if (labData && labData['attributes' + id]) {
+          rawStr = labData['attributes' + id];
+        }
+      } else {
+        // Inventory Item
+        const item = window.itemsData.find(i => i.id === id);
+        if (item && item.attributes) {
+          if (typeof item.attributes === 'object') return item.attributes;
+          rawStr = item.attributes;
+        }
+      }
+
+      if (rawStr) {
+        try {
+          // Sanitize string to preserve backslashes for invalid escapes (like \ce)
+          const sanitized = rawStr.replace(/\\(?!["\\/bfnrtu])/g, "\\\\");
+          return JSON.parse(sanitized);
+        } catch (e) {
+          console.error("Error parsing attributes for " + id, e);
+        }
+      }
+      return null;
+    };
+
     const getColors = (indices) => {
       return indices.map(idx => {
-        let attr = null;
-        if (typeof idx === 'number') {
-          if (labData['attributes' + idx]) {
-            try {
-              // Sanitize string to preserve backslashes for invalid escapes (like \ce)
-              const sanitizedAttributes = labData['attributes' + idx].replace(/\\(?!["\\/bfnrtu])/g, "\\\\");
-              attr = JSON.parse(sanitizedAttributes);
-            } catch (e) {
-              console.error("Error parsing attributes for beaker " + idx, e);
-            }
-          }
-        } else {
-          // Inventory Item
-          const item = window.itemsData.find(i => i.id === idx);
-          if (item && item.attributes) {
-            try {
-              let parsedAttr;
-              if (typeof item.attributes === 'string') {
-                const sanitizedAttributes = item.attributes.replace(/\\(?!["\\/bfnrtu])/g, "\\\\");
-                parsedAttr = JSON.parse(sanitizedAttributes);
-              } else {
-                parsedAttr = item.attributes;
-              }
-              attr = parsedAttr;
-            } catch (e) { console.error("Error parsing item attributes", e); }
-          }
-        }
+        const attr = getAttributes(idx);
         return (attr && attr.color) ? attr.color : 'rgba(255, 255, 255, 0.2)';
       });
     };
@@ -1185,30 +1190,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       indices.forEach(idx => {
         let ph = 7.0;
-        let attr = null;
-        if (typeof idx === 'number') {
-          if (labData['attributes' + idx]) {
-            try {
-              const sanitizedAttributes = labData['attributes' + idx].replace(/\\(?!["\\/bfnrtu])/g, "\\\\");
-              attr = JSON.parse(sanitizedAttributes);
-            } catch (e) { console.error("Error parsing attributes for pH calc", e); }
-          }
-        } else {
-          // Inventory item
-          const item = window.itemsData.find(i => i.id === idx);
-          if (item && item.attributes) {
-            try {
-              let parsedAttr;
-              if (typeof item.attributes === 'string') {
-                const sanitizedAttributes = item.attributes.replace(/\\(?!["\\/bfnrtu])/g, "\\\\");
-                parsedAttr = JSON.parse(sanitizedAttributes);
-              } else {
-                parsedAttr = item.attributes;
-              }
-              attr = parsedAttr;
-            } catch (e) { console.error("Error parsing item attributes", e); }
-          }
-        }
+        const attr = getAttributes(idx);
 
         if (attr && attr.ph !== undefined) {
           ph = parseFloat(attr.ph);
@@ -1701,33 +1683,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const colors = getColors([id]);
       let itemType = 'liquid';
-
-      if (typeof id === 'number') {
-        // Parse type from attributes if available
-        if (labData && labData['attributes' + id]) {
-          try {
-            const sanitizedAttributes = labData['attributes' + id].replace(/\\(?!["\\/bfnrtu])/g, "\\\\");
-            const attr = JSON.parse(sanitizedAttributes);
-            if (attr && attr.type) itemType = attr.type;
-          } catch (e) { console.error(e); }
-        }
-      } else {
-        // Inventory Item
-        const item = window.itemsData.find(i => i.id === id);
-        if (item && item.attributes) {
-          try {
-            // Check if it's already an object (if parsed by other logic) or string
-            let attr;
-            if (typeof item.attributes === 'string') {
-              const sanitizedAttributes = item.attributes.replace(/\\(?!["\\/bfnrtu])/g, "\\\\");
-              attr = JSON.parse(sanitizedAttributes);
-            } else {
-              attr = item.attributes;
-            }
-            if (attr && attr.type) itemType = attr.type;
-          } catch (e) { console.error("Error parsing item attributes", e); }
-        }
-      }
+      const attr = getAttributes(id);
+      if (attr && attr.type) itemType = attr.type;
 
       // Immediate Visual Add
       if (colors.length > 0) {
@@ -1772,13 +1729,7 @@ document.addEventListener('DOMContentLoaded', () => {
       beakerImage.style.position = 'relative';
       beakerImage.style.zIndex = '2';
 
-      let beakerAttributes = null;
-      if (labData && labData['attributes' + i]) {
-        try {
-          const sanitizedAttributes = labData['attributes' + i].replace(/\\(?!["\\/bfnrtu])/g, "\\\\");
-          beakerAttributes = JSON.parse(sanitizedAttributes);
-        } catch (e) { console.error(e); }
-      }
+      const beakerAttributes = getAttributes(i);
 
       const fluidColor = (beakerAttributes && beakerAttributes.color) ? beakerAttributes.color : 'rgba(255, 255, 255, 0.2)';
       const itemType = (beakerAttributes && beakerAttributes.type) ? beakerAttributes.type : 'liquid';
