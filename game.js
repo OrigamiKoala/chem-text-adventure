@@ -1,5 +1,3 @@
-let currentlab;
-
 // once the DOM is fully loaded
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -218,24 +216,64 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
 
-  currentlab = "reactions";
+  window.currentlab = "reactions";
 
   // HP System
   window.playerHP = 100;
   window.maxHP = 100;
   const hpContainer = document.getElementById('hp-container');
 
-  window.changeHP = function (amount) {
+  window.changeHP = async function (amount) {
     if (amount < 0) {
       spawnFallingHearts(Math.abs(amount));
     }
     window.playerHP += amount;
     if (window.playerHP > window.maxHP) window.playerHP = window.maxHP;
-    if (window.playerHP < 0) window.playerHP = 0;
     updateHPDisplay();
+    if (window.playerHP <= 0) {
+      HPloss = 0;
+      if (window.playerHP <= -1 * maxHP) {
+        window.playerHP = 0;
+        updateHPDisplay();
+        const newDiv = document.createElement('div');
+        newDiv.className = 'question';
+        document.getElementById('previous').appendChild(emptyLine);
+        document.getElementById('previous').appendChild(newDiv);
+        await typeWriter(newDiv, "Unfortunately, you have sustained too much damage and have been killed instantly. Please reload the page to restart the game.", typespeed);
+        inputField.remove();
+      } else {
+        window.playerHP = 0;
+        updateHPDisplay();
+        const initialDiv = document.createElement('div');
+        initialDiv.className = 'question';
+        document.getElementById('previous').appendChild(initialDiv);
+        await typeWriter(initialDiv, "Your HP has dropped to 0, and you fall unconscious. Rolling death saving throws.", typespeed);
+        initialDiv.insertAdjacentHTML('afterend', emptyLine.outerHTML);
+        let deathsuccess = 0;
+        for (let i = 0; i < 5; i++) {
+          if (roll("1d20", null, 10)) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            deathsuccess++;
+          }
+        }
+        const newDiv = document.createElement('div');
+        newDiv.className = 'question';
+        initialDiv.insertAdjacentElement('afterend', emptyLine);
+        initialDiv.insertAdjacentElement('afterend', newDiv);
+        if (deathsuccess >= 3) {
+          await typeWriter(newDiv, "Death refuses to take you...yet. You have succeeded your death saving throws. You have survived - just barely, though. You slowly regain consciousness, and everything hurts. You may continue.", typespeed);
+          changeHP(1);
+          updateHPDisplay();
+        }
+        else {
+          await typeWriter(newDiv, "Unfortunately, fate was not in your favor this time. You have failed your death saving throws, and are now dead. Please reload the page to restart the game.", typespeed);
+          inputField.remove();
+        }
+      }
+    }
   };
 
-  function updateHPDisplay() {
+  window.updateHPDisplay = function () {
     if (hpContainer) {
       if (playerHP >= maxHP) {
         playerHP = maxHP;
