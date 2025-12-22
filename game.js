@@ -373,25 +373,7 @@ document.addEventListener('DOMContentLoaded', () => {
       textbookdata = data.pchem_nodes;
       narrativedata = data.narrative_nodes;
       JSdata = textbookdata;
-      let initialText = findnode("initial").text;
-      previoustext = initialText;
-      let splitinitialText = initialText.split("--");
-      if (qtext && qtext.parentNode) qtext.parentNode.removeChild(qtext);
-      let newContainer = document.createElement('div');
-      formElement.parentNode.insertBefore(newContainer, formElement);
-      previouscontainer = newContainer;
-      for (var j = 0; j < splitinitialText.length;) {
-        const initialDiv = document.createElement('div');
-        initialDiv.className = 'question';
-        newContainer.appendChild(initialDiv);
-        await typeWriter(initialDiv, splitinitialText[j], typespeed);
-        initialDiv.insertAdjacentHTML('afterend', emptyLine.outerHTML);
-        initialDiv.innerHTML = splitinitialText[j];
-        safeTypeset();
-        j++;
-      }
-      // remove the original placeholder element if present so it doesn't duplicate
-      console.log('Initial text rendered.')
+      updategame();
     })
     .catch(error => {
       console.error('Error loading game data:', error);
@@ -428,7 +410,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // typewriter effect
   function typeWriter(element, text, speed, callback = () => { }) {
-    return new Promise(resolve => {
+    let contextResolver;
+    const promise = new Promise(resolve => {
+      contextResolver = resolve;
       console.log("typeWriter called");
       console.log("element= " + element);
       console.log("text= " + text);
@@ -436,10 +420,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
       let i = 0;
 
-      // reset typingTimeoutId
+      // reset typingTimeoutId and resolve previous context if pending
       if (typingTimeoutId) {
         clearTimeout(typingTimeoutId);
         console.log('Cleared existing typing timeout');
+      }
+      if (currentTypingContext && !currentTypingContext.finished) {
+        console.log("Resolving previous typing context due to new typed text");
+        currentTypingContext.interrupted = true;
+        currentTypingContext.finished = true;
+        currentTypingContext.resolve();
       }
       typingTimeoutId = null;
       currentTypingContext = null;
@@ -449,6 +439,7 @@ document.addEventListener('DOMContentLoaded', () => {
         element: element,
         text: text,
         finished: false,
+        interrupted: false,
         resolve: resolve,
         // A method to instantly finish the typing
         finish: function () {
@@ -478,6 +469,7 @@ document.addEventListener('DOMContentLoaded', () => {
               scrollToBottom(true);
               n++;
             }
+            this.interrupted = true;
             this.finished = true;
             this.resolve();
           }
@@ -659,6 +651,9 @@ document.addEventListener('DOMContentLoaded', () => {
       safeTypeset();
       console.log("typeWriter finished");
     });
+    // Attach the context to the promise so we can check it later
+    promise.context = currentTypingContext;
+    return promise;
   }
 
   // receiving input, returns output text and next id
@@ -668,8 +663,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (inputstring) {
     }
     else {
-      inputstring = 'default';
-      console.log("inputstring was empty or null, set to 'default'");
+      if (currentdivid == "initial") {
+        return [findnode("initial").text, "atomscover"];
+      } else {
+        inputstring = 'default';
+        console.log("inputstring was empty or null, set to 'default'");
+      }
     }
     if (!JSdata) return ['Loading...', currentdivid];
     const currentobj = findnode(currentdivid);
@@ -1967,6 +1966,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // if typing in progress, stop it
     if (currentTypingContext && !currentTypingContext.finished) {
+      currentTypingContext.interrupted = true;
       currentTypingContext.finish();
       console.log('Typing interrupted by user.');
     }
@@ -2039,9 +2039,10 @@ document.addEventListener('DOMContentLoaded', () => {
           console.log("Typing part " + j + ": " + splitnewText[j]);
           newContainer.appendChild(newTextDiv);
           newContainer.appendChild(emptyLine.cloneNode(true));
-          await typeWriter(newTextDiv, splitnewText[j], typespeed, finishQuestionTyping);
+          const p = typeWriter(newTextDiv, splitnewText[j], typespeed, finishQuestionTyping);
+          await p;
 
-          if (currentTypingContext && currentTypingContext.finished) {
+          if (p.context && p.context.interrupted) {
             console.log("Segment loop interrupted.");
 
             // Restore interrupted roll logic
