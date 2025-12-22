@@ -33,6 +33,8 @@ So the text is under the [CC BY-SA 4.0](https://creativecommons.org/licenses/by-
 
 Log:
 
+2025 December 22: Fixed bugs, added content
+
 2025 December 21: Fixed bugs, cleaned up code, added DnD functionalities, allow multiple undos
 
 2025 December 19: Integrated activities into the game, fixed bugs with reaction stimulation

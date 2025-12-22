@@ -324,7 +324,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // preload outline.json
   let itemsData = [];
-  let inventory = {}; // { itemId: count }
+  window.inventory = {}; // { itemId: count }
 
   fetch('data.json')
     .then(response => response.json())
@@ -449,6 +449,7 @@ document.addEventListener('DOMContentLoaded', () => {
         element: element,
         text: text,
         finished: false,
+        resolve: resolve,
         // A method to instantly finish the typing
         finish: function () {
           if (!this.finished) {
@@ -476,6 +477,7 @@ document.addEventListener('DOMContentLoaded', () => {
               n++;
             }
             this.finished = true;
+            this.resolve();
           }
         }
       }
@@ -1628,6 +1630,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (v.type === 'liquid' || !v.type) volume++;
       });
 
+      const attr = getAttributes(id);
+      if (attr && attr.type === 'nonreactant') {
+        console.log("Non-reactant item clicked, ignoring flask updates.");
+        return false;
+      }
+
       if (volume >= 4) {
         alert("Beaker full");
         return;
@@ -1637,7 +1645,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const colors = getColors([id]);
       let itemType = 'liquid';
-      const attr = getAttributes(id);
       if (attr && attr.type) itemType = attr.type;
 
       // Immediate Visual Add
@@ -1915,10 +1922,12 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log("useItem called for " + itemId + ". LabOpen: " + !!labAddLiquid);
     if (labAddLiquid) {
       if (inventory[itemId] > 0) {
-        labAddLiquid(itemId);
-        inventory[itemId]--;
-        if (inventory[itemId] <= 0) delete inventory[itemId];
-        renderInventory(); // Refresh UI
+        const result = labAddLiquid(itemId);
+        if (result !== false) {
+          inventory[itemId]--;
+          if (inventory[itemId] <= 0) delete inventory[itemId];
+          renderInventory(); // Refresh UI
+        }
       }
       return;
     }
@@ -2029,6 +2038,32 @@ document.addEventListener('DOMContentLoaded', () => {
           newContainer.appendChild(newTextDiv, formElement);
           newContainer.appendChild(emptyLine, formElement);
           await typeWriter(newTextDiv, splitnewText[j], typespeed, finishQuestionTyping);
+
+          if (currentTypingContext && currentTypingContext.finished && j < splitnewText.length) {
+            console.log("Segment loop interrupted, triggering final logic check.");
+            // finishQuestionTyping for the last segment was already handled by the logic inside finish() 
+            // but we might need to trigger the roll logic if the LAST segment (the one with buttons/info)
+            // was part of a roll node sequence.
+            const currentNode = findnode(currentid);
+            if (currentNode && currentNode.type === 'roll') {
+              console.log("Interrupted roll question detected, executing roll.");
+              let result = false;
+              try {
+                result = eval(currentNode.roll);
+              } catch (e) { console.error("Roll failed:", e); }
+
+              setTimeout(() => {
+                const nextTarget = result ? currentNode.success : currentNode.fail;
+                if (inputField) {
+                  inputField.value = "_auto_jump_" + nextTarget;
+                  updategame();
+                }
+              }, 2200);
+            }
+            if (typeof MathJax !== 'undefined') MathJax.typesetPromise();
+            break; // Stop processing more segments as finish() already put them all in DOM.
+          }
+
           if (typeof MathJax !== 'undefined') MathJax.typesetPromise();
         }
       }
