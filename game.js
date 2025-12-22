@@ -258,9 +258,16 @@ document.addEventListener('DOMContentLoaded', () => {
         initialDiv.insertAdjacentHTML('afterend', emptyLine.outerHTML);
         let deathsuccess = 0;
         for (let i = 0; i < 5; i++) {
-          if (roll("1d20", null, 10)) {
+          let roll = roll("1d20");
+          if (roll >= 10) {
             await new Promise(resolve => setTimeout(resolve, 1000));
             deathsuccess++;
+            if (roll == 20) {
+              await typeWriter(newDiv, "Critical Success! You have succeeded your death saving throws. You have survived - just barely, though. You slowly regain consciousness, and everything hurts. You may continue.", typespeed);
+            }
+          } else if (roll == 1) {
+            await typeWriter(newDiv, "Critical Failure.", typespeed);
+            deathsuccess--;
           }
         }
         const newDiv = document.createElement('div');
