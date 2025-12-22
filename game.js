@@ -453,7 +453,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // A method to instantly finish the typing
         finish: function () {
           if (!this.finished) {
-            // IMPORTANT: Immediately stop the pending timer
+            //IMPORTANT: Immediately stop the pending timer
             if (typingTimeoutId) {
               clearTimeout(typingTimeoutId);
               typingTimeoutId = null;
@@ -465,6 +465,7 @@ document.addEventListener('DOMContentLoaded', () => {
             let splitnewText = newText.split("--");
             previouscontainer.remove();
             let newContainer = document.createElement('div');
+            previouscontainer = newContainer; // FIX: Update local ref correctly
             formElement.parentNode.insertBefore(newContainer, formElement);
             for (var n = 0; n < splitnewText.length;) {
               console.log("Rendering interrupted text part " + n + ": " + splitnewText[n]);
@@ -473,6 +474,7 @@ document.addEventListener('DOMContentLoaded', () => {
               newinterruptTextDiv.innerHTML = splitnewText[n];
               runScripts(newinterruptTextDiv);
               newContainer.appendChild(newinterruptTextDiv);
+              newContainer.appendChild(emptyLine.cloneNode(true)); // FIX: Add spacer
               scrollToBottom(true);
               n++;
             }
@@ -1663,7 +1665,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       processLogicUpdates();
     };
-    let labAddLiquid = addLiquid; // Expose for useItem
+    window.labAddLiquid = addLiquid; // FIX: Expose globally
     console.log("Lab Launched. labAddLiquid set.");
 
     // Modified click loop (Replacing lines 977-1047)
@@ -2035,15 +2037,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
           };
           console.log("Typing part " + j + ": " + splitnewText[j]);
-          newContainer.appendChild(newTextDiv, formElement);
-          newContainer.appendChild(emptyLine, formElement);
+          newContainer.appendChild(newTextDiv);
+          newContainer.appendChild(emptyLine.cloneNode(true));
           await typeWriter(newTextDiv, splitnewText[j], typespeed, finishQuestionTyping);
 
-          if (currentTypingContext && currentTypingContext.finished && j < splitnewText.length) {
-            console.log("Segment loop interrupted, triggering final logic check.");
-            // finishQuestionTyping for the last segment was already handled by the logic inside finish() 
-            // but we might need to trigger the roll logic if the LAST segment (the one with buttons/info)
-            // was part of a roll node sequence.
+          if (currentTypingContext && currentTypingContext.finished) {
+            console.log("Segment loop interrupted.");
+
+            // Restore interrupted roll logic
             const currentNode = findnode(currentid);
             if (currentNode && currentNode.type === 'roll') {
               console.log("Interrupted roll question detected, executing roll.");
@@ -2060,8 +2061,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
               }, 2200);
             }
-            if (typeof MathJax !== 'undefined') MathJax.typesetPromise();
-            break; // Stop processing more segments as finish() already put them all in DOM.
+            break;
           }
 
           if (typeof MathJax !== 'undefined') MathJax.typesetPromise();
@@ -2167,5 +2167,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 });
+
+
 
 
