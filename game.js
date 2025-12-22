@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let wrongcounter = 0;
   let periodictableversion = 1
   let hintcount = 1;
+  let isNarrativeMode = false;
   const generateStatsTo72 = () => {
     let stats = [12, 12, 12, 12, 12, 12];
     for (let i = 0; i < 150; i++) {
@@ -48,6 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
   window.WIS = s5;
   window.CHA = s6;
   window.rollingActive = false;
+  window.labAddLiquid = null; // Prevent ReferenceError
 
   window.roll = function (diceType, stat, dc, advantage) {
     rollingActive = true;
@@ -681,7 +683,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let output = '';
     let nextdivid = currentdivid;
-    let isNarrativeMode = false;
+
     // handle special commands
     if (inputstring.startsWith("_auto_jump_")) {
       const targetId = inputstring.replace("_auto_jump_", "");
@@ -1664,7 +1666,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       processLogicUpdates();
     };
-    window.labAddLiquid = addLiquid; // FIX: Expose globally
+    window.labAddLiquid = addLiquid ? addLiquid : null; // FIX: Expose globally
     console.log("Lab Launched. labAddLiquid set.");
 
     // Modified click loop (Replacing lines 977-1047)
@@ -1898,6 +1900,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const invSidebar = document.getElementById('inventory-sidebar');
     const invTrigger = document.getElementById('inventory-trigger');
+    const uiTopLeft = document.getElementById('ui-top-left');
 
     if (invSidebar) {
       invSidebar.classList.add('desktop-only');
@@ -1906,24 +1909,25 @@ document.addEventListener('DOMContentLoaded', () => {
       invSidebar.style.marginTop = '';
       // Conditional hiding based on mode
       if (isNarrativeMode) {
-        invSidebar.style.display = ''; // Restore default (CSS handles it, or block)
+        invSidebar.style.display = 'block'; // Restore default (CSS handles it, or block)
+        if (uiTopLeft) uiTopLeft.appendChild(invSidebar); // Move under HP bar
       } else {
         invSidebar.style.display = 'none';
+        document.body.appendChild(invSidebar);
       }
-      document.body.appendChild(invSidebar);
     }
     if (invTrigger) invTrigger.style.display = '';
 
-    labAddLiquid = null;
+    window.labAddLiquid = null;
   }
   window.closelab = closelab;
 
   window.useItem = function (itemId) {
     // Check if lab is open
-    console.log("useItem called for " + itemId + ". LabOpen: " + !!labAddLiquid);
-    if (labAddLiquid) {
+    console.log("useItem called for " + itemId + ". LabOpen: " + !!window.labAddLiquid);
+    if (window.labAddLiquid) {
       if (inventory[itemId] > 0) {
-        const result = labAddLiquid(itemId);
+        const result = window.labAddLiquid(itemId);
         if (result !== false) {
           inventory[itemId]--;
           if (inventory[itemId] <= 0) delete inventory[itemId];
@@ -2119,6 +2123,21 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       console.warn('Item not found:', itemId);
     }
+  };
+
+  window.removeInventory = function (itemId, number) {
+    if (!inventory[itemId]) return;
+
+    if (number === "all") {
+      delete inventory[itemId];
+    } else {
+      const count = parseInt(number);
+      if (!isNaN(count)) {
+        inventory[itemId] -= count;
+        if (inventory[itemId] <= 0) delete inventory[itemId];
+      }
+    }
+    renderInventory();
   };
 
   function renderInventory() {

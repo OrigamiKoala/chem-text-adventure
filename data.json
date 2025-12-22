@@ -2052,7 +2052,7 @@
     },
     {
       "id": "use stun gun keypad",
-      "text": "Perhaps you could use the stun gun to fry the circuits in the keypad and unlock the door?\n--\nYou take out the stun gun from your pocket, but find it is covered with the ID material. When you remove the ID material, it suddenly flies out of your hands and sticks to the wall on your left.\n<script>delete inventory[\"ID material\"]; delete inventory[\"ID card\"]</script>\n--\nThe ID material is not a strong enough magnet to do that, which means the wall to your left must also be a magnet.\n--\nRegardless, you take aim at the keypad and attempt to shoot a beam of electricity at it.\n--\nType anything to continue.",
+      "text": "Perhaps you could use the stun gun to fry the circuits in the keypad and unlock the door?\n--\nYou take out the stun gun from your pocket, but find it is covered with the ID material. When you remove the ID material, it suddenly flies out of your hands and sticks to the wall on your left.\n<script>removeInventory(\"ID shards\", \"all\"); removeInventory(\"ID card\", \"all\")</script>\n--\nThe ID material is not a strong enough magnet to do that, which means the wall to your left must also be a magnet.\n--\nRegardless, you take aim at the keypad and attempt to shoot a beam of electricity at it.\n--\nType anything to continue.",
       "type": "fr",
       "next": "end",
       "roll": null,
