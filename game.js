@@ -12,7 +12,9 @@ document.addEventListener('DOMContentLoaded', () => {
   let fullJSdata = null;
   let helpText = '';
   let outlineText = '';
+  let narrativeoutlineText = '';
   let JSoutline = null;
+  let JSnarrativeoutline = null;
   let currentTypingContext = null
   let typingTimeoutId = null;
   let outlineclicked = false;
@@ -331,6 +333,7 @@ document.addEventListener('DOMContentLoaded', () => {
   fetch('data.json')
     .then(response => response.json())
     .then(data => {
+      JSnarrativeoutline = data.active_narrative_outline;
       JSoutline = data.active_pchem_outline;
       if (data.items) {
         itemsData = data.items;
@@ -339,6 +342,12 @@ document.addEventListener('DOMContentLoaded', () => {
         outlineText = 'Click on a section to jump to it.<br>';
         for (const item of JSoutline) {
           outlineText += '<button class="outline" onclick="jumpTo(\'' + item.div + '\')">' + item.reference_num + ' ' + item.content + '</button><br>';
+        }
+      }
+      if (JSnarrativeoutline) {
+        narrativeoutlineText = 'Click on a section to jump to it.<br>';
+        for (const item of JSnarrativeoutline) {
+          narrativeoutlineText += '<button class="outline" onclick="jumpTo(\'' + item.div + '\')">' + item.reference_num + ' ' + item.content + '</button><br>';
         }
       }
     }).catch(error => {
@@ -698,6 +707,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return [findnode(currentdivid).text || 'Loading condensed... please wait', currentdivid];
     } else if (inputstring == "narrative") {
       JSdata = narrativedata;
+      outlineText = narrativeoutlineText;
       isNarrativeMode = true; // Flag for inventory tracking
       currentdivid = "atomscover";
       const uiTopLeft = document.getElementById('ui-top-left');
