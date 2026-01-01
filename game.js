@@ -52,6 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
   window.CHA = s6;
   window.rollingActive = false;
   window.labAddLiquid = null; // Prevent ReferenceError
+  window.machineon = false;
 
   window.roll = function (diceType, stat, dc, advantage) {
     rollingActive = true;
@@ -2161,7 +2162,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (count > 0) {
           const item = window.itemsData.find(i => i.id === itemId);
           if (item) {
-            html += `<button class="inventory-item-btn" onclick="useItem('${itemId}')">
+            html += `<button class="inventory-item-btn" onclick="useItem('${itemId}')" oncontextmenu="event.preventDefault(); machine('${itemId}')">
               ${count > 1 ? count + 'x ' : '1x '}${item.id}
             </button>`;
           }
@@ -2175,6 +2176,22 @@ document.addEventListener('DOMContentLoaded', () => {
     if (listMobile) listMobile.innerHTML = htmlContent;
     MathJax.typesetPromise();
   }
+
+  window.machine = function (itemId) {
+    if (window.machineon) {
+      const item = window.itemsData.find(i => i.id === itemId);
+      if (item) {
+        const responseDiv = document.createElement('div');
+        responseDiv.className = 'question';
+        let response = "Name: " + item.name + "<br>";
+        response += "Usage: " + item.use;
+        responseDiv.innerHTML = response;
+        document.getElementById('previous').appendChild(responseDiv);
+        document.getElementById('previous').appendChild(emptyLine.cloneNode(true));
+        scrollToBottom();
+      }
+    }
+  };
 
 
 
