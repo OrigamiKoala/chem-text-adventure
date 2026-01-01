@@ -327,7 +327,7 @@ document.addEventListener('DOMContentLoaded', () => {
     .catch(error => { console.error('Error loading help text:', error); });
 
   // preload outline.json
-  let itemsData = [];
+  window.itemsData = [];
   window.inventory = {}; // { itemId: count }
 
   fetch('data.json')
@@ -336,7 +336,7 @@ document.addEventListener('DOMContentLoaded', () => {
       JSnarrativeoutline = data.active_narrative_outline;
       JSoutline = data.active_pchem_outline;
       if (data.items) {
-        itemsData = data.items;
+        window.itemsData = data.items;
       }
       if (JSoutline) {
         outlineText = 'Click on a section to jump to it.<br>';
@@ -1183,7 +1183,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       } else {
         // Inventory Item
-        const item = itemsData.find(i => i.id === id);
+        const item = window.itemsData.find(i => i.id === id);
         if (item && item.attributes) {
           if (typeof item.attributes === 'object') return item.attributes;
           rawStr = item.attributes;
@@ -1422,7 +1422,7 @@ document.addEventListener('DOMContentLoaded', () => {
           if (typeof idx === 'number') {
             if (labData && labData['beaker' + idx]) name = labData['beaker' + idx];
           } else {
-            const item = itemsData.find(i => i.id === idx);
+            const item = window.itemsData.find(i => i.id === idx);
             if (item) name = item.name;
           }
           if (name) reactantNames.push(name);
@@ -1813,7 +1813,7 @@ document.addEventListener('DOMContentLoaded', () => {
           if (prodName === "Unknown Product") return;
 
           // Look for existing item
-          let item = itemsData.find(i => i.name === prodName);
+          let item = window.itemsData.find(i => i.name === prodName);
           if (!item) {
             let generatedId = prodName.toLowerCase().replace(/[^a-z0-9]/g, '_');
             item = {
@@ -1828,7 +1828,7 @@ document.addEventListener('DOMContentLoaded', () => {
               }),
               script: prod.script || ""
             };
-            itemsData.push(item);
+            window.itemsData.push(item);
           }
 
           if (inventory[item.id]) inventory[item.id]++;
@@ -1947,7 +1947,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    const item = itemsData.find(i => i.id === itemId);
+    const item = window.itemsData.find(i => i.id === itemId);
     if (item && inventory[itemId] > 0) {
       // Execute script
       try {
@@ -2121,8 +2121,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Inventory System
   window.pickup = function (itemId) {
-    if (!itemsData) return;
-    const item = itemsData.find(i => i.id === itemId);
+    if (!window.itemsData) return;
+    const item = window.itemsData.find(i => i.id === itemId);
     if (item) {
       if (inventory[itemId]) {
         inventory[itemId]++;
@@ -2159,10 +2159,10 @@ document.addEventListener('DOMContentLoaded', () => {
       let html = '';
       for (const [itemId, count] of Object.entries(inventory)) {
         if (count > 0) {
-          const item = itemsData.find(i => i.id === itemId);
+          const item = window.itemsData.find(i => i.id === itemId);
           if (item) {
             html += `<button class="inventory-item-btn" onclick="useItem('${itemId}')">
-              ${count > 1 ? count + 'x ' : '1x '}${item.name}
+              ${count > 1 ? count + 'x ' : '1x '}${item.id}
             </button>`;
           }
         }
