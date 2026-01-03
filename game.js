@@ -242,7 +242,7 @@ document.addEventListener('DOMContentLoaded', () => {
     playerHP += amount;
     if (playerHP > maxHP) playerHP = maxHP;
     updateHPDisplay();
-    if (playerHP <= 0) {
+    if (playerHP <= 0 && isNarrativeMode) {
       HPloss = 0;
       if (playerHP <= -1 * maxHP) {
         playerHP = 0;
@@ -1295,7 +1295,7 @@ document.addEventListener('DOMContentLoaded', () => {
           for (let size = indices.length; size >= 2; size--) {
             const combos = getCombinations(indices, size);
             for (const combo of combos) {
-              const key = combo.sort((a, b) => a - b).join("_");
+              const key = combo.sort((a, b) => String(a).localeCompare(String(b), undefined, { numeric: true })).join("_");
               if (reactionData[key]) {
                 if (excludeKey && key === excludeKey) continue; // Skip known state
                 outcome = reactionData[key];
@@ -1311,7 +1311,7 @@ document.addEventListener('DOMContentLoaded', () => {
       state.outcome = outcome;
       state.reactingIndices = reactingIndices;
       // Assume reactingIndices joined forms the key (used for identity).
-      state.reactionKey = outcome ? reactingIndices.sort((a, b) => a - b).join('_') : null;
+      state.reactionKey = outcome ? reactingIndices.sort((a, b) => String(a).localeCompare(String(b), undefined, { numeric: true })).join('_') : null;
 
       let visualColors = [];
       let prodType = null;
@@ -1356,7 +1356,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             productNames.push("Unknown Product");
           } else {
-            productNames.push(prod.name || "Unknown Product");
+            productNames.push(prod.id || "Unknown Product");
             if (prod.script) productScripts.push(prod.script);
 
             // Simple priority for single-state legacy renderers: Solid > Gas > Liquid
@@ -1417,16 +1417,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
         // Format Reaction Name: $$\ce{Reactant1 + Reactant2 -> Product1 + Product2}$$
-        let reactantNames = [];
+        let reactantIds = [];
         reactingIndices.forEach(idx => {
-          let name = null;
+          let id = null;
           if (typeof idx === 'number') {
-            if (labData && labData['beaker' + idx]) name = labData['beaker' + idx];
+            const attr = getAttributes(idx);
+            if (attr && attr.id) id = attr.id;
+            else if (labData && labData['beaker' + idx]) id = labData['beaker' + idx];
           } else {
-            const item = window.itemsData.find(i => i.id === idx);
-            if (item) name = item.name;
+            // Inventory items: the id is the key used in reactingIndices
+            id = idx;
           }
-          if (name) reactantNames.push(name);
+          if (id) reactantIds.push(id);
         });
 
         // Helper to strip LaTeX wrappers for the reaction string
@@ -1460,7 +1462,7 @@ document.addEventListener('DOMContentLoaded', () => {
           return s;
         };
 
-        const reactantsStr = reactantNames.map(cleanForReaction).join(" + ");
+        const reactantsStr = reactantIds.map(cleanForReaction).join(" + ");
         const productsStr = productNames.map(cleanForReaction).join(" + ");
 
         state.reactionName = `$$\\ce{${reactantsStr} -> ${productsStr}}$$`;
@@ -1810,16 +1812,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (productsToAdd.length > 0) {
         productsToAdd.forEach(prod => {
-          const prodName = prod.name || "Unknown Product";
-          if (prodName === "Unknown Product") return;
+          const prodID = prod.id || "Unknown Product";
+          const prodName = prod.name || prodID;
+          if (prodID === "Unknown Product") return;
 
           // Look for existing item
-          let item = window.itemsData.find(i => i.name === prodName);
+          let item = window.itemsData.find(i => i.id === prodID);
           if (!item) {
-            let generatedId = prodName.toLowerCase().replace(/[^a-z0-9]/g, '_');
             item = {
-              id: generatedId,
+              id: prodID,
               name: prodName,
+              use: prod.use || "Unknown",
               attributes: JSON.stringify({
                 type: prod.type || 'liquid',
                 color: prod.color || 'white',
@@ -2189,6 +2192,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('previous').appendChild(responseDiv);
         document.getElementById('previous').appendChild(emptyLine.cloneNode(true));
         scrollToBottom();
+        MathJax.typesetPromise();
       }
     }
   };
