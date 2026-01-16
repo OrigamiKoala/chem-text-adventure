@@ -53,6 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
   window.rollingActive = false;
   window.labAddLiquid = null; // Prevent ReferenceError
   window.machineon = false;
+  window.conditional = false;
 
   window.roll = function (diceType, stat, dc, advantage) {
     rollingActive = true;
@@ -700,6 +701,27 @@ document.addEventListener('DOMContentLoaded', () => {
       historyStack.push(currentdivid);
       const targetNode = findnode(targetId);
       return [targetNode ? targetNode.text : "Error jumping", targetId];
+    } else if (decode(inputstring).toLowerCase().startsWith("take out ")) {
+      const query = decode(inputstring).substring(9).trim().toLowerCase();
+      // Helper to strip HTML tags for name comparison
+      const stripHtml = (html) => {
+        let tmp = document.createElement("DIV");
+        tmp.innerHTML = html;
+        return tmp.textContent || tmp.innerText || "";
+      };
+
+      const item = window.itemsData.find(i => {
+        const idMatch = i.id.toLowerCase() === query;
+        const nameMatch = stripHtml(i.name).toLowerCase() === query;
+        return idMatch || nameMatch;
+      });
+
+      if (item) {
+        window.pickup(item.id);
+        return ["Added " + item.id + " to your inventory.", currentdivid];
+      } else {
+        return ["Item not found.", currentdivid];
+      }
     } else if (inputstring == "help") {
       return [helpText || 'Loading help... please wait', currentdivid];
     } else if (inputstring == "condensed") {
@@ -1295,7 +1317,7 @@ document.addEventListener('DOMContentLoaded', () => {
           for (let size = indices.length; size >= 2; size--) {
             const combos = getCombinations(indices, size);
             for (const combo of combos) {
-              const key = combo.sort((a, b) => String(a).localeCompare(String(b), undefined, { numeric: true })).join("_");
+              const key = combo.sort((a, b) => String(a).localeCompare(String(b))).join("_");
               if (reactionData[key]) {
                 if (excludeKey && key === excludeKey) continue; // Skip known state
                 outcome = reactionData[key];
@@ -1311,7 +1333,7 @@ document.addEventListener('DOMContentLoaded', () => {
       state.outcome = outcome;
       state.reactingIndices = reactingIndices;
       // Assume reactingIndices joined forms the key (used for identity).
-      state.reactionKey = outcome ? reactingIndices.sort((a, b) => String(a).localeCompare(String(b), undefined, { numeric: true })).join('_') : null;
+      state.reactionKey = outcome ? reactingIndices.sort((a, b) => String(a).localeCompare(String(b))).join('_') : null;
 
       let visualColors = [];
       let prodType = null;
@@ -1486,6 +1508,15 @@ document.addEventListener('DOMContentLoaded', () => {
       // state.productType is set above
       // state.productColor is set above
 
+      // Check for conditional trigger in products
+      if (state.products) {
+        state.products.forEach(p => {
+          if (p && (p.conditional === "true" || p.conditional === true || p.conditional === 1)) {
+            state.triggerConditional = true;
+          }
+        });
+      }
+
       return state;
     };
 
@@ -1633,6 +1664,13 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => flask.classList.remove('flask-active'), 1000); // Shake
 
         renderVisualStack();
+
+        // Trigger Conditional if applicable
+        if (state.triggerConditional) {
+          console.log("Reaction triggered conditional flag!");
+          window.conditional = true;
+        }
+
         return state;
 
       });
@@ -2009,6 +2047,31 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
     }
+    // Conditional Wait Logic
+    const currentNodeObj = findnode(currentid);
+    if (currentNodeObj && currentNodeObj.conditional === 1 && window.conditional !== true) {
+      console.log("Waiting for conditional triggers...");
+      if (inputField) {
+        inputField.disabled = true;
+        inputField.placeholder = "Waiting...";
+      }
+      const condCheckInterval = setInterval(() => {
+        if (window.conditional === true) {
+          clearInterval(condCheckInterval);
+          if (inputField) {
+            inputField.disabled = false;
+            inputField.placeholder = "";
+            inputField.focus();
+          }
+          // Force re-render as if jumped
+          outlineclicked = true;
+          updategame();
+          window.conditional = false;
+        }
+      }, 500);
+      return;
+    }
+
     let splitnewText = newText.split("--");
     const newContainer = document.createElement('div');
     // insert newText above the form as a question element
