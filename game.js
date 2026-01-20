@@ -386,6 +386,13 @@ document.addEventListener('DOMContentLoaded', () => {
       //  textbookdata = data.pchem_nodes;
       narrativedata = data.narrative_nodes;
       JSdata = narrativedata;
+      isNarrativeMode = true; // Flag for inventory tracking
+      const uiTopLeft = document.getElementById('ui-top-left');
+      if (uiTopLeft) uiTopLeft.style.display = 'flex';
+      const hpContainer = document.getElementById('hp-container');
+      if (hpContainer) hpContainer.style.display = 'flex';
+      const invSidebar = document.getElementById('inventory-sidebar');
+      if (invSidebar) invSidebar.style.display = '';
       updategame();
       currentid = "initial";
     })
@@ -756,18 +763,6 @@ document.addEventListener('DOMContentLoaded', () => {
       //   return [findnode(currentdivid).text || 'Loading condensed... please wait', currentdivid];
       // } 
     } else if (inputstring == "narrative") {
-      JSdata = narrativedata;
-      outlineText = narrativeoutlineText;
-      isNarrativeMode = true; // Flag for inventory tracking
-      currentdivid = "atomscover";
-      const uiTopLeft = document.getElementById('ui-top-left');
-      if (uiTopLeft) uiTopLeft.style.display = 'flex';
-
-      const hpContainer = document.getElementById('hp-container');
-      if (hpContainer) hpContainer.style.display = 'flex';
-
-      const invSidebar = document.getElementById('inventory-sidebar');
-      if (invSidebar) invSidebar.style.display = '';
       return [findnode("atomscover").text || 'Loading narrative... please wait', "atomscover"];
     } else if (inputstring == "outline") {
       return [outlineText || 'Loading outline... please wait', currentdivid];
