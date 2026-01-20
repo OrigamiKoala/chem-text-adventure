@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let wrongcounter = 0;
   let periodictableversion = 1
   let hintcount = 1;
-  let isNarrativeMode = false;
+  let isNarrativeMode = true;
   const generateStatsTo72 = () => {
     let stats = [12, 12, 12, 12, 12, 12];
     for (let i = 0; i < 150; i++) {
@@ -336,7 +336,7 @@ document.addEventListener('DOMContentLoaded', () => {
     .then(response => response.json())
     .then(data => {
       JSnarrativeoutline = data.active_narrative_outline;
-      JSoutline = data.active_pchem_outline;
+      JSoutline = data.active_narrative_outline;
       if (data.items) {
         window.itemsData = data.items;
       }
@@ -383,10 +383,11 @@ document.addEventListener('DOMContentLoaded', () => {
     .then(response => response.json())
     .then(async data => {
       fullJSdata = data;
-      textbookdata = data.pchem_nodes;
+      //  textbookdata = data.pchem_nodes;
       narrativedata = data.narrative_nodes;
-      JSdata = textbookdata;
+      JSdata = narrativedata;
       updategame();
+      currentid = "initial";
     })
     .catch(error => {
       console.error('Error loading game data:', error);
@@ -749,10 +750,11 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } else if (inputstring == "help") {
       return [helpText || 'Loading help... please wait', currentdivid];
-    } else if (inputstring == "condensed") {
-      JSdata = textbookdata;
-      currentdivid = "atomscover";
-      return [findnode(currentdivid).text || 'Loading condensed... please wait', currentdivid];
+      // } else if (inputstring == "condensed") {
+      //   JSdata = textbookdata;
+      //   currentdivid = "atomscover";
+      //   return [findnode(currentdivid).text || 'Loading condensed... please wait', currentdivid];
+      // } 
     } else if (inputstring == "narrative") {
       JSdata = narrativedata;
       outlineText = narrativeoutlineText;
