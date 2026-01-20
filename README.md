@@ -33,6 +33,8 @@ So the text is under the [CC BY-SA 4.0](https://creativecommons.org/licenses/by-
 
 Log:
 
+2026 January 20: Added features, added 1.5: Molecules, 1.6: Percent Composition (narrative)
+
 2026 January 2: Added 1.4: Atomic Mass (narrative)
 
 2026 January 1: Added 1.3: Electonegativity (narrative)

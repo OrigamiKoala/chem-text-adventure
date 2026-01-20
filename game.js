@@ -722,6 +722,31 @@ document.addEventListener('DOMContentLoaded', () => {
       } else {
         return ["Item not found.", currentdivid];
       }
+    } else if (decode(inputstring).toLowerCase().startsWith("drop ")) {
+      const query = decode(inputstring).substring(5).trim().toLowerCase();
+      // Helper to strip HTML tags for name comparison
+      const stripHtml = (html) => {
+        let tmp = document.createElement("DIV");
+        tmp.innerHTML = html;
+        return tmp.textContent || tmp.innerText || "";
+      };
+
+      const item = window.itemsData.find(i => {
+        const idMatch = i.id.toLowerCase() === query;
+        const nameMatch = stripHtml(i.name).toLowerCase() === query;
+        return idMatch || nameMatch;
+      });
+
+      if (item) {
+        if (window.inventory[item.id]) {
+          window.removeInventory(item.id, 1);
+          return ["Dropped " + item.id + " from your inventory.", currentdivid];
+        } else {
+          return ["You don't have " + item.id + " in your inventory.", currentdivid];
+        }
+      } else {
+        return ["Item not found.", currentdivid];
+      }
     } else if (inputstring == "help") {
       return [helpText || 'Loading help... please wait', currentdivid];
     } else if (inputstring == "condensed") {
@@ -911,6 +936,26 @@ document.addEventListener('DOMContentLoaded', () => {
         labContainer.removeChild(child);
       }
     });
+
+    // Close Button
+    const closeBtn = document.createElement('div');
+    closeBtn.innerHTML = '&#10006;'; // X symbol
+    closeBtn.style.position = 'absolute';
+    closeBtn.style.top = '10px';
+    closeBtn.style.right = '10px';
+    closeBtn.style.width = '30px';
+    closeBtn.style.height = '30px';
+    closeBtn.style.lineHeight = '30px';
+    closeBtn.style.textAlign = 'center';
+    closeBtn.style.cursor = 'pointer';
+    closeBtn.style.color = '#555';
+    closeBtn.style.fontSize = '20px';
+    closeBtn.style.zIndex = '1000';
+    closeBtn.title = "Close Lab";
+    closeBtn.onmouseover = () => { closeBtn.style.color = 'black'; };
+    closeBtn.onmouseout = () => { closeBtn.style.color = '#555'; };
+    closeBtn.onclick = () => closelab();
+    labContainer.appendChild(closeBtn);
 
     // Ensure inventory is last, so prepend table
     // Create lab table

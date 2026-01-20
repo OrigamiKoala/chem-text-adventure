@@ -6,6 +6,8 @@ List of commands:
 <br> 'periodic table' - summon the Periodic Table
 <br> 'launch lab' - launch the previous virtual lab
 <br> 'close lab' - close the virtual lab
+<br> 'take out' - find something in the lab and add it to your inventory
+<br> 'drop' - remove something from your inventory
 <br>
 <br>
 <br>Links:
