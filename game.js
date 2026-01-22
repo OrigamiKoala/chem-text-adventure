@@ -1110,7 +1110,67 @@ document.addEventListener('DOMContentLoaded', () => {
     startCooling();
 
     // Reusable Renderer
-    const renderVisuals = (liquidColors, pType, pColor) => {
+    // Helper for generating outlined cloud visuals
+    // Helper for generating outlined cloud visuals using gas.png
+    const createCloudVisual = (color) => {
+      const svgns = "http://www.w3.org/2000/svg";
+      const svg = document.createElementNS(svgns, "svg");
+      svg.setAttribute("viewBox", "0 0 100 100");
+      svg.style.width = "100%";
+      svg.style.height = "100%";
+      svg.style.overflow = "visible";
+
+      // Define Filter for Outline
+      const defs = document.createElementNS(svgns, "defs");
+      const filterId = "outline-" + Math.floor(Math.random() * 100000);
+      const filter = document.createElementNS(svgns, "filter");
+      filter.setAttribute("id", filterId);
+
+      // 1. Dilate SourceAlpha to create expanded mask
+      const dilate = document.createElementNS(svgns, "feMorphology");
+      dilate.setAttribute("operator", "dilate");
+      dilate.setAttribute("radius", "2");
+      dilate.setAttribute("in", "SourceAlpha");
+      dilate.setAttribute("result", "dilated");
+
+      // 2. Cut out original SourceAlpha from Dilated -> Edge
+      const compositeOut = document.createElementNS(svgns, "feComposite");
+      compositeOut.setAttribute("in", "dilated");
+      compositeOut.setAttribute("in2", "SourceAlpha");
+      compositeOut.setAttribute("operator", "out");
+      compositeOut.setAttribute("result", "outline");
+
+      // 3. Flood with Color
+      const flood = document.createElementNS(svgns, "feFlood");
+      flood.setAttribute("flood-color", color || "white");
+      flood.setAttribute("result", "floodColor");
+
+      // 4. Composite Color onto Edge
+      const compositeColor = document.createElementNS(svgns, "feComposite");
+      compositeColor.setAttribute("in", "floodColor");
+      compositeColor.setAttribute("in2", "outline");
+      compositeColor.setAttribute("operator", "in");
+      compositeColor.setAttribute("result", "coloredOutline");
+
+      filter.appendChild(dilate);
+      filter.appendChild(compositeOut);
+      filter.appendChild(flood);
+      filter.appendChild(compositeColor);
+      defs.appendChild(filter);
+      svg.appendChild(defs);
+
+      const image = document.createElementNS(svgns, "image");
+      image.setAttributeNS("http://www.w3.org/1999/xlink", "href", "images/gas.png");
+      image.setAttribute("width", "100");
+      image.setAttribute("height", "100");
+      image.setAttribute("filter", `url(#${filterId})`);
+
+      svg.appendChild(image);
+      return svg;
+    };
+
+    // Reusable Renderer
+    const renderVisuals = (liquidColors, pType, pColor, isProductGas) => {
       // Solid Layer
       if (flaskSolid) {
         if (pType === 'solid') {
@@ -1120,14 +1180,88 @@ document.addEventListener('DOMContentLoaded', () => {
           flaskSolid.style.left = '25%'; // Centered (100 - 50 / 2)
           flaskSolid.style.borderRadius = '0';
           flaskSolid.style.clipPath = 'polygon(5% 100%, 10% 85%, 18% 80%, 25% 70%, 32% 65%, 40% 55%, 50% 50%, 60% 55%, 68% 65%, 75% 70%, 82% 80%, 90% 85%, 95% 100%)';
-          flaskSolid.style.background = pColor || 'rgba(255, 255, 255, 0.2)';
+          flaskSolid.style.background = pColor || '#ffffff';
           flaskSolid.style.transitionDelay = '0s';
           flaskSolid.style.opacity = '1';
         } else {
-          flaskSolid.style.transitionDelay = '0s';
           flaskSolid.style.opacity = '0';
         }
       }
+
+      // Gas Layer (Bubbles or Cloud)
+      if (typeof flaskGas !== 'undefined' && flaskGas) {
+        if (pType === 'gas') {
+          flaskGas.style.opacity = '1';
+          flaskGas.innerHTML = '';
+
+          if (isProductGas) {
+            // Prevent restarting animation if already active (fixes "appear twice/flicker")
+            if (flaskGas.getAttribute('data-active-cloud') === 'true') return;
+
+            flaskGas.innerHTML = ''; // Start fresh
+            flaskGas.setAttribute('data-active-cloud', 'true');
+
+            // Product Gas = Cloud above flask
+            flaskGas.style.bottom = '100%'; // User requested "starts much higher"
+            flaskGas.style.left = '-20%';
+            flaskGas.style.width = '140%';
+            flaskGas.style.height = 'auto'; // SVG scales naturally
+            flaskGas.style.maskImage = 'none';
+            flaskGas.style.webkitMaskImage = 'none';
+
+            const cloudSvg = createCloudVisual(pColor);
+            cloudSvg.style.width = '100%';
+            cloudSvg.style.height = '150px'; // Forced height for SVG
+            cloudSvg.style.opacity = '0.9';
+            // Apply Float Animation - Slower (10s)
+            cloudSvg.style.animation = 'float-away 10s ease-out forwards';
+
+            // Cleanup attribute when animation ends
+            cloudSvg.addEventListener('animationend', () => {
+              flaskGas.setAttribute('data-active-cloud', 'false');
+            });
+
+            flaskGas.appendChild(cloudSvg);
+          } else {
+            // Reset active flag if switching to bubbles
+            flaskGas.setAttribute('data-active-cloud', 'false');
+            // Reactant Gas = Bubbles in flask
+            flaskGas.style.bottom = '10%'; // Reset to inside
+            flaskGas.style.left = '10%';
+            flaskGas.style.width = '80%';
+            flaskGas.style.height = '80%';
+            flaskGas.style.maskImage = "url('images/gas.png')"; // Restore mask if needed or just use container
+            flaskGas.style.webkitMaskImage = "url('images/gas.png')";
+            // Actually, remove mask for bubbles to look crisp
+            flaskGas.style.maskImage = 'none';
+            flaskGas.style.webkitMaskImage = 'none';
+
+            const numBubbles = 20;
+            for (let b = 0; b < numBubbles; b++) {
+              const bubble = document.createElement('div');
+              bubble.className = 'bubble';
+              const size = Math.random() * 12 + 4 + 'px';
+              bubble.style.width = size;
+              bubble.style.height = size;
+              bubble.style.left = Math.random() * 80 + 10 + '%';
+              bubble.style.bottom = Math.random() * 60 + '%';
+              bubble.style.animationDelay = Math.random() * 2 + 's';
+              bubble.style.animationDuration = Math.random() * 3 + 2 + 's';
+
+              // Apply Outline Style
+              bubble.style.backgroundColor = 'transparent';
+              bubble.style.border = `2px solid ${pColor || 'rgba(255, 255, 255, 0.5)'}`;
+
+              flaskGas.appendChild(bubble);
+            }
+          }
+        } else {
+          flaskGas.style.opacity = '0';
+          flaskGas.innerHTML = '';
+        }
+      }
+
+
       // Liquid Layer
       if (flaskLiquid) {
         if (liquidColors.length > 0) {
@@ -1226,7 +1360,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // Gas Layer
       if (flaskGas) {
         if (pType === 'gas') {
-          flaskGas.style.background = pColor || 'rgba(255, 255, 255, 0.2)';
+          flaskGas.style.background = 'transparent';
           flaskGas.style.opacity = '1';
         } else {
           flaskGas.style.opacity = '0';
@@ -1578,8 +1712,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       let pType = null;
       let pColor = null;
+      let isProductGas = false;
 
-      // Check if any solid exists in stack
       // Check if any solid exists in stack
       const solidItem = visualStack.find(v => v.type === 'solid');
       if (solidItem) {
@@ -1591,11 +1725,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (gasItem) {
           pType = 'gas';
           pColor = gasItem.color;
+          isProductGas = !!gasItem.isProduct;
         }
       }
 
       // Pass to renderer
-      renderVisuals(liquidColors, pType, pColor);
+      renderVisuals(liquidColors, pType, pColor, isProductGas);
 
       // Update displays to match visual state using current globals (which update upon reaction execution).
 
@@ -1634,6 +1769,32 @@ document.addEventListener('DOMContentLoaded', () => {
       processedBeakersCount = selectedBeakers.length;
     };
 
+    const checkFlaskReactions = () => {
+      console.log("Checking for chained reactions...");
+      let allIds = [];
+      visualStack.forEach(v => {
+        // Exclude ephemeral gas products from reaction chains
+        if (v.isProduct && v.type === 'gas') return;
+
+        if (v.ids && v.ids.length > 0) {
+          allIds.push(...v.ids);
+        }
+      });
+      console.log("Current Flask IDs (excluding gas products):", allIds);
+
+      if (allIds.length < 1) return;
+
+      const state = getFlaskState(allIds);
+      console.log("Chained Reaction State:", state);
+
+      if (state.reactionKey) {
+        console.log("Chained reaction detected: " + state.reactionKey);
+        queueReaction(state);
+      } else {
+        console.log("No further reactions found.");
+      }
+    };
+
     // Identify reacting IDs assuming the subset causing the reaction consumes its inputs.
 
     const queueReaction = (state) => {
@@ -1669,6 +1830,16 @@ document.addEventListener('DOMContentLoaded', () => {
             });
           }
 
+          // 0. Accumulate IDs from consumed items (to allow products to mimic their ingredients)
+          const consumedIds = [];
+          visualStack.forEach(token => {
+            const intersection = token.ids.filter(id => idsToconsume.has(id));
+            if (intersection.length > 0) {
+              consumedIds.push(...token.ids);
+            }
+          });
+          const uniqueConsumedIds = [...new Set(consumedIds)];
+
           // 1. Filter out tokens whose IDs were fully consumed.
           let newStack = visualStack.filter(token => {
             const intersection = token.ids.filter(id => idsToconsume.has(id)); // intersection with set
@@ -1680,11 +1851,26 @@ document.addEventListener('DOMContentLoaded', () => {
           // 2. Add ALL Products
           if (products.length > 0) {
             products.forEach(prod => {
+              // Merge product ID with consumed IDs to allow Chained "Upgrade" Reactions
+              // e.g. if 1+2 -> P, P carries {P, 1, 2}. P+3 matches {1, 2, 3}.
+              const compoundIds = prod.id ? [prod.id, ...uniqueConsumedIds] : [...uniqueConsumedIds];
+              const finalIds = [...new Set(compoundIds)]; // Deduplicate
+
               newStack.push({
-                ids: [],
+                ids: finalIds,
                 color: prod.color,
-                type: prod.type || 'liquid'
+                type: prod.type || 'liquid',
+                isProduct: true
               });
+
+              // If product is gas, schedule its removal (ephemeral)
+              if (prod.type === 'gas') {
+                setTimeout(() => {
+                  // Remove this specific gas instance from visualStack
+                  visualStack = visualStack.filter(v => !(v.isProduct && v.type === 'gas'));
+                  renderVisualStack();
+                }, 4000);
+              }
             });
           }
 
@@ -1712,6 +1898,11 @@ document.addEventListener('DOMContentLoaded', () => {
           console.log("Reaction triggered conditional flag!");
           window.conditional = true;
         }
+
+        // Trigger Chained Reactions after a short delay
+        setTimeout(() => {
+          checkFlaskReactions();
+        }, 500);
 
         return state;
 
@@ -1797,6 +1988,21 @@ document.addEventListener('DOMContentLoaded', () => {
         solidBlock.className = 'lab-item solid-block';
         solidBlock.style.backgroundColor = fluidColor;
         beakerWrapper.appendChild(solidBlock);
+      } else if (itemType === 'gas') {
+        // Render as Cloud above Beaker using SVG
+        const cloudSvg = createCloudVisual(fluidColor);
+        cloudSvg.style.position = 'absolute';
+        cloudSvg.style.bottom = '50%';
+        cloudSvg.style.left = '-10%';
+        cloudSvg.style.width = '120%';
+        cloudSvg.style.height = '140px';
+        cloudSvg.style.zIndex = '3';
+        cloudSvg.style.opacity = '0.9';
+        cloudSvg.style.pointerEvents = 'none'; // Click goes to beaker
+        beakerWrapper.appendChild(cloudSvg);
+
+        // Still render beaker container
+        beakerWrapper.appendChild(beakerImage);
       } else {
         // Render as Beaker (Default)
         if (fluidColor) {

@@ -921,3 +921,51 @@ input:focus {
         color: var(--muted);
     }
 }
+
+/* Bubbles for Gas in Flask */
+.bubble {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.4);
+    box-shadow: inset 0 0 2px rgba(255, 255, 255, 0.6);
+    pointer-events: none;
+    z-index: 2;
+    animation: bubble-rise 4s infinite ease-in-out;
+}
+
+@keyframes bubble-rise {
+    0% {
+        transform: translateY(0) scale(1);
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 1;
+    }
+
+    90% {
+        opacity: 1;
+        transform: translateY(-50px) scale(1.2);
+    }
+
+    100% {
+        transform: translateY(-60px) scale(1.4);
+        opacity: 0;
+    }
+}
+
+@keyframes float-away {
+    0% {
+        transform: translateY(0) scale(0.5);
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 0.9;
+    }
+
+    100% {
+        transform: translateY(-250px) scale(1.5);
+        opacity: 0;
+    }
+}
