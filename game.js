@@ -1170,7 +1170,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Reusable Renderer
-    const renderVisuals = (liquidColors, pType, pColor, isProductGas) => {
+    const renderVisuals = (liquidColors, pType, pColor, isProductGas, resetLiquids = false) => {
       // Solid Layer
       if (flaskSolid) {
         if (pType === 'solid') {
@@ -1243,8 +1243,13 @@ document.addEventListener('DOMContentLoaded', () => {
               const size = Math.random() * 12 + 4 + 'px';
               bubble.style.width = size;
               bubble.style.height = size;
-              bubble.style.left = Math.random() * 80 + 10 + '%';
-              bubble.style.bottom = Math.random() * 60 + '%';
+
+              // Spawning at base of liquid (Bottom constrained)
+              // Liquid starts at ~14.5%. Bubbles spawn 15%-25%.
+              // Centered horizontally (30-70% of flask width)
+              bubble.style.left = Math.random() * 40 + 30 + '%';
+              bubble.style.bottom = Math.random() * 10 + 15 + '%';
+
               bubble.style.animationDelay = Math.random() * 2 + 's';
               bubble.style.animationDuration = Math.random() * 3 + 2 + 's';
 
@@ -1302,6 +1307,9 @@ document.addEventListener('DOMContentLoaded', () => {
             clipper.style.display = 'flex';
             clipper.style.flexDirection = 'column-reverse';
             flaskLiquid.appendChild(clipper);
+          } else if (resetLiquids) {
+            // Hard reset requested: clear layers to avoid morphing-vs-disappearing asymmetry
+            clipper.innerHTML = '';
           }
 
           const heightPerLiquid = 12.5;
@@ -1705,7 +1713,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentProductType = "liquid"; // Global for type
     let currentProductColor = "white"; // Global for color
     let currentProducts = []; // Global array for multiple products
-    const renderVisualStack = () => {
+    const renderVisualStack = (opts = {}) => {
       // Map visualStack items to colors for the renderer
       const liquidColors = visualStack.filter(v => v.type === 'liquid' || !v.type).map(v => v.color);
       // Determine product type/color based on visualStack items (solid/gas presence).
@@ -1730,7 +1738,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       // Pass to renderer
-      renderVisuals(liquidColors, pType, pColor, isProductGas);
+      renderVisuals(liquidColors, pType, pColor, isProductGas, opts.resetLiquids);
 
       // Update displays to match visual state using current globals (which update upon reaction execution).
 
@@ -1804,6 +1812,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Identify Reagents & Products
         const idsToconsume = new Set(state.reactingIndices);
+        console.log("QueueReaction: Target IDs:", Array.from(idsToconsume));
+        console.log("QueueReaction: VisualStack:", JSON.parse(JSON.stringify(visualStack)));
+
         let consumed = false;
         let totalLiquidLayersConsumed = 0;
 
@@ -1818,6 +1829,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
           }
         });
+
+        console.log("QueueReaction: Consumed?", consumed);
 
         if (consumed) {
           const products = state.products || [];
@@ -1891,7 +1904,11 @@ document.addEventListener('DOMContentLoaded', () => {
         flask.classList.add('flask-active');
         setTimeout(() => flask.classList.remove('flask-active'), 1000); // Shake
 
-        renderVisualStack();
+        // Animate Flask
+        flask.classList.add('flask-active');
+        setTimeout(() => flask.classList.remove('flask-active'), 1000); // Shake
+
+        renderVisualStack({ resetLiquids: true });
 
         // Trigger Conditional if applicable
         if (state.triggerConditional) {
