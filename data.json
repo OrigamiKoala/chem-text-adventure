@@ -2254,7 +2254,7 @@
       "id": "ch3f validation",
       "text": "This mystery gas is \\(\\ce{CH_3F\\}, which is methyl fluoride - definitely not methane.\n--\nWhew! Luckily, though, you find some extra methane in some corner of the closet.\n--\nYou charge up the battery of the stun gun, and proceed to finish carving a hole in the door.\n--\nSeveral smoky minutes later, a piece of the door falls away, and you step through to the room outside.\n--\nType anything to continue.",
       "type": "fr",
-      "next": "end",
+      "next": "reactions cover",
       "roll": null,
       "success": null,
       "fail": null,
@@ -2265,6 +2265,96 @@
       "op3": null,
       "op4": null,
       "conditional": null,
+      "altcorrect": null,
+      "hint2": null
+    },
+    {
+      "id": "reactions cover",
+      "text": "You step into a dim courtyard, the last rays of sunset casting everything in a pink and purple glow.\n--\nThe courtyard is paved with concrete, but a marble section in the center hosts a bronze statue, atop a marble pedestal. The statue is of a hand, palm upward.\n--\nThe buildings around you, upon closer inspection, all look to be abandoned. The entire complex is eerily silent.\n--\nSuddenly, you hear a buzz, and see a swarm of bugs flying toward you. You hurry back into the lab, and the bugs don't seem to follow. When they reach the entrance you carved in the door, the cloud abruptly stops and flies away.\n--\n<img src = \"images/courtyard.jpg\">\n--\nYour bug bites begin to itch, and you notice several of them have begun to swell up.\n--\nWhat would you like to do next?\n--\n<ol>\n<li>Heal the bug bites</li>\n<li>Put on one of the protective suits and go back out</li>\n<li>Check out the statue</li>\n</ol>",
+      "type": "mcq",
+      "next": null,
+      "roll": null,
+      "success": null,
+      "fail": null,
+      "correct": null,
+      "hint": null,
+      "op1": "heal bug bites",
+      "op2": "put on suit",
+      "op3": "check out statue",
+      "op4": null,
+      "conditional": null,
+      "altcorrect": null,
+      "hint2": null
+    },
+    {
+      "id": "heal bug bites",
+      "text": "You vaguely remember something in the book - a compound called \"sodium bicarbonate\" that could help with the itching.\n--\nYou look throught the book again, and discover the following thing written under \"Production:\"\n--\n\\[\\ce{NaOH (aq) + CO_2 (g) -> NaHCO_3 (g)}\\]\n--\nWhat does that mean?\n--\nWell, considering it's written under \"Production\", it must be a recipe of sorts for how to make sodium bicarbonate (\\(\\ce{NaHCO_3}\\)). The arrow probably means the stuff on the left forms the stuff on the right, sodium bicarbonate.\n--\nSo you're probably going to need some \\(\\ce{NaOH}\\) and some \\(\\ce{CO_2}\\). Luckily, you find some in the cabinets. <script>currentlab=\"baking soda\"</script>Let's open up the lab workspace and try it out!\n--\nType anything once you have made baking soda.",
+      "type": "fr",
+      "next": "baking soda lab",
+      "roll": null,
+      "success": null,
+      "fail": null,
+      "correct": null,
+      "hint": null,
+      "op1": null,
+      "op2": null,
+      "op3": null,
+      "op4": null,
+      "conditional": null,
+      "altcorrect": null,
+      "hint2": null
+    },
+    {
+      "id": "put on suit",
+      "text": null,
+      "type": null,
+      "next": null,
+      "roll": null,
+      "success": null,
+      "fail": null,
+      "correct": null,
+      "hint": null,
+      "op1": null,
+      "op2": null,
+      "op3": null,
+      "op4": null,
+      "conditional": null,
+      "altcorrect": null,
+      "hint2": null
+    },
+    {
+      "id": "check out statue",
+      "text": null,
+      "type": null,
+      "next": null,
+      "roll": null,
+      "success": null,
+      "fail": null,
+      "correct": null,
+      "hint": null,
+      "op1": null,
+      "op2": null,
+      "op3": null,
+      "op4": null,
+      "conditional": null,
+      "altcorrect": null,
+      "hint2": null
+    },
+    {
+      "id": "baking soda lab",
+      "text": null,
+      "type": null,
+      "next": null,
+      "roll": null,
+      "success": null,
+      "fail": null,
+      "correct": null,
+      "hint": null,
+      "op1": null,
+      "op2": null,
+      "op3": null,
+      "op4": null,
+      "conditional": 1,
       "altcorrect": null,
       "hint2": null
     }
@@ -2308,7 +2398,7 @@
     {
       "reference_num": 2,
       "content": "Chemical Reactions",
-      "div": "error"
+      "div": "reactions cover"
     }
   ],
   "labs": [
@@ -2359,6 +2449,18 @@
       "beaker4": null,
       "attributes4": null,
       "reaction": "{\n\"1_Powder #1\":[{\"id\":\"liquid\",\"type\":\"liquid\"}]\n\"1_Powder #2\":[{\"id\":\"liquid\",\"type\":\"liquid\"}]\n}"
+    },
+    {
+      "labid": "baking soda",
+      "beaker1": "\\(\\ce{NaOH}\\)",
+      "attributes1": "{\"type\":\"liquid\",\"temp\":\"298 K\", \"ph\":\"14\", \"script\":\"changeHP(-100)\"}",
+      "beaker2": "\\(\\ce{CO_2}\\)",
+      "attributes2": "{\"type\":\"gas\"}",
+      "beaker3": null,
+      "attributes3": null,
+      "beaker4": null,
+      "attributes4": null,
+      "reaction": "{\n\"1_2\":[{\"id\":\"Baking soda\",\"name\":\"\\(\\ce{NaHCO_3}\\)\",\"type\":\"solid\",\"color\":\"#ffffff\",\"script\":\"changeHP(20)\",\"conditional\":\"true\"}]\n}"
     }
   ],
   "items": [
@@ -2469,7 +2571,7 @@
     },
     {
       "id": "Amoxicillin",
-      "name": "Amoxicllin",
+      "name": "Amoxicillin",
       "use": "antibiotic",
       "attributes": null,
       "script": "HPloss=0; changeHP(100)"
@@ -2480,6 +2582,13 @@
       "use": "Unknown",
       "attributes": "{\"type\":\"gas\",\"color\":\"#000\"}",
       "script": null
+    },
+    {
+      "id": "Hydrocortisone",
+      "name": "Hydrocortisone <br> <img src = \"images/hydrocortisone.png\">",
+      "use": "Anti-inflammatory agent",
+      "attributes": "{\"type\":\"liquid\"}",
+      "script": "HPloss=0; changeHP(100)"
     }
   ]
 }

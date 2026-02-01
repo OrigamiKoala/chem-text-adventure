@@ -1263,6 +1263,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
           flaskGas.style.opacity = '0';
           flaskGas.innerHTML = '';
+          flaskGas.setAttribute('data-active-cloud', 'false');
         }
       }
 
@@ -1707,6 +1708,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Reaction Queue Globals ---
     let visualStack = []; // Array of { ids: [beakerId], color: string, type: 'liquid'/'solid'/'gas' }
     let reactionQueue = Promise.resolve();
+    let logicUpdateTimer = null; // Debounce timer
     let processedBeakersCount = 0;
     let currentReactionScript = ""; // Global for addToInventory
     let currentProductName = ""; // Global for addToInventory name
@@ -1757,24 +1759,11 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const processLogicUpdates = () => {
-      // Iterate through new beakers
-      for (let i = processedBeakersCount + 1; i <= selectedBeakers.length; i++) {
-        const subset = selectedBeakers.slice(0, i);
-        // Check if new subset triggers a *new* reaction, ignoring valid reactions from previous subsets.
-        const prevSubset = selectedBeakers.slice(0, i - 1);
-        const prevState = getFlaskState(prevSubset);
-
-        const state = getFlaskState(subset, prevState.reactionKey);
-
-        // Robust detection: Check if reactionKey changed or became non-null.
-        const newReaction = state.reactionKey && (!prevState.reactionKey || state.reactionKey !== prevState.reactionKey);
-
-        if (newReaction) {
-          // Schedule Reaction
-          queueReaction(state);
-        }
-      }
-      processedBeakersCount = selectedBeakers.length;
+      // Debounce the reaction check to allow multiple additions (e.g. 1+2+3)
+      if (logicUpdateTimer) clearTimeout(logicUpdateTimer);
+      logicUpdateTimer = setTimeout(() => {
+        checkFlaskReactions();
+      }, 500);
     };
 
     const checkFlaskReactions = () => {
@@ -1796,8 +1785,19 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log("Chained Reaction State:", state);
 
       if (state.reactionKey) {
-        console.log("Chained reaction detected: " + state.reactionKey);
-        queueReaction(state);
+        // Prevent Infinite Loop: Check if this reaction is just re-identifying an existing product.
+        // If all reacting IDs are contained within a SINGLE product token, ignore it.
+        const internalReaction = visualStack.some(v =>
+          v.isProduct &&
+          state.reactingIndices.every(reqId => v.ids && v.ids.includes(reqId))
+        );
+
+        if (internalReaction) {
+          console.log("Skipping self-reaction loop for: " + state.reactionKey);
+        } else {
+          console.log("Chained reaction detected: " + state.reactionKey);
+          queueReaction(state);
+        }
       } else {
         console.log("No further reactions found.");
       }
@@ -1812,6 +1812,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Identify Reagents & Products
         const idsToconsume = new Set(state.reactingIndices);
+
+        // Strict Check: Ensure all reactants are still present in the stack
+        // This prevents "ghost" reactions if ingredients were consumed by a previous reaction in the queue.
+        // Removed: This check is too strict and prevents valid chained reactions where a product is consumed.
+        // The visualStack filtering logic handles actual consumption.
+        // const currentIds = new Set();
+        // visualStack.forEach(v => {
+        //   if (v.ids) v.ids.forEach(id => currentIds.add(id));
+        // });
+        // const missingReactants = state.reactingIndices.some(id => !currentIds.has(id));
+        // if (missingReactants) {
+        //   console.log("QueueReaction: Aborting, reactants missing:", state.reactingIndices);
+        //   return;
+        // }
+
         console.log("QueueReaction: Target IDs:", Array.from(idsToconsume));
         console.log("QueueReaction: VisualStack:", JSON.parse(JSON.stringify(visualStack)));
 
@@ -1869,18 +1884,19 @@ document.addEventListener('DOMContentLoaded', () => {
               const compoundIds = prod.id ? [prod.id, ...uniqueConsumedIds] : [...uniqueConsumedIds];
               const finalIds = [...new Set(compoundIds)]; // Deduplicate
 
-              newStack.push({
+              const token = {
                 ids: finalIds,
                 color: prod.color,
                 type: prod.type || 'liquid',
                 isProduct: true
-              });
+              };
+              newStack.push(token);
 
               // If product is gas, schedule its removal (ephemeral)
               if (prod.type === 'gas') {
                 setTimeout(() => {
                   // Remove this specific gas instance from visualStack
-                  visualStack = visualStack.filter(v => !(v.isProduct && v.type === 'gas'));
+                  visualStack = visualStack.filter(v => v !== token);
                   renderVisualStack();
                 }, 4000);
               }
