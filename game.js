@@ -2342,6 +2342,10 @@ document.addEventListener('DOMContentLoaded', () => {
       currentTypingContext.interrupted = true;
       currentTypingContext.finish();
       console.log('Typing interrupted by user.');
+      // Only abort if no input provided and not a forced jump (outline triggers)
+      if ((!inputField || !inputField.value) && !outlineclicked) {
+        return;
+      }
     }
 
     const userInput = inputField ? inputField.value : '';
@@ -2386,7 +2390,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updategame();
         // Reset flag/handler (don't reset window.conditional to false here if it needs to stay true for other checks, 
         // but typically it consumes the event. The previous code toggled it.)
-        // window.conditional = false; // Original code toggled it.
+        window.conditional = false; // Original code toggled it.
         window.onConditionalMet = null;
       };
 
