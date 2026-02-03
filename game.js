@@ -718,10 +718,31 @@ document.addEventListener('DOMContentLoaded', () => {
         return tmp.textContent || tmp.innerText || "";
       };
 
+      // Helper to strip LaTeX wrappers
+      const cleanLatex = (str) => {
+        // Removes: $$, \(, \), \ch{, \ce{, }, \text{ and also _ and ^ for subscripts/superscripts
+        return str.replace(/\$\$|\\\(|\\\)|\\ch\{|\\ce\{|\\text\{|\}|_|(\^)/g, "");
+      };
+
+      const cleanQuery = cleanLatex(query);
+
       const item = window.itemsData.find(i => {
-        const idMatch = i.id.toLowerCase() === query;
-        const nameMatch = stripHtml(i.name).toLowerCase() === query;
-        return idMatch || nameMatch;
+        const id = i.id.toLowerCase();
+        const name = stripHtml(i.name).toLowerCase();
+
+        const idMatch = id === query;
+        const nameMatch = name === query;
+        const latexIdMatch = cleanLatex(id) === cleanQuery;
+
+        return idMatch || nameMatch || latexIdMatch;
+      }) || window.itemsData.find(i => {
+        const id = i.id.toLowerCase();
+        const name = stripHtml(i.name).toLowerCase();
+
+        // Fallback: Partial match
+        return id.includes(query) ||
+          name.includes(query) ||
+          cleanLatex(id).includes(cleanQuery);
       });
 
       if (item) {
@@ -1317,15 +1338,18 @@ document.addEventListener('DOMContentLoaded', () => {
           const fillPerc = Math.min(liquidColors.length * heightPerLiquid, 100);
           const targetClip = `inset(${100 - fillPerc}% 0 0 0)`;
 
-          // Animate Level
+          // Animate Level - Use ease-out for faster "start" feel
+          const transitionDuration = '0.5s';
           if (flaskLiquid.style.opacity === '0') {
             clipper.style.transition = 'none';
             clipper.style.clipPath = `inset(100% 0 0 0)`;
             void clipper.offsetWidth;
-            clipper.style.transition = 'clip-path 1s ease-in-out';
+            clipper.style.transition = `clip-path ${transitionDuration} ease-out`;
             clipper.style.clipPath = targetClip;
           } else {
-            clipper.style.transition = 'clip-path 1s ease-in-out';
+            // Latch current state to ensure transition starts from exactly where we are
+            window.getComputedStyle(clipper).clipPath;
+            clipper.style.transition = `clip-path ${transitionDuration} ease-out`;
             clipper.style.clipPath = targetClip;
           }
 
@@ -1337,15 +1361,27 @@ document.addEventListener('DOMContentLoaded', () => {
             let layer;
             if (i < currentLayers.length) {
               layer = currentLayers[i];
+              // Existing layer - transition is already active, just update color
+              layer.style.height = layerHeight;
+              layer.style.backgroundColor = color;
             } else {
+              // New layer - Create and set color IMMEDIATELY before transition
               layer = document.createElement('div');
               layer.style.width = '100%';
               layer.style.flexShrink = '0';
-              layer.style.transition = 'background-color 2s ease, height 1s ease';
+
+              // Set properties first so no transition happens from default (transparent)
+              layer.style.height = layerHeight;
+              layer.style.backgroundColor = color;
+
               clipper.appendChild(layer);
+
+              // Force reflow to ensure initial state is locked
+              void layer.offsetWidth;
+
+              // Now enable transition for FUTURE changes
+              layer.style.transition = 'background-color 2s ease, height 1s ease';
             }
-            layer.style.height = layerHeight;
-            layer.style.backgroundColor = color;
           });
 
           while (clipper.children.length > liquidColors.length) {
@@ -2336,20 +2372,24 @@ document.addEventListener('DOMContentLoaded', () => {
         inputField.disabled = true;
         inputField.placeholder = "Waiting...";
       }
-      const condCheckInterval = setInterval(() => {
-        if (window.conditional === true) {
-          clearInterval(condCheckInterval);
-          if (inputField) {
-            inputField.disabled = false;
-            inputField.placeholder = "";
-            inputField.focus();
-          }
-          // Force re-render as if jumped
-          outlineclicked = true;
-          updategame();
-          window.conditional = false;
+
+      // Reactive approach: Define setter if not already doing so, or just hook into the property.
+      // We'll define a special callback on the window object that the setter will trigger.
+      window.onConditionalMet = () => {
+        if (inputField) {
+          inputField.disabled = false;
+          inputField.placeholder = "";
+          inputField.focus();
         }
-      }, 500);
+        // Force re-render as if jumped
+        outlineclicked = true;
+        updategame();
+        // Reset flag/handler (don't reset window.conditional to false here if it needs to stay true for other checks, 
+        // but typically it consumes the event. The previous code toggled it.)
+        // window.conditional = false; // Original code toggled it.
+        window.onConditionalMet = null;
+      };
+
       return;
     }
 
@@ -2561,6 +2601,22 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     };
   }
+
+  // --- Reactive Variable Setup ---
+  let _conditionalFlag = false;
+  Object.defineProperty(window, 'conditional', {
+    get: function () { return _conditionalFlag; },
+    set: function (val) {
+      _conditionalFlag = val;
+      if (val === true && typeof window.onConditionalMet === 'function') {
+        window.onConditionalMet();
+        _conditionalFlag = false;
+      }
+    }
+  });
+
+  // Start
+  loadGameData();
 });
 
 
