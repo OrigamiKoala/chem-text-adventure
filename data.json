@@ -2648,7 +2648,7 @@
     },
     {
       "id": "how many g of baking soda",
-      "text": "Nice!\n--\nSo, if you have 15 g of \\(\\ce{NaOH}\\), how many grams of baking soda can you form? (Don't write units)\n--\nBy the way, here's the balanced equation:\n\\[\\ce{NaOH + CO2 -> 2 NaHCO3}\\]",
+      "text": "Nice!\n--\nSo, if you have 15 g of \\(\\ce{NaOH}\\), how many grams of baking soda can you form? (Don't write units)\n--\nBy the way, here's the balanced equation:\n\\[\\ce{NaOH + CO2 -> NaHCO3}\\]",
       "type": "frq",
       "next": "soda validation",
       "roll": null,
