@@ -840,7 +840,32 @@ document.addEventListener('DOMContentLoaded', () => {
       return [findnode(currentid).text, currentid];
     } else if (currentobj.type === 'frq') {
       inputstring = inputstring.trim();
-      if (inputstring == currentobj.correct || inputstring == currentobj.altcorrect) {
+      let isCorrect = (inputstring == currentobj.correct || inputstring == currentobj.altcorrect);
+
+      // Add numerical tolerance check (5%)
+      const userNum = Number(inputstring);
+      if (!isCorrect && inputstring !== "" && !isNaN(userNum)) {
+        const correctNum = Number(currentobj.correct);
+        if (!isNaN(correctNum)) {
+          const tolerance = Math.abs(correctNum * 0.05);
+          if (Math.abs(userNum - correctNum) <= tolerance) {
+            isCorrect = true;
+          }
+        }
+
+        // Also check altcorrect if it's a number
+        if (!isCorrect && currentobj.altcorrect) {
+          const altCorrectNum = Number(currentobj.altcorrect);
+          if (!isNaN(altCorrectNum)) {
+            const tolerance = Math.abs(altCorrectNum * 0.05);
+            if (Math.abs(userNum - altCorrectNum) <= tolerance) {
+              isCorrect = true;
+            }
+          }
+        }
+      }
+
+      if (isCorrect) {
         historyStack.push(currentdivid);
         nextdivid = currentobj.next;
         const nextobj = findnode(nextdivid);
