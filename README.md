@@ -33,6 +33,8 @@ So the text is under the [CC BY-SA 4.0](https://creativecommons.org/licenses/by-
 
 Log:
 
+2026 February 4: Added 2.4: Limiting Reagents
+
 2026 February 3: Added 1.7-2.3
 
 2026 January 20: Added features, added 1.5: Molecules, 1.6: Percent Composition (narrative)
