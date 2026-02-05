@@ -1216,7 +1216,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Reusable Renderer
-    const renderVisuals = (liquidColors, pType, pColor, isProductGas, resetLiquids = false) => {
+    const renderVisuals = (liquidColors, pType, pColor, isProductGas, resetLiquids = false, bubbleColor = null) => {
       // Solid Layer
       if (flaskSolid) {
         if (pType === 'solid') {
@@ -1235,85 +1235,115 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       // Gas Layer (Bubbles or Cloud)
+      // Gas Layer (Bubbles or Cloud)
       if (typeof flaskGas !== 'undefined' && flaskGas) {
+        // Reset container to full coverage for independent child positioning
+        flaskGas.style.bottom = '0%';
+        flaskGas.style.left = '0%';
+        flaskGas.style.width = '100%';
+        flaskGas.style.height = '100%';
+        flaskGas.style.opacity = '1';
+        flaskGas.style.maskImage = 'none';
+        flaskGas.style.webkitMaskImage = 'none';
+
+        // 1. Cloud Logic (Product)
         if (pType === 'gas' || pType === 'trapped_gas') {
-          flaskGas.style.opacity = '1';
-          flaskGas.innerHTML = '';
-
           if (isProductGas) {
-            // Prevent restarting animation if already active (fixes "appear twice/flicker")
-            if (flaskGas.getAttribute('data-active-cloud') === 'true') return;
-
-            flaskGas.innerHTML = ''; // Start fresh
-            flaskGas.setAttribute('data-active-cloud', 'true');
-
-            // Product Gas = Cloud above flask
-            flaskGas.style.bottom = '100%'; // User requested "starts much higher"
-            flaskGas.style.left = '-20%';
-            flaskGas.style.width = '140%';
-            flaskGas.style.height = 'auto'; // SVG scales naturally
-            flaskGas.style.maskImage = 'none';
-            flaskGas.style.webkitMaskImage = 'none';
-
-            const cloudSvg = createCloudVisual(pColor);
-            cloudSvg.style.width = '100%';
-            cloudSvg.style.height = '150px'; // Forced height for SVG
-            cloudSvg.style.opacity = '0.9';
-            // Apply Float Animation - Slower (10s) or Persistent (for trapped_gas)
-            if (pType === 'trapped_gas') {
-              cloudSvg.style.animation = 'float-and-stay 5s ease-out forwards';
+            // Prevent restarting animation if already active 
+            if (flaskGas.getAttribute('data-active-cloud') === 'true') {
+              // Active
             } else {
-              cloudSvg.style.animation = 'float-away 10s ease-out forwards';
-            }
+              // Clear existing cloud if any (but careful not to wipe bubbles yet, though we rebuild bubbles strictly below)
+              // actually, just remove old cloud
+              const oldCloud = flaskGas.querySelector('.gas-cloud');
+              if (oldCloud) oldCloud.remove();
 
-            // Cleanup attribute when animation ends
-            cloudSvg.addEventListener('animationend', () => {
-              flaskGas.setAttribute('data-active-cloud', 'false');
-            });
+              flaskGas.setAttribute('data-active-cloud', 'true');
 
-            flaskGas.appendChild(cloudSvg);
-          } else {
-            // Reset active flag if switching to bubbles
-            flaskGas.setAttribute('data-active-cloud', 'false');
-            // Reactant Gas = Bubbles in flask
-            flaskGas.style.bottom = '10%'; // Reset to inside
-            flaskGas.style.left = '10%';
-            flaskGas.style.width = '80%';
-            flaskGas.style.height = '80%';
-            flaskGas.style.maskImage = "url('images/gas.png')"; // Restore mask if needed or just use container
-            flaskGas.style.webkitMaskImage = "url('images/gas.png')";
-            // Actually, remove mask for bubbles to look crisp
-            flaskGas.style.maskImage = 'none';
-            flaskGas.style.webkitMaskImage = 'none';
+              const cloudWrapper = document.createElement('div');
+              cloudWrapper.className = 'gas-cloud';
+              cloudWrapper.style.position = 'absolute';
+              cloudWrapper.style.bottom = '60%';
+              cloudWrapper.style.left = '-20%';
+              cloudWrapper.style.width = '140%';
+              cloudWrapper.style.height = 'auto';
+              cloudWrapper.style.pointerEvents = 'none';
 
-            const numBubbles = 20;
-            for (let b = 0; b < numBubbles; b++) {
-              const bubble = document.createElement('div');
-              bubble.className = 'bubble';
-              const size = Math.random() * 12 + 4 + 'px';
-              bubble.style.width = size;
-              bubble.style.height = size;
+              const cloudSvg = createCloudVisual(pColor);
+              cloudSvg.style.width = '100%';
+              cloudSvg.style.height = '150px';
+              cloudSvg.style.opacity = '0.9';
+              if (pType === 'trapped_gas') {
+                cloudSvg.style.animation = 'float-and-stay 5s ease-out forwards';
+              } else {
+                cloudSvg.style.animation = 'float-away 10s ease-out forwards';
+              }
 
-              // Spawning at base of liquid (Bottom constrained)
-              // Liquid starts at ~14.5%. Bubbles spawn 15%-25%.
-              // Centered horizontally (30-70% of flask width)
-              bubble.style.left = Math.random() * 40 + 30 + '%';
-              bubble.style.bottom = Math.random() * 10 + 15 + '%';
+              if (pType !== 'trapped_gas') {
+                cloudSvg.addEventListener('animationend', () => {
+                  flaskGas.setAttribute('data-active-cloud', 'false');
+                  // For ephemeral gas, we might want to remove it visually here too?
+                  // Logic handles removal from stack, which triggers re-render.
+                });
+              } else {
+                // For trapped_gas, we want it to persist. 
+                // Do NOT reset the flag, so subsequent renders see it as "true" and leave the DOM alone.
+                // This ensures the "forwards" style (-100px) remains active.
+              }
 
-              bubble.style.animationDelay = Math.random() * 2 + 's';
-              bubble.style.animationDuration = Math.random() * 3 + 2 + 's';
-
-              // Apply Outline Style
-              bubble.style.backgroundColor = 'transparent';
-              bubble.style.border = `2px solid ${pColor || 'rgba(255, 255, 255, 0.5)'}`;
-
-              flaskGas.appendChild(bubble);
+              cloudWrapper.appendChild(cloudSvg);
+              flaskGas.appendChild(cloudWrapper);
             }
           }
         } else {
-          flaskGas.style.opacity = '0';
-          flaskGas.innerHTML = '';
+          // No cloud expected, remove if present? 
+          // If we switch from cloud to no-cloud, re-render should handle it by not adding it.
+          // However, if we are in a persistent state, we need to be careful.
+          // If pType is NOT gas/trapped_gas, we should effectively obscure gas layer? 
+          // But wait, we separate cloud/bubbles now.
+          // If pType is not gas/trapped_gas, it means NO cloud.
           flaskGas.setAttribute('data-active-cloud', 'false');
+          const oldCloud = flaskGas.querySelector('.gas-cloud');
+          if (oldCloud) oldCloud.remove();
+        }
+
+        // 2. Bubble Logic (Reactant)
+        // Re-render bubbles every time (they are cheap divs)
+        // Remove old bubbles
+        const oldBubbles = flaskGas.querySelectorAll('.bubble-container');
+        oldBubbles.forEach(b => b.remove());
+
+        if (bubbleColor) {
+          const bubbleContainer = document.createElement('div');
+          bubbleContainer.className = 'bubble-container';
+          bubbleContainer.style.position = 'absolute';
+          bubbleContainer.style.bottom = '10%';
+          bubbleContainer.style.left = '10%';
+          bubbleContainer.style.width = '80%';
+          bubbleContainer.style.height = '80%';
+          bubbleContainer.style.pointerEvents = 'none';
+          // Bubbles need the mask?
+          // flaskGas had the mask before. Now flaskGas is a wrapper.
+          // We apply mask to bubbleContainer?
+          // "Actually, remove mask for bubbles to look crisp" - comment from previous code.
+          // So no mask.
+
+          const numBubbles = 20;
+          for (let b = 0; b < numBubbles; b++) {
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble';
+            const size = Math.random() * 12 + 4 + 'px';
+            bubble.style.width = size;
+            bubble.style.height = size;
+            bubble.style.left = Math.random() * 40 + 30 + '%';
+            bubble.style.bottom = Math.random() * 10 + 15 + '%';
+            bubble.style.animationDelay = Math.random() * 2 + 's';
+            bubble.style.animationDuration = Math.random() * 3 + 2 + 's';
+            bubble.style.backgroundColor = 'transparent';
+            bubble.style.border = `2px solid ${bubbleColor || 'rgba(255, 255, 255, 0.5)'}`;
+            bubbleContainer.appendChild(bubble);
+          }
+          flaskGas.appendChild(bubbleContainer);
         }
       }
 
@@ -1553,19 +1583,80 @@ document.addEventListener('DOMContentLoaded', () => {
             return result;
           };
 
-          // Prioritize LARGEST subset matches first (Greedy)
-          for (let size = indices.length; size >= 2; size--) {
+          // Prioritize direct matches (including 'eq' suffix)
+          // Search indices.length down to 1 (size 1 for single-molecule reverse)
+          for (let size = indices.length; size >= 1; size--) {
             const combos = getCombinations(indices, size);
             for (const combo of combos) {
-              const key = combo.sort((a, b) => String(a).localeCompare(String(b))).join("_");
-              if (reactionData[key]) {
-                if (excludeKey && key === excludeKey) continue; // Skip known state
-                outcome = reactionData[key];
+              const sorted = combo.sort((a, b) => String(a).localeCompare(String(b)));
+              const baseKey = sorted.join("_");
+              const eqKey = baseKey + "eq";
+
+              let foundKey = null;
+              if (reactionData[eqKey]) foundKey = eqKey;
+              else if (reactionData[baseKey] && size >= 2) foundKey = baseKey; // Standard reactions need at least 2 items
+
+              if (foundKey) {
+                if (excludeKey && foundKey === excludeKey) continue;
+                outcome = reactionData[foundKey];
                 reactingIndices = combo;
+                if (foundKey.endsWith('eq')) state.isEquilibrium = true;
                 break;
               }
             }
             if (outcome) break;
+          }
+
+          // Reverse Equilibrium Matching: If we have a product matching an 'eq' reaction, trigger decomposition
+          if (!outcome && indices.length > 0) {
+            for (const key in reactionData) {
+              if (key.endsWith('eq')) {
+                const eqOutcomes = Array.isArray(reactionData[key]) ? reactionData[key] : [reactionData[key]];
+                const productIds = eqOutcomes.map(o => o.id);
+
+                // If any item in flask matches a product of an equilibrium reaction
+                const matchingProduct = indices.find(id => productIds.includes(id));
+                if (matchingProduct) {
+                  // Trigger Reverse: Generate reactants from the key
+                  const reactantStrings = key.replace('eq', '').split('_');
+                  const reverseOutcomes = reactantStrings.map(rStr => {
+                    const beakerKey = isNaN(rStr) ? null : 'beaker' + rStr;
+                    const attrKey = isNaN(rStr) ? null : 'attributes' + rStr;
+
+                    let id = rStr;
+                    let type = 'liquid';
+                    let color = 'rgba(255, 255, 255, 0.2)';
+
+                    if (beakerKey && labData[beakerKey]) {
+                      id = labData[beakerKey];
+                      const attr = getAttributes(parseInt(rStr));
+                      if (attr) {
+                        if (attr.type) type = attr.type;
+                        if (attr.color) color = attr.color;
+                      }
+                    } else {
+                      // Inventory item fallback
+                      const item = window.itemsData.find(i => i.id === rStr || i.name === rStr);
+                      if (item) {
+                        id = item.id;
+                        if (item.attributes) {
+                          const attr = typeof item.attributes === 'string' ? JSON.parse(item.attributes) : item.attributes;
+                          if (attr.type) type = attr.type;
+                          if (attr.color) color = attr.color;
+                        }
+                      }
+                    }
+                    return { id, type, color };
+                  });
+
+                  outcome = reverseOutcomes;
+                  reactingIndices = [matchingProduct];
+                  state.isEquilibrium = true;
+                  state.direction = 'reverse';
+                  break;
+                }
+              }
+            }
           }
         }
       }
@@ -1726,8 +1817,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const reactantsStr = reactantIds.map(cleanForReaction).join(" + ");
         const productsStr = productNames.map(cleanForReaction).join(" + ");
+        const arrow = state.isEquilibrium ? "<=>" : "->";
 
-        state.reactionName = `$$\\ce{${reactantsStr} -> ${productsStr}}$$`;
+        state.reactionName = `$$\\ce{${reactantsStr} ${arrow} ${productsStr}}$$`;
         state.productName = productsStr;
         state.script = productScripts.join(";");
 
@@ -1786,16 +1878,62 @@ document.addEventListener('DOMContentLoaded', () => {
         pColor = solidItem.color;
       } else {
         // Check for gas
-        const gasItem = visualStack.find(v => v.type === 'gas' || v.type === 'trapped_gas');
-        if (gasItem) {
-          pType = gasItem.type; // Preserve specific type (gas or trapped_gas)
-          pColor = gasItem.color;
-          isProductGas = !!gasItem.isProduct;
-        }
-      }
+        // Check for gas: Prioritize products (clouds) over reactants (bubbles)
+        const gasProd = visualStack.find(v => (v.type === 'gas' || v.type === 'trapped_gas') && v.isProduct);
+        const gasReact = visualStack.find(v => (v.type === 'gas' || v.type === 'trapped_gas') && !v.isProduct);
 
-      // Pass to renderer
-      renderVisuals(liquidColors, pType, pColor, isProductGas, opts.resetLiquids);
+        let bubbleColor = null;
+
+        if (gasProd) {
+          pType = gasProd.type; // Cloud type
+          pColor = gasProd.color;
+          isProductGas = true;
+        }
+
+        if (gasReact) {
+          bubbleColor = gasReact.color;
+          // If no cloud, ensure we trigger gas logic if needed?
+          // renderVisuals logic now checks pType OR bubbleColor?
+          // No, renderVisuals checks pType for cloud, bubbleColor for bubbles.
+          // But "gas layer" visibility depended on pType.
+          // If ONLY gasReact, pType is null above.
+          // We should set pType='gas' if only reactants exist TO ENABLE THE CONTAINER?
+          // Actually my new renderVisuals code checks `if (typeof flaskGas ...)` always.
+          // And handles cloud/bubbles separately.
+          // BUT existing calls might rely on pType?
+          // Let's safe-guard: if no gasProd but gasReact, set pType='gas' implies "Gas Layer Logic active".
+          // But my new logic says "if pType=gas/trapped => cloud".
+          // So for only Bubbles, pType should be NULL or 'gas-bubbles' to avoid cloud loop?
+          // Logic: "if (pType === 'gas' || pType === 'trapped_gas')" -> Enters Cloud Logic.
+          // If I have only bubbles, I don't want cloud logic.
+          // So pType can be null. Bubble logic is separate block "if (bubbleColor)".
+        }
+
+        // Legacy Fallback for single "pType='gas'" which meant bubbles previously?
+        // Pre-refactor: if pType='gas' && !isProductGas -> Bubbles.
+        // My new code: if bubbleColor -> Bubbles.
+
+        // So if ONLY gasReact:
+        // gasProd=undefined. pType=null.
+        // gasReact=exists. bubbleColor=color.
+        // renderVisuals(..., null, null, false, ..., color)
+        // Inside: 
+        // Cloud check: pType (null) != gas/trapped. Cloud skipped.
+        // Bubble check: bubbleColor exists. Bubbles drawn.
+        // This works!
+
+        // If BOTH:
+        // gasProd exists. pType=trapped_gas.
+        // gasReact exists. bubbleColor=color.
+        // renderVisuals(..., trapped_gas, cloudColor, true, ..., bubbleColor)
+        // Inside:
+        // Cloud check: pType=trapped. Cloud drawn.
+        // Bubble check: bubbleColor exists. Bubbles drawn.
+        // This works!
+
+        // Pass to renderer
+        renderVisuals(liquidColors, pType, pColor, isProductGas, opts.resetLiquids, bubbleColor);
+      }
 
       // Update displays to match visual state using current globals (which update upon reaction execution).
 
@@ -1925,6 +2063,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
           // 1. Filter out tokens whose IDs were fully consumed.
           let newStack = visualStack.filter(token => {
+            if (state.isEquilibrium) return true; // Persistent Reagents: Don't remove anything
             const intersection = token.ids.filter(id => idsToconsume.has(id)); // intersection with set
             // If any ID in token is being consumed, remove the token.
             // Simplification: if intersection > 0, remove.
@@ -1939,6 +2078,12 @@ document.addEventListener('DOMContentLoaded', () => {
               const compoundIds = prod.id ? [prod.id, ...uniqueConsumedIds] : [...uniqueConsumedIds];
               const finalIds = [...new Set(compoundIds)]; // Deduplicate
 
+              // Equilibrium Check: Avoid duplicate products if they already exist in the mixture
+              if (state.isEquilibrium) {
+                const alreadyPresent = visualStack.some(v => v.ids.includes(prod.id));
+                if (alreadyPresent) return;
+              }
+
               const token = {
                 ids: finalIds,
                 color: prod.color,
@@ -1948,8 +2093,8 @@ document.addEventListener('DOMContentLoaded', () => {
               newStack.push(token);
 
               // If product is gas, schedule its removal (ephemeral)
-              // trapped_gas stays in the visualStack indefinitely
-              if (prod.type === 'gas') {
+              // trapped_gas remains, and any gas in an equilibrium reaction remains
+              if (prod.type === 'gas' && !state.isEquilibrium) {
                 setTimeout(() => {
                   // Remove this specific gas instance from visualStack
                   visualStack = visualStack.filter(v => v !== token);
@@ -1972,13 +2117,12 @@ document.addEventListener('DOMContentLoaded', () => {
         currentProductColor = state.productColor || 'white';
         currentProducts = state.products || [];
 
-        // Animate Flask
-        flask.classList.add('flask-active');
-        setTimeout(() => flask.classList.remove('flask-active'), 1000); // Shake
 
         // Animate Flask
-        flask.classList.add('flask-active');
-        setTimeout(() => flask.classList.remove('flask-active'), 1000); // Shake
+        if (typeof flask !== 'undefined' && flask) {
+          flask.classList.add('flask-active');
+          setTimeout(() => flask.classList.remove('flask-active'), 1000); // Shake
+        }
 
         renderVisualStack({ resetLiquids: true });
 
@@ -2168,65 +2312,41 @@ document.addEventListener('DOMContentLoaded', () => {
     addToInvBtn.className = 'lab-item tool';
     addToInvBtn.innerHTML = 'Add to 🎒';
     addToInvBtn.onclick = () => {
-      // Find reaction name
-      const reactionName = currentProductName; // Still used for check (concatenated name)
+      // Collect EVERYTHING in the visualStack
+      visualStack.forEach(token => {
+        const primaryId = token.ids[0];
+        if (!primaryId) return;
 
-      // 1. Handle Product Addition
-      // If we have a products array, use it. Fallback to legacy single globals if array is empty but name exists.
+        // Resolve ID: If it's a number (lab beaker), resolve to its LaTeX ID
+        const beakerKey = isNaN(primaryId) ? null : 'beaker' + primaryId;
+        const resolvedId = (beakerKey && labData[beakerKey]) ? labData[beakerKey] : primaryId;
 
-      const productsToAdd = (currentProducts && currentProducts.length > 0) ? currentProducts : [];
-      // Fallback for single product (legacy)
-      if (productsToAdd.length === 0 && currentProductName && currentProductName !== "Unknown Product") {
-        productsToAdd.push({
-          name: currentProductName,
-          type: currentProductType || 'liquid',
-          color: currentProductColor || 'white',
-          script: currentReactionScript || ""
-        });
-      }
+        if (resolvedId === "Unknown Product") return;
 
-      if (productsToAdd.length > 0) {
-        productsToAdd.forEach(prod => {
-          const prodID = prod.id || "Unknown Product";
-          const prodName = prod.name || prodID;
-          if (prodID === "Unknown Product") return;
-
-          // Look for existing item
-          let item = window.itemsData.find(i => i.id === prodID);
-          if (!item) {
-            item = {
-              id: prodID,
-              name: prodName,
-              use: prod.use || "Unknown",
-              attributes: JSON.stringify({
-                type: prod.type || 'liquid',
-                color: prod.color || 'white',
-                // pH/Temp might be uniform or specific. Use global/uniform for now from state.
-                ph: prod.ph ? parseFloat(prod.ph) : currentPH,
-                temp: prod.temp ? parseInt(prod.temp) : currentTemperature
-              }),
-              script: prod.script || ""
-            };
-            window.itemsData.push(item);
-          }
-
-          if (inventory[item.id]) inventory[item.id]++;
-          else inventory[item.id] = 1;
-        });
-      }
-
-      // 2. Return Unreacted Items & Clear Flask
-      // ... (Rest of logic unchanged) ...
-      const currentState = getFlaskState(selectedBeakers);
-      const consumedIndices = currentState.reactingIndices || [];
-      selectedBeakers.forEach((id, index) => {
-        if (typeof id === 'string' && !consumedIndices.includes(index)) {
-          if (inventory[id]) inventory[id]++;
-          else inventory[id] = 1;
+        // Ensure item exists in window.itemsData (especially for new products)
+        let item = window.itemsData.find(i => i.id === resolvedId);
+        if (!item) {
+          item = {
+            id: resolvedId,
+            name: resolvedId, // Fallback name
+            use: "Unknown",
+            attributes: JSON.stringify({
+              type: token.type || 'liquid',
+              color: token.color || 'white',
+              ph: currentPH,
+              temp: currentTemperature
+            }),
+            script: ""
+          };
+          window.itemsData.push(item);
         }
+
+        // Add to inventory
+        if (inventory[item.id]) inventory[item.id]++;
+        else inventory[item.id] = 1;
       });
 
-      // Clear Flask State
+      // Clear Flask State (Consumed and All)
       selectedBeakers = [];
       visualStack = [];
       processedBeakersCount = 0;

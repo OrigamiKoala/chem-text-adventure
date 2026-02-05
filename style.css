@@ -981,7 +981,7 @@ input:focus {
     }
 
     100% {
-        transform: translateY(-100px) scale(1.2);
+        transform: translateY(-20px) scale(1.2);
         opacity: 0.9;
     }
 }
