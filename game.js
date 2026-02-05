@@ -1236,7 +1236,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Gas Layer (Bubbles or Cloud)
       if (typeof flaskGas !== 'undefined' && flaskGas) {
-        if (pType === 'gas') {
+        if (pType === 'gas' || pType === 'trapped_gas') {
           flaskGas.style.opacity = '1';
           flaskGas.innerHTML = '';
 
@@ -1259,8 +1259,12 @@ document.addEventListener('DOMContentLoaded', () => {
             cloudSvg.style.width = '100%';
             cloudSvg.style.height = '150px'; // Forced height for SVG
             cloudSvg.style.opacity = '0.9';
-            // Apply Float Animation - Slower (10s)
-            cloudSvg.style.animation = 'float-away 10s ease-out forwards';
+            // Apply Float Animation - Slower (10s) or Persistent (for trapped_gas)
+            if (pType === 'trapped_gas') {
+              cloudSvg.style.animation = 'float-and-stay 5s ease-out forwards';
+            } else {
+              cloudSvg.style.animation = 'float-away 10s ease-out forwards';
+            }
 
             // Cleanup attribute when animation ends
             cloudSvg.addEventListener('animationend', () => {
@@ -1424,16 +1428,6 @@ document.addEventListener('DOMContentLoaded', () => {
           flaskLiquid.style.opacity = '0';
           let clipper = flaskLiquid.querySelector('.level-clipper');
           if (clipper) clipper.style.clipPath = `inset(100% 0 0 0)`;
-        }
-      }
-
-      // Gas Layer
-      if (flaskGas) {
-        if (pType === 'gas') {
-          flaskGas.style.background = 'transparent';
-          flaskGas.style.opacity = '1';
-        } else {
-          flaskGas.style.opacity = '0';
         }
       }
     };
@@ -1631,8 +1625,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (prod.type === 'solid') {
               primaryType = 'solid';
               primaryColor = prod.color;
-            } else if (prod.type === 'gas' && primaryType !== 'solid') {
-              primaryType = 'gas';
+            } else if ((prod.type === 'gas' || prod.type === 'trapped_gas') && primaryType !== 'solid') {
+              primaryType = prod.type; // Use the specific gas type
               primaryColor = prod.color;
             } else if (prod.type === 'liquid' && !primaryType) {
               primaryType = 'liquid';
@@ -1792,9 +1786,9 @@ document.addEventListener('DOMContentLoaded', () => {
         pColor = solidItem.color;
       } else {
         // Check for gas
-        const gasItem = visualStack.find(v => v.type === 'gas');
+        const gasItem = visualStack.find(v => v.type === 'gas' || v.type === 'trapped_gas');
         if (gasItem) {
-          pType = 'gas';
+          pType = gasItem.type; // Preserve specific type (gas or trapped_gas)
           pColor = gasItem.color;
           isProductGas = !!gasItem.isProduct;
         }
@@ -1954,6 +1948,7 @@ document.addEventListener('DOMContentLoaded', () => {
               newStack.push(token);
 
               // If product is gas, schedule its removal (ephemeral)
+              // trapped_gas stays in the visualStack indefinitely
               if (prod.type === 'gas') {
                 setTimeout(() => {
                   // Remove this specific gas instance from visualStack
@@ -2082,7 +2077,7 @@ document.addEventListener('DOMContentLoaded', () => {
         solidBlock.className = 'lab-item solid-block';
         solidBlock.style.backgroundColor = fluidColor;
         beakerWrapper.appendChild(solidBlock);
-      } else if (itemType === 'gas') {
+      } else if (itemType === 'gas' || itemType === 'trapped_gas') {
         // Render as Cloud above Beaker using SVG
         const cloudSvg = createCloudVisual(fluidColor);
         cloudSvg.style.position = 'absolute';
@@ -2095,8 +2090,8 @@ document.addEventListener('DOMContentLoaded', () => {
         cloudSvg.style.pointerEvents = 'none'; // Click goes to beaker
         beakerWrapper.appendChild(cloudSvg);
 
-        // Still render beaker container
-        beakerWrapper.appendChild(beakerImage);
+        // Reactant type is gas: do not display a beaker with liquid inside
+        // beakerWrapper.appendChild(beakerImage); // Removed to show ONLY the gas cloud
       } else {
         // Render as Beaker (Default)
         if (fluidColor) {
@@ -2645,7 +2640,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Start
-  loadGameData();
 });
 
 
