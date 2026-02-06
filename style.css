@@ -653,12 +653,13 @@ input:focus {
     animation: glass-glow 2s infinite;
 }
 
-.beaker div {
+.beaker-label {
     font-weight: bold;
     color: var(--text);
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     margin-top: 5px;
 }
+
 
 #reaction-info-container {
     background: rgba(255, 255, 255, 0.05);
@@ -983,5 +984,75 @@ input:focus {
     100% {
         transform: translateY(-20px) scale(1.2);
         opacity: 0.9;
+    }
+}
+
+/* Measurement Bar Styles */
+#measurement-container {
+    transition: all 0.3s ease;
+}
+
+.measure-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--text);
+    opacity: 0;
+    animation: fadeIn 0.5s forwards;
+}
+
+.measure-label {
+    width: 100px;
+    /* Fixed width for alignment */
+    text-align: right;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-shrink: 0;
+}
+
+.measure-bar-bg {
+    flex-grow: 1;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.measure-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--accent);
+    border-radius: 4px;
+    position: absolute;
+    left: 0;
+    top: 0;
+    /* Transition controlled via JS for custom kinetics, but base smooth fallback */
+    /* transition: width 0.1s linear; */
+    box-shadow: 0 0 8px rgba(125, 211, 252, 0.4);
+}
+
+.measure-value {
+    width: 45px;
+    text-align: left;
+    font-size: 0.8rem;
+    color: var(--muted);
+    flex-shrink: 0;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }

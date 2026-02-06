@@ -1030,6 +1030,16 @@ document.addEventListener('DOMContentLoaded', () => {
     reactionNameDisplay.style.minHeight = '1.2em';
     reactionInfoContainer.appendChild(reactionNameDisplay);
 
+    // Measurement Container
+    const measurementContainer = document.createElement('div');
+    measurementContainer.id = 'measurement-container';
+    measurementContainer.style.marginTop = '15px';
+    measurementContainer.style.width = '100%';
+    measurementContainer.style.display = 'flex';
+    measurementContainer.style.flexDirection = 'column';
+    measurementContainer.style.gap = '8px';
+    reactionInfoContainer.appendChild(measurementContainer);
+
     // Add elements to lab table
     const flask = document.createElement('div');
     flask.className = 'lab-item flask';
@@ -1817,6 +1827,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const reactantsStr = reactantIds.map(cleanForReaction).join(" + ");
         const productsStr = productNames.map(cleanForReaction).join(" + ");
+
+        // Save raw lists for measurement bar
+        state.reactantList = reactantIds.map(cleanForReaction);
+        state.productList = productNames.map(cleanForReaction);
+
         const arrow = state.isEquilibrium ? "<=>" : "->";
 
         state.reactionName = `$$\\ce{${reactantsStr} ${arrow} ${productsStr}}$$`;
@@ -1932,8 +1947,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // This works!
 
         // Pass to renderer
-        renderVisuals(liquidColors, pType, pColor, isProductGas, opts.resetLiquids, bubbleColor);
-      }
+        if (typeof renderVisuals === 'function') {
+          renderVisuals(liquidColors, pType, pColor, isProductGas, opts.resetLiquids, bubbleColor);
+        } else {
+          console.error("renderVisuals function missing!");
+        }
+      };
 
       // Update displays to match visual state using current globals (which update upon reaction execution).
 
@@ -2000,6 +2019,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const queueReaction = (state) => {
       reactionQueue = reactionQueue.then(async () => {
+        // Trigger measurement animation
+        // Trigger measurement animation
+        try {
+          if (state.reactantList && state.productList) {
+            updateMeasurementBars(state.reactantList, state.productList);
+          }
+        } catch (e) {
+          console.error("Error updating measurement bars:", e);
+        }
+
         // Wait 2s
         await new Promise(r => setTimeout(r, 2000));
 
@@ -2124,7 +2153,11 @@ document.addEventListener('DOMContentLoaded', () => {
           setTimeout(() => flask.classList.remove('flask-active'), 1000); // Shake
         }
 
-        renderVisualStack({ resetLiquids: true });
+        try {
+          renderVisualStack({ resetLiquids: true });
+        } catch (e) {
+          console.error("Error rendering visual stack:", e);
+        }
 
         // Trigger Conditional if applicable
         if (state.triggerConditional) {
@@ -2264,13 +2297,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (beakerAttributes && beakerAttributes.concentration) {
         labelText = `${beakerAttributes.concentration} ${labelText}`;
       }
+      beakerLabel.className = 'beaker-label'; // EXTRACTED CLASS
       beakerLabel.innerHTML = labelText;
-      // Re-trigger MathJax for the label if needed (though usually processed globally or by safeTypeset call if dynamic.
-      // Launch usually happens once. We might need to ensure MathJax typesets this new dynamic content? 
-      // Existing code doesn't seem to explicitly typeset these labels inside loop, relying on global render?
-      // Wait, `labData` usually has LaTeX. If `launch` builds DOM, does it trigger typeset?
-      // Check if there is a typeset call at end of launch.
-
       beakerContainer.appendChild(beakerLabel);
 
       const beakerIdx = i;
@@ -2758,6 +2786,93 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   });
+
+
+  const updateMeasurementBars = (reactants, products) => {
+    const container = document.getElementById('measurement-container');
+    if (!container) return;
+
+    // Persist previous bars (do not clear)
+    // container.innerHTML = '';
+    container.style.opacity = '1';
+
+    // Helper to create a bar
+    const createBar = (label, isReactant) => {
+      const row = document.createElement('div');
+      row.className = 'measure-row';
+
+      const nameDiv = document.createElement('div');
+      nameDiv.className = 'measure-label';
+      nameDiv.innerText = label;
+      nameDiv.title = label;
+
+      const barBg = document.createElement('div');
+      barBg.className = 'measure-bar-bg';
+
+      const barFill = document.createElement('div');
+      barFill.className = 'measure-bar-fill';
+      // Reactant starts full, Product starts empty
+      barFill.style.width = isReactant ? '100%' : '0%';
+
+      barBg.appendChild(barFill);
+
+      const valDiv = document.createElement('div');
+      valDiv.className = 'measure-value';
+      valDiv.innerText = isReactant ? '100%' : '0%';
+
+      row.appendChild(nameDiv);
+      row.appendChild(barBg);
+      row.appendChild(valDiv);
+
+      // Append new bars to the top or bottom? 
+      // User said "something new gets added", implying append order.
+      container.appendChild(row);
+
+      return { barFill, valDiv, isReactant };
+    };
+
+    const barData = [];
+    reactants.forEach(r => barData.push(createBar(r, true)));
+    products.forEach(p => barData.push(createBar(p, false)));
+
+    // Animate
+    // Force reflow
+    container.getBoundingClientRect();
+
+    // Start Animation with Kinetic Curves
+    // Reactant (Decay): Fast drop, slow tail
+    // Product (Growth): Fast rise, slow tail
+    // Both mapped to ease-out quint/quart
+
+    requestAnimationFrame(() => {
+      barData.forEach(({ barFill, valDiv, isReactant }) => {
+        barFill.style.transition = 'width 2s cubic-bezier(0.22, 1, 0.36, 1)';
+        barFill.style.width = isReactant ? '0%' : '100%';
+      });
+
+      // Numeric ticker
+      const startTime = performance.now();
+      const duration = 2000;
+
+      const tick = (now) => {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        // Quartic ease-out for numbers to match bars
+        const eased = 1 - Math.pow(1 - progress, 4);
+
+        barData.forEach(({ valDiv, isReactant }) => {
+          const start = isReactant ? 100 : 0;
+          const end = isReactant ? 0 : 100;
+          const current = start + (end - start) * eased;
+          valDiv.innerText = Math.round(current) + '%';
+        });
+
+        if (progress < 1) requestAnimationFrame(tick);
+        // No fadeout
+      };
+      requestAnimationFrame(tick);
+    });
+  };
 
   // Start
 });
