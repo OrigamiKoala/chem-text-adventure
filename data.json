@@ -2396,7 +2396,7 @@
     },
     {
       "id": "why burn",
-      "text": "You look in the book under 'butane' and find, under a section called \"Warnings\":\n<h3>WARNING: HIGHLY FLAMMABLE</h3>\n--\n\\[\\ce{C4H10 + O2 -> CO2 + H2O}\\]\n--\nIt looks like the book is saying 1 molecule of butane plus 1 molecule of oxygen (\\(\\ce{O2}\\)) form 1 molecule of carbon dioxide (\\(\\ce{CO2}\\)) and 1 molecule of water (\\(\\ce{H2O}\\)). Alternatively, it also says 1 mole of butane plus 1 mole of oxygen makes 1 mole of carbon dioxide and 1 mole of water.\n--\nThat is called a <i>chemical equation</i>, which describes a <i>chemical reaction</i>, where some things react to form new things. A reaction is chemical if something new is formed.\n--\nExcited to blow more stuff up, you get some more butane - 10 grams of it, in fact!\n--\nHow many grams of water should be produced after you burn this butane?",
+      "text": "You look in the book under 'butane' and find, under a section called \"Warnings\":\n<h3>WARNING: HIGHLY FLAMMABLE</h3>\n--\n\\[\\ce{C4H10 + O2 -> CO2 + H2O}\\]\n--\nIt looks like the book is saying 1 molecule of butane plus 1 molecule of oxygen (\\(\\ce{O2}\\)) form 1 molecule of carbon dioxide (\\(\\ce{CO2}\\)) and 1 molecule of water (\\(\\ce{H2O}\\)). Alternatively, it also says 1 mole of butane plus 1 mole of oxygen makes 1 mole of carbon dioxide and 1 mole of water.\n--\nThat is called a <i>chemical equation</i>, which describes a <i>chemical reaction</i>, where some things react to form new things. A reaction is chemical if something new is formed.\n--\nNot all reactions are chemical - for example, freezing water (\\(\\ce{H2O}\\)) results in ice (\\(\\ce{H2O}\\)), which still has the same molecules - so nothing chemically new gets formed.\n--\nExcited to blow more stuff up, you get some more butane - 10 grams of it, in fact!\n--\nHow many grams of water should be produced after you burn this butane?",
       "type": "frq",
       "next": "c mismatch",
       "roll": null,
@@ -2414,7 +2414,7 @@
     },
     {
       "id": "stop itching",
-      "text": "The bug bites are less itchy now, but they still don't look good. Plus, you didn't make enough baking soda to cover all your bug bites.\n--\nHowever, when you apply just sodium hydroxide and carbon dioxide to your skin, it only gets more irritated.\n--\nSo something new must have formed when you mixed the two in the beaker.\n--\nA chemical reaction just occurred - between sodium hydroxide (\\(\\ce{NaOH}\\)) and carbon dioxide (\\(\\ce{CO2}\\)), to produce baking soda (\\(\\ce{NaHCO3}\\))\n--\nThe thing you saw in the book:\n\\[\\ce{NaOH + CO2 -> 2 NaHCO3}\\]\nis called a <i>chemical equation</i>, and it basically describes a <i>chemical reaction</i>, where things react to form new things. A reaction is chemical if something new is formed.\n--\nThe chemical equation says that one molecule of \\(\\ce{NaOH}\\) reacts with one molecule of \\(\\ce{CO2}\\) to form two molecules of \\(\\ce{NaHCO3}\\). Alternatively, it says 1 mole of \\(\\ce{NaOH}\\) and 1 mole of \\(\\ce{CO2}\\) form 2 moles of \\(\\ce{NaHCO3}\\)\n--\nSo if you have 10 grams of \\(\\ce{NaOH}\\), how many grams of \\(\\ce{NaHCO3}\\) are formed?",
+      "text": "The bug bites are less itchy now, but they still don't look good. Plus, you didn't make enough baking soda to cover all your bug bites.\n--\nHowever, when you apply just sodium hydroxide and carbon dioxide to your skin, it only gets more irritated.\n--\nSo something new must have formed when you mixed the two in the beaker.\n--\nA chemical reaction just occurred - between sodium hydroxide (\\(\\ce{NaOH}\\)) and carbon dioxide (\\(\\ce{CO2}\\)), to produce baking soda (\\(\\ce{NaHCO3}\\))\n--\nThe thing you saw in the book:\n\\[\\ce{NaOH + CO2 -> 2 NaHCO3}\\]\nis called a <i>chemical equation</i>, and it basically describes a <i>chemical reaction</i>, where things react to form new things. A reaction is chemical if something new is formed.\n--\nNot all reactions are chemical - for example, freezing water (\\(\\ce{H2O}\\)) results in ice (\\(\\ce{H2O}\\)), which still has the same molecules - so nothing chemically new gets formed.\n--\nThe chemical equation says that one molecule of \\(\\ce{NaOH}\\) reacts with one molecule of \\(\\ce{CO2}\\) to form two molecules of \\(\\ce{NaHCO3}\\). Alternatively, it says 1 mole of \\(\\ce{NaOH}\\) and 1 mole of \\(\\ce{CO2}\\) form 2 moles of \\(\\ce{NaHCO3}\\)\n--\nSo if you have 10 grams of \\(\\ce{NaOH}\\), how many grams of \\(\\ce{NaHCO3}\\) are formed?",
       "type": "frq",
       "next": "na mismatch",
       "roll": null,
@@ -2807,6 +2807,78 @@
       "conditional": null,
       "altcorrect": null,
       "hint2": null
+    },
+    {
+      "id": "equilibrium cover",
+      "text": "When you head outside to touch grass :) you notice that the grass is dying.\n--\nThe grass has plenty of sun, and water from the frequent storms. It must be lacking fertilizer, so you're going to need to make some.\n--\nThe book says a compound called 'ammonia', \\(\\ce{NH3}\\) is a great fertilizer. Under the production section, you find:\n\\[\\ce{3 H2 + N2 <=> 2 NH3}\\]\n--\n<script>currentlab=\"ammonia\"</script>\nLaunch the lab workspace to try out making ammonia!\n--\nType anything once you have made ammonia.",
+      "type": "fr",
+      "next": "made ammonia",
+      "roll": null,
+      "success": null,
+      "fail": null,
+      "correct": null,
+      "hint": null,
+      "op1": null,
+      "op2": null,
+      "op3": null,
+      "op4": null,
+      "conditional": null,
+      "altcorrect": null,
+      "hint2": null
+    },
+    {
+      "id": "made ammonia",
+      "text": "Good job!\n--\nNow, add the solution to your inventory. What do you notice?",
+      "type": "fr",
+      "next": null,
+      "roll": null,
+      "success": null,
+      "fail": null,
+      "correct": null,
+      "hint": null,
+      "op1": null,
+      "op2": null,
+      "op3": null,
+      "op4": null,
+      "conditional": 1,
+      "altcorrect": null,
+      "hint2": null
+    },
+    {
+      "id": null,
+      "text": "Uhhh...why are there still nitrogen and hydrogen left over? The reaction seems to have stopped partway.\n--\nHmmmm...\n--\nTry putting the ammonia back into the beaker, leave it for a little bit, and see what happens.\n--\nWhat do you see?",
+      "type": "fr",
+      "next": null,
+      "roll": null,
+      "success": null,
+      "fail": null,
+      "correct": null,
+      "hint": null,
+      "op1": null,
+      "op2": null,
+      "op3": null,
+      "op4": null,
+      "conditional": null,
+      "altcorrect": null,
+      "hint2": null
+    },
+    {
+      "id": null,
+      "text": "Looks like part of the ammonia turned back into nitrogen and hydrogen, so we actually had two reactions:\n\\[\\ce{N2 + 3 H2 -> 2 NH3}\\]\n\\[\\ce{2 NH3 -> N2 + 3 H2}\\]\n--\nSo that's why the arrow was funky in the book! It's actually a double arrow, pointing both ways.\n--\nAfter some of the nitrogen and hydrogen reacted, and everything settled down, the reaction is said to have reached <i>equilibrium</i>, a place of stability.",
+      "type": null,
+      "next": null,
+      "roll": null,
+      "success": null,
+      "fail": null,
+      "correct": null,
+      "hint": null,
+      "op1": null,
+      "op2": null,
+      "op3": null,
+      "op4": null,
+      "conditional": null,
+      "altcorrect": null,
+      "hint2": null
     }
   ],
   "active_narrative_outline": [
@@ -2874,6 +2946,11 @@
       "reference_num": 2.4,
       "content": "Limiting Reagents",
       "div": "limiting reagents cover"
+    },
+    {
+      "reference_num": 3,
+      "content": "Equilibrium",
+      "div": "equilibrium cover"
     }
   ],
   "labs": [
@@ -2930,12 +3007,24 @@
       "beaker1": "\\(\\ce{NaOH}\\)",
       "attributes1": "{\"type\":\"liquid\",\"temp\":\"298 K\", \"ph\":\"14\", \"script\":\"changeHP(-100)\"}",
       "beaker2": "\\(\\ce{CO2}\\)",
-      "attributes2": "{\"type\":\"gas\"}",
+      "attributes2": "{\"type\":\"trapped_gas\"}",
       "beaker3": null,
       "attributes3": null,
       "beaker4": null,
       "attributes4": null,
       "reaction": "{\n\"1_2\":[{\"name\":\"Baking soda\",\"id\":\"\\(\\ce{NaHCO3}\\)\",\"type\":\"solid\",\"color\":\"#ffffff\",\"script\":\"changeHP(20)\",\"conditional\":\"true\"}]\n}"
+    },
+    {
+      "labid": "ammonia",
+      "beaker1": "\\(\\ce{N2}\\)",
+      "attributes1": "{\"type\":\"trapped_gas\", \"color\":\"#fff\"}",
+      "beaker2": "\\(\\ce{H2}\\)",
+      "attributes2": "{\"type\":\"trapped_gas\", \"color\":\"#fff\"}",
+      "beaker3": null,
+      "attributes3": null,
+      "beaker4": null,
+      "attributes4": null,
+      "reaction": "{\n\"1_3*2eqK1\":[{\"id\":\"\\(\\ce{NH3}\\)\", \"name\":\"ammonia\", \"type\":\"trapped_gas\",\"conditional\":\"true\"}]\n}"
     }
   ],
   "items": [
@@ -3057,13 +3146,6 @@
       "use": "Unknown",
       "attributes": "{\"type\":\"gas\",\"color\":\"#000\"}",
       "script": null
-    },
-    {
-      "id": "Hydrocortisone",
-      "name": "Hydrocortisone <br> <img src = \"images/hydrocortisone.png\">",
-      "use": "Anti-inflammatory agent",
-      "attributes": "{\"type\":\"liquid\"}",
-      "script": "HPloss=0; changeHP(100)"
     },
     {
       "id": "\\(\\ce{C4H10}\\)",
