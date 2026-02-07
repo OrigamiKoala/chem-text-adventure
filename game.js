@@ -65,22 +65,71 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // Helper to strip LaTeX wrappers
-  const cleanLatex = (str) => {
+  const cleanTeX = (str) => {
     if (typeof str !== 'string') return str;
-    // Removes: $$, \(, \), \ch{, \ce{, }, \text{ and also _ and ^ for subscripts/superscripts
-    return str.replace(/\$\$|\\\(|\\\)|\\ch\{|\\ce\{|\\text\{|\}|_|(\^)/g, "");
+    let s = str;
+    // Recursively strip wrappers
+    while (true) {
+      let changed = false;
+      // Remove wrapping $$
+      if (s.startsWith('$$') && s.endsWith('$$')) {
+        s = s.substring(2, s.length - 2);
+        changed = true;
+      }
+      // Remove wrapping \ce{...}
+      if (s.startsWith('\\ce{') && s.endsWith('}')) {
+        s = s.substring(4, s.length - 1);
+        changed = true;
+      }
+      // Remove wrapping \ch{...} (chemfig alternate)
+      if (s.startsWith('\\ch{') && s.endsWith('}')) {
+        s = s.substring(4, s.length - 1);
+        changed = true;
+      }
+      // Remove wrapping \text{...}
+      if (s.startsWith('\\text{') && s.endsWith('}')) {
+        s = s.substring(6, s.length - 1);
+        changed = true;
+      }
+      // Remove wrapping \(...\)
+      if (s.startsWith('\\(') && s.endsWith('\\)')) {
+        s = s.substring(2, s.length - 2);
+        changed = true;
+      }
+      // Remove individual markers if not wrapped (fallback)
+      // This part mimics the old regex but better handled
+      if (!changed) {
+        const oldS = s;
+        s = s.replace(/\\(ce|ch|text)\{|\}|\$|_|\^|\\\("|\\\)/g, "");
+        if (s !== oldS) changed = true;
+      }
+
+      if (!changed) break;
+    }
+    return s;
+  };
+
+  // Helper for numeric tolerance check
+  const checkNumericAnswer = (input, correct, tolerancePercent = 0.05) => {
+    const userNum = Number(input);
+    const correctNum = Number(correct);
+    if (!isNaN(userNum) && !isNaN(correctNum)) {
+      const tolerance = Math.abs(correctNum * tolerancePercent);
+      return Math.abs(userNum - correctNum) <= tolerance;
+    }
+    return false;
   };
 
   // Generalized Item Finder
   const findItem = (query) => {
     if (!window.itemsData) return null;
-    const cleanQuery = cleanLatex(query);
+    const cleanQuery = cleanTeX(query);
     return window.itemsData.find(i => {
       const id = i.id.toLowerCase();
       const name = stripHtml(i.name).toLowerCase();
       const idMatch = id === query;
       const nameMatch = name === query;
-      const latexIdMatch = cleanLatex(id) === cleanQuery;
+      const latexIdMatch = cleanTeX(id) === cleanQuery;
       return idMatch || nameMatch || latexIdMatch;
     }) || window.itemsData.find(i => {
       const id = i.id.toLowerCase();
@@ -88,7 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // Fallback: Partial match
       return id.includes(query) ||
         name.includes(query) ||
-        cleanLatex(id).includes(cleanQuery);
+        cleanTeX(id).includes(cleanQuery);
     });
   };
 
@@ -714,7 +763,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const stackIndex = visualStack.findIndex(token => {
         // Token IDs are arrays, check if any ID matches query via findItem logic
         // Simplified: Check if any ID in token matches query exact or partial
-        const cleanQuery = cleanLatex(query);
+        const cleanQuery = cleanTeX(query);
         return token.ids.some(id => {
           const lowerId = id.toLowerCase();
           const itemDef = window.itemsData.find(d => d.id === id);
@@ -832,27 +881,10 @@ document.addEventListener('DOMContentLoaded', () => {
       let isCorrect = (inputstring == currentobj.correct || inputstring == currentobj.altcorrect);
 
       // Add numerical tolerance check (5%)
-      const userNum = Number(inputstring);
-      if (!isCorrect && inputstring !== "" && !isNaN(userNum)) {
-        const correctNum = Number(currentobj.correct);
-        if (!isNaN(correctNum)) {
-          const tolerance = Math.abs(correctNum * 0.05);
-          if (Math.abs(userNum - correctNum) <= tolerance) {
-            isCorrect = true;
-          }
-        }
+      const isNumCorrect = checkNumericAnswer(inputstring, currentobj.correct) ||
+        (currentobj.altcorrect && checkNumericAnswer(inputstring, currentobj.altcorrect));
 
-        // Also check altcorrect if it's a number
-        if (!isCorrect && currentobj.altcorrect) {
-          const altCorrectNum = Number(currentobj.altcorrect);
-          if (!isNaN(altCorrectNum)) {
-            const tolerance = Math.abs(altCorrectNum * 0.05);
-            if (Math.abs(userNum - altCorrectNum) <= tolerance) {
-              isCorrect = true;
-            }
-          }
-        }
-      }
+      if (isNumCorrect) isCorrect = true;
 
       if (isCorrect) {
         historyStack.push(currentdivid);
@@ -1759,19 +1791,7 @@ document.addEventListener('DOMContentLoaded', () => {
               // Generate Reaction Name (Equation)
               // Key format: "1_3*2eqK1" -> "1 + 3*2"
 
-              const cleanFormula = (str) => {
-                // Validated via debug_formula_clean_v2.js
-                // Handles typical ID: "\(\ce{N2}\)" -> "N2"
-                let s = str;
-                if (/^\\\(\\ce\{/.test(s)) {
-                  s = s.replace(/^\\\(\\ce\{|\}\\\)$/g, '');
-                } else if (/^\\ce\{/.test(s)) {
-                  s = s.replace(/^\\ce\{|\}$/g, '');
-                } else if (/^\\\(/.test(s)) {
-                  s = s.replace(/^\\\(|\}\\\)$/g, '');
-                }
-                return s;
-              };
+              const cleanFormula = (str) => cleanTeX(str);
 
               let leftSide = "";
               reactantParts.forEach((part, idx) => {
@@ -2025,35 +2045,7 @@ document.addEventListener('DOMContentLoaded', () => {
           });
 
           // Helper to strip LaTeX wrappers for the reaction string
-          const cleanForReaction = (name) => {
-            let s = name;
-            // Recursively strip wrappers to handle nested cases like $$\ce{...}$$
-            while (true) {
-              let changed = false;
-              // Remove wrapping $$
-              if (s.startsWith('$$') && s.endsWith('$$')) {
-                s = s.substring(2, s.length - 2);
-                changed = true;
-              }
-              // Remove wrapping \ce{...}
-              if (s.startsWith('\\ce{') && s.endsWith('}')) {
-                s = s.substring(4, s.length - 1);
-                changed = true;
-              }
-              // Remove wrapping \text{...} (if used)
-              if (s.startsWith('\\text{') && s.endsWith('}')) {
-                s = s.substring(6, s.length - 1);
-                changed = true;
-              }
-              // Remove wrapping \(...\)
-              if (s.startsWith('\\(') && s.endsWith('\\)')) {
-                s = s.substring(2, s.length - 2);
-                changed = true;
-              }
-              if (!changed) break;
-            }
-            return s;
-          };
+          const cleanForReaction = (name) => cleanTeX(name);
 
           const reactantsStr = reactantIds.map(cleanForReaction).join(" + ");
           const productsStr = productNames.map(cleanForReaction).join(" + ");
@@ -2103,7 +2095,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Start Lab Logic
     // ...
     // Note: visualStack is GLOBAL and persistent. Do NOT clear it here unless rebuilding from another state.
-    // visualStack.length = 0; // REMOVED: Caused state reset
 
     let reactionQueue = Promise.resolve();
     let logicUpdateTimer = null; // Debounce timer
@@ -2365,7 +2356,8 @@ document.addEventListener('DOMContentLoaded', () => {
           });
         }
 
-        visualStack = newStack;
+        window.visualStack = newStack;
+        visualStack = window.visualStack;
 
         // Update Globals
         currentPH = state.ph;
@@ -3041,7 +3033,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!container) return;
 
     // Persist previous bars (do not clear)
-    // container.innerHTML = '';
     container.style.opacity = '1';
 
     // Helper to create or reuse a bar
@@ -3115,8 +3106,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (!item) {
         // Fallback: Try cleaning LaTeX or HTML
-        // Note: cleanLatex is defined in global scope closure
-        const cleanId = typeof cleanLatex === 'function' ? cleanLatex(identifier) : identifier;
+        // Note: cleanTeX is defined in global scope closure
+        const cleanId = typeof cleanTeX === 'function' ? cleanTeX(identifier) : identifier;
         const cleanName = typeof stripHtml === 'function' ? stripHtml(identifier) : identifier;
 
         item = window.itemsData.find(i => {
@@ -3126,7 +3117,7 @@ document.addEventListener('DOMContentLoaded', () => {
           // Match against ID or Name
           // Also enable cleaning on the ITEM side if that helps matching
           return iId === identifier || iName === identifier ||
-            (typeof cleanLatex === 'function' && cleanLatex(iId) === cleanId) ||
+            (typeof cleanTeX === 'function' && cleanTeX(iId) === cleanId) ||
             iName === cleanName;
         });
       }
