@@ -54,6 +54,43 @@ document.addEventListener('DOMContentLoaded', () => {
   window.labAddLiquid = null; // Prevent ReferenceError
   window.machineon = false;
   window.conditional = false;
+  window.visualStack = []; // Global flask state for access by measurement bars
+  let visualStack = window.visualStack; // Local alias for convenience, keeping original variable name working
+
+  // Helper to strip HTML tags for name comparison
+  const stripHtml = (html) => {
+    let tmp = document.createElement("DIV");
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText || "";
+  };
+
+  // Helper to strip LaTeX wrappers
+  const cleanLatex = (str) => {
+    if (typeof str !== 'string') return str;
+    // Removes: $$, \(, \), \ch{, \ce{, }, \text{ and also _ and ^ for subscripts/superscripts
+    return str.replace(/\$\$|\\\(|\\\)|\\ch\{|\\ce\{|\\text\{|\}|_|(\^)/g, "");
+  };
+
+  // Generalized Item Finder
+  const findItem = (query) => {
+    if (!window.itemsData) return null;
+    const cleanQuery = cleanLatex(query);
+    return window.itemsData.find(i => {
+      const id = i.id.toLowerCase();
+      const name = stripHtml(i.name).toLowerCase();
+      const idMatch = id === query;
+      const nameMatch = name === query;
+      const latexIdMatch = cleanLatex(id) === cleanQuery;
+      return idMatch || nameMatch || latexIdMatch;
+    }) || window.itemsData.find(i => {
+      const id = i.id.toLowerCase();
+      const name = stripHtml(i.name).toLowerCase();
+      // Fallback: Partial match
+      return id.includes(query) ||
+        name.includes(query) ||
+        cleanLatex(id).includes(cleanQuery);
+    });
+  };
 
   window.roll = function (diceType, stat, dc, advantage) {
     rollingActive = true;
@@ -521,57 +558,19 @@ document.addEventListener('DOMContentLoaded', () => {
               let tagContent = text.substring(i, tagEnd + 1);
 
               // check if it's the specific <button tag
-              if (tagContent.startsWith('<button')) {
-                console.log("<button> tag detected at index " + i);
-                // Find the closing </button> tag
-                let closingTagStart = text.indexOf('</button>', i);
+              const immediateTags = ['button', 'ol', 'ul'];
+              const matchedTag = immediateTags.find(t => tagContent.startsWith('<' + t));
+
+              if (matchedTag) {
+                console.log(`<${matchedTag}> tag detected at index ` + i);
+                const closingTag = `</${matchedTag}>`;
+                let closingTagStart = text.indexOf(closingTag, i);
 
                 if (closingTagStart !== -1) {
-                  // Render the entire <button>...</button> structure instantly
-                  let fullButtonHtml = text.substring(i, closingTagStart + 9); // +9 for length of </button>
-                  element.innerHTML += fullButtonHtml;
-
-                  // Set index i to after the closing tag
-                  i = closingTagStart + 9;
-                  delay = 1; // Tiny delay before next Qtext character
-                } else {
-                  // Fallback for an unmatched opening tag (treat as a simple tag)
-                  element.innerHTML += tagContent;
-                  i = tagEnd + 1;
+                  let fullHtml = text.substring(i, closingTagStart + closingTag.length);
+                  element.innerHTML += fullHtml;
+                  i = closingTagStart + closingTag.length;
                   delay = 1;
-                }
-              } else if (tagContent.startsWith('<ol')) {
-                console.log("<ol> tag detected at index " + i);
-                // Find the closing </ol> tag
-                let closingTagStart = text.indexOf('</ol>', i);
-
-                if (closingTagStart !== -1) {
-                  // Render the entire <ol>...</ol> structure instantly
-                  let fullOlHtml = text.substring(i, closingTagStart + 5); // +5 for length of </ol>
-                  element.innerHTML += fullOlHtml;
-
-                  // Set index i to after the closing tag
-                  i = closingTagStart + 5;
-                  delay = 1; // Tiny delay before next Qtext character
-                } else {
-                  // Fallback for an unmatched opening tag (treat as a simple tag)
-                  element.innerHTML += tagContent;
-                  i = tagEnd + 1;
-                  delay = 1;
-                }
-              } else if (tagContent.startsWith('<ul')) {
-                console.log("<ul> tag detected at index " + i);
-                // Find the closing </ul> tag
-                let closingTagStart = text.indexOf('</ul>', i);
-
-                if (closingTagStart !== -1) {
-                  // Render the entire <ul>...</ul> structure instantly
-                  let fullUlHtml = text.substring(i, closingTagStart + 5); // +5 for length of </ul>
-                  element.innerHTML += fullUlHtml;
-
-                  // Set index i to after the closing tag
-                  i = closingTagStart + 5;
-                  delay = 1; // Tiny delay before next Qtext character 
                 } else {
                   element.innerHTML += tagContent;
                   i = tagEnd + 1;
@@ -711,40 +710,46 @@ document.addEventListener('DOMContentLoaded', () => {
       return [targetNode ? targetNode.text : "Error jumping", targetId];
     } else if (decode(inputstring).toLowerCase().startsWith("take out ")) {
       const query = decode(inputstring).substring(9).trim().toLowerCase();
-      // Helper to strip HTML tags for name comparison
-      const stripHtml = (html) => {
-        let tmp = document.createElement("DIV");
-        tmp.innerHTML = html;
-        return tmp.textContent || tmp.innerText || "";
-      };
-
-      // Helper to strip LaTeX wrappers
-      const cleanLatex = (str) => {
-        // Removes: $$, \(, \), \ch{, \ce{, }, \text{ and also _ and ^ for subscripts/superscripts
-        return str.replace(/\$\$|\\\(|\\\)|\\ch\{|\\ce\{|\\text\{|\}|_|(\^)/g, "");
-      };
-
-      const cleanQuery = cleanLatex(query);
-
-      const item = window.itemsData.find(i => {
-        const id = i.id.toLowerCase();
-        const name = stripHtml(i.name).toLowerCase();
-
-        const idMatch = id === query;
-        const nameMatch = name === query;
-        const latexIdMatch = cleanLatex(id) === cleanQuery;
-
-        return idMatch || nameMatch || latexIdMatch;
-      }) || window.itemsData.find(i => {
-        const id = i.id.toLowerCase();
-        const name = stripHtml(i.name).toLowerCase();
-
-        // Fallback: Partial match
-        return id.includes(query) ||
-          name.includes(query) ||
-          cleanLatex(id).includes(cleanQuery);
+      // First, try to find it in the flask (visualStack)
+      const stackIndex = visualStack.findIndex(token => {
+        // Token IDs are arrays, check if any ID matches query via findItem logic
+        // Simplified: Check if any ID in token matches query exact or partial
+        const cleanQuery = cleanLatex(query);
+        return token.ids.some(id => {
+          const lowerId = id.toLowerCase();
+          const itemDef = window.itemsData.find(d => d.id === id);
+          const lowerName = itemDef ? stripHtml(itemDef.name).toLowerCase() : "";
+          return lowerId === query || lowerName === query || lowerId.includes(query) || lowerName.includes(query);
+        });
       });
 
+      if (stackIndex !== -1) {
+        // Found in flask! Remove it.
+        const token = visualStack[stackIndex];
+        visualStack.splice(stackIndex, 1);
+        renderVisualStack();
+
+        // Update bars: Current stack is now missing the item. 
+        // We need to pass the OLD list (with item) vs NEW list (without) to trigger 0% animation?
+        // Actually, updateMeasurementBars calculates 'consumed' based on validReactants vs validProducts.
+        // If we treat the REMOVED item as a 'consumed reactant', it works.
+        // Let's pass:
+        // Reactants = All items currently in DOM (existingLabels) + the item we just removed
+        // Products = All items currently in visualStack (which excludes the removed item)
+
+        // Better strategy: Just call with current flask contents as products.
+        // The 'existingLabels' logic in updateMeasurementBars will see the bar exists.
+        // It compares 'validProducts' (new list) against 'startSet' (existing bars).
+        // The removed item is NOT in 'validProducts', so it is treated as consumed (end=0%).
+
+        // Trigger measurement bar to animate to 0% for the item taken out
+        // Pick up the Primary ID (or first available)
+        const pickupId = token.ids[0]; // Simplification
+        window.pickup(pickupId);
+        return ["Took out " + pickupId + " from the flask.", currentdivid];
+      }
+
+      const item = findItem(query);
       if (item) {
         window.pickup(item.id);
         return ["Added " + item.id + " to your inventory.", currentdivid];
@@ -753,18 +758,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } else if (decode(inputstring).toLowerCase().startsWith("drop ")) {
       const query = decode(inputstring).substring(5).trim().toLowerCase();
-      // Helper to strip HTML tags for name comparison
-      const stripHtml = (html) => {
-        let tmp = document.createElement("DIV");
-        tmp.innerHTML = html;
-        return tmp.textContent || tmp.innerText || "";
-      };
-
-      const item = window.itemsData.find(i => {
-        const idMatch = i.id.toLowerCase() === query;
-        const nameMatch = stripHtml(i.name).toLowerCase() === query;
-        return idMatch || nameMatch;
-      });
+      const item = findItem(query);
 
       if (item) {
         if (window.inventory[item.id]) {
@@ -778,11 +772,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } else if (inputstring == "help") {
       return [helpText || 'Loading help... please wait', currentdivid];
-      // } else if (inputstring == "condensed") {
-      //   JSdata = textbookdata;
-      //   currentdivid = "atomscover";
-      //   return [findnode(currentdivid).text || 'Loading condensed... please wait', currentdivid];
-      // } 
     } else if (inputstring == "narrative") {
       return [findnode("atomscover").text || 'Loading narrative... please wait', "atomscover"];
     } else if (inputstring == "outline") {
@@ -945,6 +934,268 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log("parseinput returned output=" + output + " and nextdivid=" + nextdivid);
     return [output, nextdivid];
   }
+  // --- Visual Rendering Helpers ---
+  const createCloudVisual = (color) => {
+    const svgns = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(svgns, "svg");
+    svg.setAttribute("viewBox", "0 0 100 100");
+    svg.style.width = "100%";
+    svg.style.height = "100%";
+    svg.style.overflow = "visible";
+
+    const defs = document.createElementNS(svgns, "defs");
+    const filterId = "outline-" + Math.floor(Math.random() * 100000);
+    const filter = document.createElementNS(svgns, "filter");
+    filter.setAttribute("id", filterId);
+
+    const dilate = document.createElementNS(svgns, "feMorphology");
+    dilate.setAttribute("operator", "dilate");
+    dilate.setAttribute("radius", "2");
+    dilate.setAttribute("in", "SourceAlpha");
+    dilate.setAttribute("result", "dilated");
+
+    const compositeOut = document.createElementNS(svgns, "feComposite");
+    compositeOut.setAttribute("in", "dilated");
+    compositeOut.setAttribute("in2", "SourceAlpha");
+    compositeOut.setAttribute("operator", "out");
+    compositeOut.setAttribute("result", "outline");
+
+    const flood = document.createElementNS(svgns, "feFlood");
+    flood.setAttribute("flood-color", color || "white");
+    flood.setAttribute("result", "floodColor");
+
+    const compositeColor = document.createElementNS(svgns, "feComposite");
+    compositeColor.setAttribute("in", "floodColor");
+    compositeColor.setAttribute("in2", "outline");
+    compositeColor.setAttribute("operator", "in");
+    compositeColor.setAttribute("result", "coloredOutline");
+
+    filter.appendChild(dilate);
+    filter.appendChild(compositeOut);
+    filter.appendChild(flood);
+    filter.appendChild(compositeColor);
+    defs.appendChild(filter);
+    svg.appendChild(defs);
+
+    const image = document.createElementNS(svgns, "image");
+    image.setAttributeNS("http://www.w3.org/1999/xlink", "href", "images/gas.png");
+    image.setAttribute("width", "100");
+    image.setAttribute("height", "100");
+    image.setAttribute("filter", `url(#${filterId})`);
+
+    svg.appendChild(image);
+    return svg;
+  };
+
+  const renderSolid = (type, color) => {
+    const flaskSolid = document.getElementById('flask-solid');
+    if (!flaskSolid) return;
+
+    if (type === 'solid') {
+      flaskSolid.style.width = '50%';
+      flaskSolid.style.height = '15%';
+      flaskSolid.style.bottom = '14.5%';
+      flaskSolid.style.left = '25%';
+      flaskSolid.style.borderRadius = '0';
+      flaskSolid.style.clipPath = 'polygon(5% 100%, 10% 85%, 18% 80%, 25% 70%, 32% 65%, 40% 55%, 50% 50%, 60% 55%, 68% 65%, 75% 70%, 82% 80%, 90% 85%, 95% 100%)';
+      flaskSolid.style.background = color || '#ffffff';
+      flaskSolid.style.transitionDelay = '0s';
+      flaskSolid.style.opacity = '1';
+    } else {
+      flaskSolid.style.opacity = '0';
+    }
+  };
+
+  const renderGas = (type, color, isProductGas, bubbleColor) => {
+    const flaskGas = document.getElementById('flask-gas');
+    if (!flaskGas) return;
+
+    flaskGas.style.bottom = '0%';
+    flaskGas.style.left = '0%';
+    flaskGas.style.width = '100%';
+    flaskGas.style.height = '100%';
+    flaskGas.style.opacity = '1';
+    flaskGas.style.maskImage = 'none';
+    flaskGas.style.webkitMaskImage = 'none';
+
+    // 1. Cloud Logic
+    if (type === 'gas' || type === 'trapped_gas') {
+      if (isProductGas) {
+        if (flaskGas.getAttribute('data-active-cloud') !== 'true') {
+          const oldCloud = flaskGas.querySelector('.gas-cloud');
+          if (oldCloud) oldCloud.remove();
+
+          flaskGas.setAttribute('data-active-cloud', 'true');
+
+          const cloudWrapper = document.createElement('div');
+          cloudWrapper.className = 'gas-cloud';
+          cloudWrapper.style.position = 'absolute';
+          cloudWrapper.style.bottom = '60%';
+          cloudWrapper.style.left = '-20%';
+          cloudWrapper.style.width = '140%';
+          cloudWrapper.style.height = 'auto';
+          cloudWrapper.style.pointerEvents = 'none';
+
+          const cloudSvg = createCloudVisual(color);
+          cloudSvg.style.width = '100%';
+          cloudSvg.style.height = '150px';
+          cloudSvg.style.opacity = '0.9';
+
+          if (type === 'trapped_gas') {
+            cloudSvg.style.animation = 'float-and-stay 5s ease-out forwards';
+          } else {
+            cloudSvg.style.animation = 'float-away 10s ease-out forwards';
+          }
+
+          if (type !== 'trapped_gas') {
+            cloudSvg.addEventListener('animationend', () => {
+              flaskGas.setAttribute('data-active-cloud', 'false');
+            });
+          }
+
+          cloudWrapper.appendChild(cloudSvg);
+          flaskGas.appendChild(cloudWrapper);
+        }
+      }
+    } else {
+      flaskGas.setAttribute('data-active-cloud', 'false');
+      const oldCloud = flaskGas.querySelector('.gas-cloud');
+      if (oldCloud) oldCloud.remove();
+    }
+
+    // 2. Bubble Logic
+    const oldBubbles = flaskGas.querySelectorAll('.bubble-container');
+    oldBubbles.forEach(b => b.remove());
+
+    if (bubbleColor) {
+      const bubbleContainer = document.createElement('div');
+      bubbleContainer.className = 'bubble-container';
+      bubbleContainer.style.position = 'absolute';
+      bubbleContainer.style.bottom = '10%';
+      bubbleContainer.style.left = '10%';
+      bubbleContainer.style.width = '80%';
+      bubbleContainer.style.height = '80%';
+      bubbleContainer.style.pointerEvents = 'none';
+
+      const numBubbles = 20;
+      for (let b = 0; b < numBubbles; b++) {
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble';
+        const size = Math.random() * 12 + 4 + 'px';
+        bubble.style.width = size;
+        bubble.style.height = size;
+        bubble.style.left = Math.random() * 40 + 30 + '%';
+        bubble.style.bottom = Math.random() * 10 + 15 + '%';
+        bubble.style.animationDelay = Math.random() * 2 + 's';
+        bubble.style.animationDuration = Math.random() * 3 + 2 + 's';
+        bubble.style.backgroundColor = 'transparent';
+        bubble.style.border = `2px solid ${bubbleColor || 'rgba(255, 255, 255, 0.5)'}`;
+        bubbleContainer.appendChild(bubble);
+      }
+      flaskGas.appendChild(bubbleContainer);
+    }
+  };
+
+  const renderLiquid = (liquidColors, resetLiquids) => {
+    const flaskLiquid = document.getElementById('flask-liquid');
+    if (!flaskLiquid) return;
+
+    if (liquidColors.length > 0) {
+      flaskLiquid.style.width = '74%';
+      flaskLiquid.style.left = '13%';
+      flaskLiquid.style.bottom = '14.5%';
+      flaskLiquid.style.height = '82.5%';
+      flaskLiquid.style.background = 'none';
+      flaskLiquid.style.display = 'block';
+
+      const staticShape = `polygon(
+        44% 0%, 56% 0%,
+        56% 20%, 56.5% 25%, 58% 30%, 61% 35%, 61% 40%, 51% 45%,
+        100% 95%,
+        99.8% 97.5%, 99% 99%, 97% 99.8%, 91% 100%, 85% 100%,
+        15% 100%, 9% 100%, 3% 99.8%, 1% 99%, 0.2% 97.5%, 0% 95%,
+        47% 45%,
+        39% 40%, 39% 35%, 42% 30%, 43.5% 25%, 44% 20%
+      )`;
+      flaskLiquid.style.clipPath = staticShape;
+      flaskLiquid.style.borderRadius = '0';
+      flaskLiquid.style.overflow = 'hidden';
+
+      let clipper = flaskLiquid.querySelector('.level-clipper');
+      if (!clipper) {
+        clipper = document.createElement('div');
+        clipper.className = 'level-clipper';
+        clipper.style.width = '100%';
+        clipper.style.height = '100%';
+        clipper.style.display = 'flex';
+        clipper.style.flexDirection = 'column-reverse';
+        flaskLiquid.appendChild(clipper);
+      } else if (resetLiquids) {
+        clipper.innerHTML = '';
+      }
+
+      const heightPerLiquid = 12.5;
+      const fillPerc = Math.min(liquidColors.length * heightPerLiquid, 100);
+      const targetClip = `inset(${100 - fillPerc}% 0 0 0)`;
+      const transitionDuration = '2.0s';
+
+      if (flaskLiquid.style.opacity === '0') {
+        clipper.style.transition = 'none';
+        clipper.style.clipPath = `inset(100% 0 0 0)`;
+        void clipper.offsetWidth;
+        clipper.style.transition = `clip-path ${transitionDuration} ease-out`;
+        clipper.style.clipPath = targetClip;
+      } else {
+        window.getComputedStyle(clipper).clipPath;
+        clipper.style.transition = `clip-path ${transitionDuration} ease-out`;
+        clipper.style.clipPath = targetClip;
+      }
+
+      const currentLayers = Array.from(clipper.children);
+      const layerHeight = heightPerLiquid + '%';
+
+      liquidColors.forEach((color, i) => {
+        let layer;
+        if (i < currentLayers.length) {
+          layer = currentLayers[i];
+          layer.style.height = layerHeight;
+          layer.style.backgroundColor = color;
+        } else {
+          layer = document.createElement('div');
+          layer.style.width = '100%';
+          layer.style.flexShrink = '0';
+          layer.style.height = layerHeight;
+          layer.style.backgroundColor = color;
+          clipper.appendChild(layer);
+          void layer.offsetWidth;
+          layer.style.transition = 'background-color 2s ease, height 1s ease';
+        }
+      });
+
+      while (clipper.children.length > liquidColors.length) {
+        clipper.removeChild(clipper.lastChild);
+      }
+
+      flaskLiquid.style.opacity = '0.7';
+      flaskLiquid.style.maskImage = '';
+      flaskLiquid.style.webkitMaskImage = '';
+
+    } else {
+      flaskLiquid.style.opacity = '0';
+      let clipper = flaskLiquid.querySelector('.level-clipper');
+      if (clipper) clipper.style.clipPath = `inset(100% 0 0 0)`;
+    }
+  };
+
+  window.renderVisuals = (liquidColors, solidInfo, gasInfo, resetLiquids = false) => {
+    // solidInfo: { type, color }
+    // gasInfo: { type, color, isProduct, bubbleColor }
+
+    renderSolid(solidInfo.type, solidInfo.color);
+    renderGas(gasInfo.type, gasInfo.color, gasInfo.isProduct, gasInfo.bubbleColor);
+    renderLiquid(liquidColors, resetLiquids);
+  };
+
   function launch(labid) {
     currentlab = labid;
     console.log("launching lab: " + labid);
@@ -1133,9 +1384,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentTemperature = 298;
     let currentPH = 7.0;
     let currentReactionName = "";
-    // Globals used instead of locals for product state
-    // let currentProductType = null;
-    // let currentProductColor = null;
 
     showReactionBtn.onclick = () => {
       if (reactionNameDisplay.innerHTML !== "") {
@@ -1168,328 +1416,63 @@ document.addEventListener('DOMContentLoaded', () => {
     // Reusable Renderer
     // Helper for generating outlined cloud visuals
     // Helper for generating outlined cloud visuals using gas.png
-    const createCloudVisual = (color) => {
-      const svgns = "http://www.w3.org/2000/svg";
-      const svg = document.createElementNS(svgns, "svg");
-      svg.setAttribute("viewBox", "0 0 100 100");
-      svg.style.width = "100%";
-      svg.style.height = "100%";
-      svg.style.overflow = "visible";
-
-      // Define Filter for Outline
-      const defs = document.createElementNS(svgns, "defs");
-      const filterId = "outline-" + Math.floor(Math.random() * 100000);
-      const filter = document.createElementNS(svgns, "filter");
-      filter.setAttribute("id", filterId);
-
-      // 1. Dilate SourceAlpha to create expanded mask
-      const dilate = document.createElementNS(svgns, "feMorphology");
-      dilate.setAttribute("operator", "dilate");
-      dilate.setAttribute("radius", "2");
-      dilate.setAttribute("in", "SourceAlpha");
-      dilate.setAttribute("result", "dilated");
-
-      // 2. Cut out original SourceAlpha from Dilated -> Edge
-      const compositeOut = document.createElementNS(svgns, "feComposite");
-      compositeOut.setAttribute("in", "dilated");
-      compositeOut.setAttribute("in2", "SourceAlpha");
-      compositeOut.setAttribute("operator", "out");
-      compositeOut.setAttribute("result", "outline");
-
-      // 3. Flood with Color
-      const flood = document.createElementNS(svgns, "feFlood");
-      flood.setAttribute("flood-color", color || "white");
-      flood.setAttribute("result", "floodColor");
-
-      // 4. Composite Color onto Edge
-      const compositeColor = document.createElementNS(svgns, "feComposite");
-      compositeColor.setAttribute("in", "floodColor");
-      compositeColor.setAttribute("in2", "outline");
-      compositeColor.setAttribute("operator", "in");
-      compositeColor.setAttribute("result", "coloredOutline");
-
-      filter.appendChild(dilate);
-      filter.appendChild(compositeOut);
-      filter.appendChild(flood);
-      filter.appendChild(compositeColor);
-      defs.appendChild(filter);
-      svg.appendChild(defs);
-
-      const image = document.createElementNS(svgns, "image");
-      image.setAttributeNS("http://www.w3.org/1999/xlink", "href", "images/gas.png");
-      image.setAttribute("width", "100");
-      image.setAttribute("height", "100");
-      image.setAttribute("filter", `url(#${filterId})`);
-
-      svg.appendChild(image);
-      return svg;
-    };
+    // (Moved to global scope)
 
     // Reusable Renderer
-    const renderVisuals = (liquidColors, pType, pColor, isProductGas, resetLiquids = false, bubbleColor = null) => {
-      // Solid Layer
-      if (flaskSolid) {
-        if (pType === 'solid') {
-          flaskSolid.style.width = '50%';
-          flaskSolid.style.height = '15%'; // Low pile
-          flaskSolid.style.bottom = '14.5%';
-          flaskSolid.style.left = '25%'; // Centered (100 - 50 / 2)
-          flaskSolid.style.borderRadius = '0';
-          flaskSolid.style.clipPath = 'polygon(5% 100%, 10% 85%, 18% 80%, 25% 70%, 32% 65%, 40% 55%, 50% 50%, 60% 55%, 68% 65%, 75% 70%, 82% 80%, 90% 85%, 95% 100%)';
-          flaskSolid.style.background = pColor || '#ffffff';
-          flaskSolid.style.transitionDelay = '0s';
-          flaskSolid.style.opacity = '1';
-        } else {
-          flaskSolid.style.opacity = '0';
-        }
-      }
-
-      // Gas Layer (Bubbles or Cloud)
-      // Gas Layer (Bubbles or Cloud)
-      if (typeof flaskGas !== 'undefined' && flaskGas) {
-        // Reset container to full coverage for independent child positioning
-        flaskGas.style.bottom = '0%';
-        flaskGas.style.left = '0%';
-        flaskGas.style.width = '100%';
-        flaskGas.style.height = '100%';
-        flaskGas.style.opacity = '1';
-        flaskGas.style.maskImage = 'none';
-        flaskGas.style.webkitMaskImage = 'none';
-
-        // 1. Cloud Logic (Product)
-        if (pType === 'gas' || pType === 'trapped_gas') {
-          if (isProductGas) {
-            // Prevent restarting animation if already active 
-            if (flaskGas.getAttribute('data-active-cloud') === 'true') {
-              // Active
-            } else {
-              // Clear existing cloud if any (but careful not to wipe bubbles yet, though we rebuild bubbles strictly below)
-              // actually, just remove old cloud
-              const oldCloud = flaskGas.querySelector('.gas-cloud');
-              if (oldCloud) oldCloud.remove();
-
-              flaskGas.setAttribute('data-active-cloud', 'true');
-
-              const cloudWrapper = document.createElement('div');
-              cloudWrapper.className = 'gas-cloud';
-              cloudWrapper.style.position = 'absolute';
-              cloudWrapper.style.bottom = '60%';
-              cloudWrapper.style.left = '-20%';
-              cloudWrapper.style.width = '140%';
-              cloudWrapper.style.height = 'auto';
-              cloudWrapper.style.pointerEvents = 'none';
-
-              const cloudSvg = createCloudVisual(pColor);
-              cloudSvg.style.width = '100%';
-              cloudSvg.style.height = '150px';
-              cloudSvg.style.opacity = '0.9';
-              if (pType === 'trapped_gas') {
-                cloudSvg.style.animation = 'float-and-stay 5s ease-out forwards';
-              } else {
-                cloudSvg.style.animation = 'float-away 10s ease-out forwards';
-              }
-
-              if (pType !== 'trapped_gas') {
-                cloudSvg.addEventListener('animationend', () => {
-                  flaskGas.setAttribute('data-active-cloud', 'false');
-                  // For ephemeral gas, we might want to remove it visually here too?
-                  // Logic handles removal from stack, which triggers re-render.
-                });
-              } else {
-                // For trapped_gas, we want it to persist. 
-                // Do NOT reset the flag, so subsequent renders see it as "true" and leave the DOM alone.
-                // This ensures the "forwards" style (-100px) remains active.
-              }
-
-              cloudWrapper.appendChild(cloudSvg);
-              flaskGas.appendChild(cloudWrapper);
-            }
-          }
-        } else {
-          // No cloud expected, remove if present? 
-          // If we switch from cloud to no-cloud, re-render should handle it by not adding it.
-          // However, if we are in a persistent state, we need to be careful.
-          // If pType is NOT gas/trapped_gas, we should effectively obscure gas layer? 
-          // But wait, we separate cloud/bubbles now.
-          // If pType is not gas/trapped_gas, it means NO cloud.
-          flaskGas.setAttribute('data-active-cloud', 'false');
-          const oldCloud = flaskGas.querySelector('.gas-cloud');
-          if (oldCloud) oldCloud.remove();
-        }
-
-        // 2. Bubble Logic (Reactant)
-        // Re-render bubbles every time (they are cheap divs)
-        // Remove old bubbles
-        const oldBubbles = flaskGas.querySelectorAll('.bubble-container');
-        oldBubbles.forEach(b => b.remove());
-
-        if (bubbleColor) {
-          const bubbleContainer = document.createElement('div');
-          bubbleContainer.className = 'bubble-container';
-          bubbleContainer.style.position = 'absolute';
-          bubbleContainer.style.bottom = '10%';
-          bubbleContainer.style.left = '10%';
-          bubbleContainer.style.width = '80%';
-          bubbleContainer.style.height = '80%';
-          bubbleContainer.style.pointerEvents = 'none';
-          // Bubbles need the mask?
-          // flaskGas had the mask before. Now flaskGas is a wrapper.
-          // We apply mask to bubbleContainer?
-          // "Actually, remove mask for bubbles to look crisp" - comment from previous code.
-          // So no mask.
-
-          const numBubbles = 20;
-          for (let b = 0; b < numBubbles; b++) {
-            const bubble = document.createElement('div');
-            bubble.className = 'bubble';
-            const size = Math.random() * 12 + 4 + 'px';
-            bubble.style.width = size;
-            bubble.style.height = size;
-            bubble.style.left = Math.random() * 40 + 30 + '%';
-            bubble.style.bottom = Math.random() * 10 + 15 + '%';
-            bubble.style.animationDelay = Math.random() * 2 + 's';
-            bubble.style.animationDuration = Math.random() * 3 + 2 + 's';
-            bubble.style.backgroundColor = 'transparent';
-            bubble.style.border = `2px solid ${bubbleColor || 'rgba(255, 255, 255, 0.5)'}`;
-            bubbleContainer.appendChild(bubble);
-          }
-          flaskGas.appendChild(bubbleContainer);
-        }
-      }
-
-
-      // Liquid Layer
-      if (flaskLiquid) {
-        if (liquidColors.length > 0) {
-          // Reset dimensions in case they were morphed to solid
-          // Static layout: flaskLiquid fixed at max visual size; clip-path reveals bottom-up to prevent child distortion.
-
-          // Refined Geometry for PERFECTLY PARALLEL SIDES and NATURAL SMOOTH CORNERS:
-          // Spacing: Perfectly equalized gaps on all sides (13% uniform).
-          flaskLiquid.style.width = '74%';
-          flaskLiquid.style.left = '13%';
-          flaskLiquid.style.bottom = '14.5%';
-          flaskLiquid.style.height = '82.5%';
-          flaskLiquid.style.background = 'none';
-          flaskLiquid.style.display = 'block';
-
-          // Outer Shape (High-Fidelity 50-Point Polygon for Precision Alignment)
-          // Refined: Absolute Parallel Precision (60.5% right, 39.5% left top) for flawless gap consistency.
-          const staticShape = `polygon(
-            44% 0%, 56% 0%,                       /* Neck Top */
-            56% 20%, 56.5% 25%, 58% 30%, 61% 35%, 61% 40%, 51% 45%, /* Right Shoulder Flare & Parallel Start */
-            100% 95%,                             /* Parallel Wall End */
-            99.8% 97.5%, 99% 99%, 97% 99.8%, 91% 100%, 85% 100%,    /* Natural Right Corner */
-            15% 100%, 9% 100%, 3% 99.8%, 1% 99%, 0.2% 97.5%, 0% 95%, /* Natural Left Corner */
-            47% 45%,                            /* Parallel Wall Start & Flare End */
-            39% 40%, 39% 35%, 42% 30%, 43.5% 25%, 44% 20%           /* Left Shoulder Flare */
-          )`;
-          flaskLiquid.style.clipPath = staticShape;
-          flaskLiquid.style.borderRadius = '0';
-          flaskLiquid.style.overflow = 'hidden';
-
-          // Nested Level Clipper (Handles the "rise" without distorting the shape)
-          let clipper = flaskLiquid.querySelector('.level-clipper');
-          if (!clipper) {
-            clipper = document.createElement('div');
-            clipper.className = 'level-clipper';
-            clipper.style.width = '100%';
-            clipper.style.height = '100%';
-            clipper.style.display = 'flex';
-            clipper.style.flexDirection = 'column-reverse';
-            flaskLiquid.appendChild(clipper);
-          } else if (resetLiquids) {
-            // Hard reset requested: clear layers to avoid morphing-vs-disappearing asymmetry
-            clipper.innerHTML = '';
-          }
-
-          const heightPerLiquid = 12.5;
-          const fillPerc = Math.min(liquidColors.length * heightPerLiquid, 100);
-          const targetClip = `inset(${100 - fillPerc}% 0 0 0)`;
-
-          // Animate Level - Use ease-out for faster "start" feel
-          const transitionDuration = '0.5s';
-          if (flaskLiquid.style.opacity === '0') {
-            clipper.style.transition = 'none';
-            clipper.style.clipPath = `inset(100% 0 0 0)`;
-            void clipper.offsetWidth;
-            clipper.style.transition = `clip-path ${transitionDuration} ease-out`;
-            clipper.style.clipPath = targetClip;
-          } else {
-            // Latch current state to ensure transition starts from exactly where we are
-            window.getComputedStyle(clipper).clipPath;
-            clipper.style.transition = `clip-path ${transitionDuration} ease-out`;
-            clipper.style.clipPath = targetClip;
-          }
-
-          // Render layers inside the clipper
-          const currentLayers = Array.from(clipper.children);
-          const layerHeight = heightPerLiquid + '%';
-
-          liquidColors.forEach((color, i) => {
-            let layer;
-            if (i < currentLayers.length) {
-              layer = currentLayers[i];
-              // Existing layer - transition is already active, just update color
-              layer.style.height = layerHeight;
-              layer.style.backgroundColor = color;
-            } else {
-              // New layer - Create and set color IMMEDIATELY before transition
-              layer = document.createElement('div');
-              layer.style.width = '100%';
-              layer.style.flexShrink = '0';
-
-              // Set properties first so no transition happens from default (transparent)
-              layer.style.height = layerHeight;
-              layer.style.backgroundColor = color;
-
-              clipper.appendChild(layer);
-
-              // Force reflow to ensure initial state is locked
-              void layer.offsetWidth;
-
-              // Now enable transition for FUTURE changes
-              layer.style.transition = 'background-color 2s ease, height 1s ease';
-            }
-          });
-
-          while (clipper.children.length > liquidColors.length) {
-            clipper.removeChild(clipper.lastChild);
-          }
-
-          flaskLiquid.style.opacity = '0.7';
-
-          // Clear any artifacts from previous mask attempts
-          flaskLiquid.style.maskImage = '';
-          flaskLiquid.style.webkitMaskImage = '';
-
-        } else {
-          // No liquids
-          flaskLiquid.style.opacity = '0';
-          let clipper = flaskLiquid.querySelector('.level-clipper');
-          if (clipper) clipper.style.clipPath = `inset(100% 0 0 0)`;
-        }
-      }
-    };
+    // (Moved to global scope as renderVisuals)
 
     const labData = fullJSdata.labs.find(lab => lab.labid === labid);
+    window.currentLabData = labData; // Expose globally for helpers
 
     // Helper: Parse attributes for any item (Lab or Inventory)
     const getAttributes = (id) => {
       let attrData = null;
       let rawStr = null;
 
+      // Resolve ID to name/chemical ID if it's a number (Beaker)
+      // This fixes the issue where bars show "1", "2" instead of "AgNO3"
+      let realId = id;
+      const lData = window.currentLabData || labData;
+
       if (typeof id === 'number') {
-        // Lab Beaker
-        if (labData && labData['attributes' + id]) {
-          rawStr = labData['attributes' + id];
+        // Try labData mapping first
+        if (lData && lData['beaker' + id]) {
+          realId = lData['beaker' + id];
+        } else if (attr && attr.id) { // 'attr' is not defined here, this line might be problematic if 'attr' is expected to exist
+          realId = attr.id;
+        }
+      } else if (typeof id === 'string') {
+        // If it's an item ID (like from a reaction product), keeps it as is (e.g. "\ce{NaHCO3}")
+        // Ensure consistency: The bars look for THIS realId.
+      }
+      // Use realId for subsequent lookups
+      id = realId;
+
+      if (typeof id === 'number') {
+        // Lab Beaker by Index
+        if (lData && lData['attributes' + id]) {
+          rawStr = lData['attributes' + id];
         }
       } else {
-        // Inventory Item
+        // String ID: Could be Inventory OR Resolved Beaker Content
+        // 1. Try Inventory
         const item = window.itemsData.find(i => i.id === id);
         if (item && item.attributes) {
           if (typeof item.attributes === 'object') return item.attributes;
           rawStr = item.attributes;
+        }
+
+        // 2. Try identifying if this string ID belongs to a Beaker in the current lab
+        // (Reverse Lookup: Find key 'beakerX' where value === id)
+        if (!rawStr && labData) {
+          for (let i = 1; i <= 20; i++) { // Limit search to reasonable beaker count
+            if (labData['beaker' + i] === id) {
+              if (labData['attributes' + i]) {
+                rawStr = labData['attributes' + i];
+              }
+              break;
+            }
+          }
         }
       }
 
@@ -1546,81 +1529,304 @@ document.addEventListener('DOMContentLoaded', () => {
     const getFlaskState = (indices, excludeKey = null) => {
       let state = {
         ph: 7.0,
-        temp: 298,
+        temp: 298.0,
         reactionName: "",
         visualColors: [],
         productType: null,
-        productColor: null,
-        outcome: null,
+        reactionKey: null,
         reactingIndices: [],
-        reactionKey: null
+        limitingYield: 1.0, // Default 1.0 (100%)
+        isEquilibrium: false,
+        direction: 'forward',
+        K: null,
+        outcome: null
       };
 
-      if (indices.length === 0) return state;
+      if (!indices || indices.length === 0) return state;
+
+      // 1. Map Inputs: Handle both raw IDs and {id, qty} objects
+      // We need to sum up total Quantity available for each ID
+      const flaskCounts = {}; // ID -> Total Quantity
+      const flaskInstances = {}; // ID -> Array of original objects (for tracking)
+
+      indices.forEach(item => {
+        const id = (typeof item === 'object' && item.id) ? item.id : item;
+        const qty = (typeof item === 'object' && item.qty) ? item.qty : 1.0;
+        const strId = String(id);
+
+        if (!flaskCounts[strId]) flaskCounts[strId] = 0;
+        flaskCounts[strId] += qty;
+
+        if (!flaskInstances[strId]) flaskInstances[strId] = [];
+        flaskInstances[strId].push(item);
+      });
 
       // pH
-      const newPH = calculateMixPH(indices);
+      const newPH = calculateMixPH(indices.map(item => (typeof item === 'object' && item.id) ? item.id : item)); // Pass raw IDs for pH calculation
       if (newPH !== null) state.ph = newPH;
 
       // Reaction
       let outcome = null;
       let reactionData = null;
       let reactingIndices = [];
+      const lData = window.currentLabData || labData;
 
-      if (labData && labData.reaction && indices.length >= 2) {
+      if (lData && lData.reaction && indices.length >= 1) { // Changed from indices.length >= 2 to >= 1 to allow single-reactant reactions
         try {
           // Use sanitized string safely
-          const sanitizedReaction = labData.reaction.replace(/\\(?!["\\/bfnrtu])/g, "\\\\");
+          const sanitizedReaction = lData.reaction.replace(/\\(?!["\\/bfnrtu])/g, "\\\\");
           reactionData = JSON.parse(sanitizedReaction);
         } catch (e) {
           console.error("Error parsing reaction data:", e);
         }
 
         if (reactionData) {
-          const getCombinations = (arr, size) => {
-            let result = [];
-            const f = (prefix, chars) => {
-              for (let i = 0; i < chars.length; i++) {
-                let newPrefix = [...prefix, chars[i]];
-                if (newPrefix.length === size) {
-                  result.push(newPrefix);
-                } else {
-                  f(newPrefix, chars.slice(i + 1));
+          // --- NEW LOGIC: Iterate Reactions & Check Stoichiometry ---
+          // 2. Iterate All Defined Reactions to find a match
+          // We prioritize "complex" reactions (more total reactants) to avoid partial matches
+          const reactionKeys = Object.keys(reactionData).sort((a, b) => {
+            // Sort by length/complexity descending (heuristic)
+            return b.length - a.length;
+          });
+
+          for (const key of reactionKeys) {
+            if (excludeKey && key === excludeKey) continue;
+
+            // 3. Parse Key
+            // Format: "2*1_3*2eqK1.5" -> Reactants: 2 of '1', 3 of '2'. Eq: True, K: 1.5
+
+            let baseKey = key;
+            let isEq = false;
+            let kVal = null;
+
+            // Check Suffixes
+            if (baseKey.includes('eq')) {
+              isEq = true;
+              kVal = 1.0; // Default K is 1
+              // Check for K value
+              const kMatch = baseKey.match(/eqK([\d\.]+)/);
+              if (kMatch) {
+                kVal = parseFloat(kMatch[1]);
+              }
+              // Strip suffix for reactant parsing
+              baseKey = baseKey.split('eq')[0];
+            }
+
+            const reactantParts = baseKey.split('_');
+            let match = true;
+            const requiredIndicesForReaction = []; // To store exactly which instances are consumed
+            let minYield = Infinity;
+
+            // 4. Verify Stoichiometry & Calculate Yield
+            for (const part of reactantParts) {
+              let count = 1;
+              let id = part;
+
+              // Check "Count * ID" syntax (e.g. 3*2)
+              if (part.includes('*')) {
+                const pieces = part.split('*');
+                if (pieces.length === 2 && !isNaN(pieces[0])) {
+                  count = parseInt(pieces[0]);
+                  id = pieces[1];
                 }
               }
-            };
-            f([], arr);
-            return result;
-          };
 
-          // Prioritize direct matches (including 'eq' suffix)
-          // Search indices.length down to 1 (size 1 for single-molecule reverse)
-          for (let size = indices.length; size >= 1; size--) {
-            const combos = getCombinations(indices, size);
-            for (const combo of combos) {
-              const sorted = combo.sort((a, b) => String(a).localeCompare(String(b)));
-              const baseKey = sorted.join("_");
-              const eqKey = baseKey + "eq";
+              // Check if flask has enough
+              // NEW: Check Total Quantity vs Required Count
+              // If we have 0.5 units, and need 1, yield is 0.5
+              const available = flaskCounts[id] || 0;
 
-              let foundKey = null;
-              if (reactionData[eqKey]) foundKey = eqKey;
-              else if (reactionData[baseKey] && size >= 2) foundKey = baseKey; // Standard reactions need at least 2 items
-
-              if (foundKey) {
-                if (excludeKey && foundKey === excludeKey) continue;
-                outcome = reactionData[foundKey];
-                reactingIndices = combo;
-                if (foundKey.endsWith('eq')) state.isEquilibrium = true;
+              if (available <= 0.0001) { // Use a small epsilon for float comparison
+                match = false;
                 break;
               }
+
+              const theoreticalYield = available / count;
+              if (theoreticalYield < minYield) minYield = theoreticalYield;
+
+              // "Consume" logic for tracking: We don't need to splice instances anymore
+              // We just record the IDs involved.
+              const instancesToUse = flaskInstances[id].map(obj => (typeof obj === 'object' ? obj.id : obj));
+              requiredIndicesForReaction.push(...instancesToUse);
             }
-            if (outcome) break;
+
+            if (match) {
+              // FOUND A VALID REACTION
+              let finalYield = minYield; // Default to limiting reagent yield (Complete reaction)
+
+              // --- EQUILIBRIUM LOGIC ---
+              if (isEq && kVal !== null) {
+                // 1. Gather Reactant Data (We need it again in a structured way for the solver)
+                // Re-parse reactantParts to get coefficients and available amounts
+                const reactants = [];
+                for (const part of reactantParts) {
+                  let count = 1;
+                  let id = part;
+                  if (part.includes('*')) {
+                    const pieces = part.split('*');
+                    if (pieces.length === 2 && !isNaN(pieces[0])) {
+                      count = parseInt(pieces[0]);
+                      id = pieces[1];
+                    }
+                  }
+                  reactants.push({
+                    count: count,
+                    available: flaskCounts[id] || 0
+                  });
+                }
+
+                // 2. Gather Product Data
+                // We need current amounts of products in flask to calculate Q
+                const products = [];
+                const outcome = reactionData[key] || [];
+                // Group outcome items by ID to determine coefficients (e.g. 2 NH3)
+                const productCounts = {};
+                outcome.forEach(p => {
+                  const pid = p.id;
+                  productCounts[pid] = (productCounts[pid] || 0) + 1;
+                });
+
+                Object.keys(productCounts).forEach(pid => {
+                  products.push({
+                    count: productCounts[pid],
+                    available: flaskCounts[pid] || 0
+                  });
+                });
+
+                // 3. Solve for Extent (Delta) using Binary Search
+                // Find delta in [0, minYield] such that Q(delta) = K
+                // Q(delta) = [Products] / [Reactants]
+                // Q = Prod((P.curr + P.coef*delta)^P.coef) / Prod((R.curr - R.coef*delta)^R.coef)
+
+                // Check initial Q (delta=0)
+                let num0 = 1;
+                products.forEach(p => num0 *= Math.pow(p.available, p.count));
+                let den0 = 1;
+                reactants.forEach(r => den0 *= Math.pow(r.available, r.count));
+
+                // If den0 is 0 (reactants empty), Q is undefined (or infinite). 
+                // But here we know reactants > 0 due to 'match' check.
+
+                let Q0 = num0 / den0;
+                if (Q0 >= kVal) {
+                  // Already at or past equilibrium
+                  finalYield = 0;
+                } else {
+                  // Search for positive delta
+                  let low = 0;
+                  let high = minYield;
+
+                  for (let i = 0; i < 20; i++) {
+                    const mid = (low + high) / 2;
+
+                    // Avoid division by zero at strict limit
+                    if (mid >= minYield * 0.999999) {
+                      high = mid; continue;
+                    }
+
+                    let num = 1;
+                    products.forEach(p => num *= Math.pow(p.available + p.count * mid, p.count));
+                    let den = 1;
+                    reactants.forEach(r => den *= Math.pow(r.available - r.count * mid, r.count)); // Can be small
+
+                    if (den <= 1e-9) {
+                      // Effectively purely products -> Infinite Q -> Too high
+                      high = mid; continue;
+                    }
+
+                    const Q = num / den;
+
+                    if (Q < kVal) {
+                      low = mid; // Q too small, need more reaction (more products)
+                    } else {
+                      high = mid; // Q too big, backed off
+                    }
+                  }
+                  finalYield = low;
+                }
+              }
+
+              // Apply Yield Lower Bound filter to prevent micro-reactions
+              if (finalYield < 0.001) {
+                // Treat as no reaction
+                continue;
+              }
+
+              state.reactionKey = key;
+              state.reactingIndices = requiredIndicesForReaction; // Legacy name, now used for "Consumption Set"
+              state.outcome = reactionData[key];
+
+              // Generate Reaction Name (Equation)
+              // Key format: "1_3*2eqK1" -> "1 + 3*2"
+
+              const cleanFormula = (str) => {
+                // Validated via debug_formula_clean_v2.js
+                // Handles typical ID: "\(\ce{N2}\)" -> "N2"
+                let s = str;
+                if (/^\\\(\\ce\{/.test(s)) {
+                  s = s.replace(/^\\\(\\ce\{|\}\\\)$/g, '');
+                } else if (/^\\ce\{/.test(s)) {
+                  s = s.replace(/^\\ce\{|\}$/g, '');
+                } else if (/^\\\(/.test(s)) {
+                  s = s.replace(/^\\\(|\}\\\)$/g, '');
+                }
+                return s;
+              };
+
+              let leftSide = "";
+              reactantParts.forEach((part, idx) => {
+                let count = 1;
+                let id = part;
+                if (part.includes('*')) {
+                  const p = part.split('*');
+                  count = p[0];
+                  id = p[1];
+                }
+                // Resolve ID to Name/Formula
+                const resolved = resolveId(id);
+                if (idx > 0) leftSide += " + ";
+                leftSide += (count > 1 ? count + " " : "") + cleanFormula(resolved);
+              });
+
+              let rightSide = "";
+              if (state.outcome) {
+                const outArr = Array.isArray(state.outcome) ? state.outcome : [state.outcome];
+                // Group by ID
+                const counts = {};
+                outArr.forEach(o => counts[o.id] = (counts[o.id] || 0) + 1);
+
+                Object.keys(counts).forEach((oid, idx) => {
+                  if (idx > 0) rightSide += " + ";
+                  const c = counts[oid];
+                  rightSide += (c > 1 ? c + " " : "") + cleanFormula(resolveId(oid) || oid);
+                });
+              }
+
+              // Use mhchem arrow syntax inside \ce
+              const arrow = isEq ? " <=> " : " -> ";
+              state.reactionName = "\\(\\ce{" + leftSide + arrow + rightSide + "}\\)";
+
+              // Helper to define generic properties if they exist
+              if (state.outcome && state.outcome.length > 0) {
+                const first = state.outcome[0];
+                state.productType = first.type;
+                state.productColor = first.color;
+                state.productName = first.name || first.id;
+                state.triggerConditional = first.conditional === "true";
+                // Accumulate scripts? Usually just one.
+                state.script = first.script;
+              }
+
+              state.limitingYield = finalYield;
+
+              return state;
+            }
           }
 
           // Reverse Equilibrium Matching: If we have a product matching an 'eq' reaction, trigger decomposition
           if (!outcome && indices.length > 0) {
             for (const key in reactionData) {
-              if (key.endsWith('eq')) {
+              if (key.includes('eq')) {
                 const eqOutcomes = Array.isArray(reactionData[key]) ? reactionData[key] : [reactionData[key]];
                 const productIds = eqOutcomes.map(o => o.id);
 
@@ -1628,40 +1834,65 @@ document.addEventListener('DOMContentLoaded', () => {
                 const matchingProduct = indices.find(id => productIds.includes(id));
                 if (matchingProduct) {
                   // Trigger Reverse: Generate reactants from the key
-                  const reactantStrings = key.replace('eq', '').split('_');
-                  const reverseOutcomes = reactantStrings.map(rStr => {
-                    const beakerKey = isNaN(rStr) ? null : 'beaker' + rStr;
-                    const attrKey = isNaN(rStr) ? null : 'attributes' + rStr;
+                  const reactantParts = key.split('eq')[0].split('_').filter(p => p);
+                  const reverseOutcomes = [];
 
-                    let id = rStr;
-                    let type = 'liquid';
-                    let color = 'rgba(255, 255, 255, 0.2)';
+                  reactantParts.forEach(part => {
+                    let count = 1;
+                    let rStr = part;
 
-                    if (beakerKey && labData[beakerKey]) {
-                      id = labData[beakerKey];
-                      const attr = getAttributes(parseInt(rStr));
-                      if (attr) {
-                        if (attr.type) type = attr.type;
-                        if (attr.color) color = attr.color;
+                    // Parse "Count * ID"
+                    // Default count is 1
+                    if (part.includes('*')) {
+                      const pieces = part.split('*');
+                      if (pieces.length === 2 && !isNaN(pieces[0])) {
+                        count = parseInt(pieces[0]);
+                        rStr = pieces[1];
                       }
-                    } else {
-                      // Inventory item fallback
-                      const item = window.itemsData.find(i => i.id === rStr || i.name === rStr);
-                      if (item) {
-                        id = item.id;
-                        if (item.attributes) {
-                          const attr = typeof item.attributes === 'string' ? JSON.parse(item.attributes) : item.attributes;
+                    }
+
+                    // Generate 'count' copies of this reactant
+                    for (let c = 0; c < count; c++) {
+                      const beakerKey = isNaN(rStr) ? null : 'beaker' + rStr;
+                      // const attrKey = isNaN(rStr) ? null : 'attributes' + rStr; // Unused variable?
+
+                      let id = rStr;
+                      let type = 'liquid';
+                      let color = 'rgba(255, 255, 255, 0.2)';
+
+                      if (beakerKey && window.currentLabData && window.currentLabData[beakerKey]) {
+                        id = window.currentLabData[beakerKey];
+                        const attr = getAttributes(parseInt(rStr));
+                        if (attr) {
                           if (attr.type) type = attr.type;
                           if (attr.color) color = attr.color;
                         }
+                      } else {
+                        // Inventory item fallback
+                        const item = window.itemsData.find(i => i.id === rStr || i.name === rStr);
+                        if (item) {
+                          id = item.id;
+                          if (item.attributes) {
+                            const attr = typeof item.attributes === 'string' ? JSON.parse(item.attributes) : item.attributes;
+                            if (attr.type) type = attr.type;
+                            if (attr.color) color = attr.color;
+                          }
+                        }
                       }
+
+                      reverseOutcomes.push({
+                        id: id,
+                        type: type,
+                        color: color
+                      });
                     }
-                    return { id, type, color };
                   });
 
                   outcome = reverseOutcomes;
+                  // matchingProduct is defined in the closure
                   reactingIndices = [matchingProduct];
                   state.isEquilibrium = true;
+                  state.K = 1; // Default K=1 for reverse
                   state.direction = 'reverse';
                   break;
                 }
@@ -1669,206 +1900,211 @@ document.addEventListener('DOMContentLoaded', () => {
             }
           }
         }
-      }
 
-      state.outcome = outcome;
-      state.reactingIndices = reactingIndices;
-      // Assume reactingIndices joined forms the key (used for identity).
-      state.reactionKey = outcome ? reactingIndices.sort((a, b) => String(a).localeCompare(String(b))).join('_') : null;
+        state.outcome = outcome;
+        state.reactingIndices = reactingIndices;
+        // Assume reactingIndices joined forms the key (used for identity).
+        state.reactionKey = outcome ? reactingIndices.sort((a, b) => String(a).localeCompare(String(b))).join('_') : null;
 
-      let visualColors = [];
-      let prodType = null;
-      let prodColor = null;
+        let visualColors = [];
+        let prodType = null;
+        let prodColor = null;
 
-      let tempReactants = reactingIndices ? [...reactingIndices] : [];
+        let tempReactants = reactingIndices ? [...reactingIndices] : [];
 
-      indices.forEach((bId) => {
-        const rIndex = tempReactants.indexOf(bId);
-        if (rIndex > -1) {
-          tempReactants.splice(rIndex, 1);
-        } else {
-          const colors = getColors([bId]);
-          if (colors.length > 0) visualColors.push(colors[0]);
-        }
-      });
-
-      if (outcome) {
-        // Normalize to array
-        const outcomes = Array.isArray(outcome) ? outcome : [outcome];
-        state.products = outcomes;
-
-        let productNames = [];
-        let productScripts = [];
-        let primaryType = null;
-        let primaryColor = null;
-
-        outcomes.forEach(prod => {
-          // Visuals: If any product is solid/gas, tracking it might be useful for rendering override?
-          // Currently, 'visualColors' tracks LIQUIDS. 
-          // 'prodType'/'prodColor' tracks the SPECIAL state (solid block/gas).
-          // If we have multiple, we need a strategy.
-          // For now, let's say if ANY is solid, we show solid. If ANY is gas, we show gas (or maybe both?).
-          // The renderer uses 'productType' and 'productColor'.
-          // Let's stick to the FIRST non-liquid type found for the 'productType' state used by partial renderers,
-          // OR better: Just grab data for names/scripts here. Visuals are handled by 'visualColors' 
-          // and specific tokens.
-
-          if (typeof prod === 'string') {
-            if (prod === 'solid') {
-              if (!primaryType) { primaryType = 'solid'; primaryColor = reactionData.solidcolor; }
-            }
-            productNames.push("Unknown Product");
+        indices.forEach((bId) => {
+          const rIndex = tempReactants.indexOf(bId);
+          if (rIndex > -1) {
+            tempReactants.splice(rIndex, 1);
           } else {
-            productNames.push(prod.id || "Unknown Product");
-            if (prod.script) productScripts.push(prod.script);
-
-            // Simple priority for single-state legacy renderers: Solid > Gas > Liquid
-            if (prod.type === 'solid') {
-              primaryType = 'solid';
-              primaryColor = prod.color;
-            } else if ((prod.type === 'gas' || prod.type === 'trapped_gas') && primaryType !== 'solid') {
-              primaryType = prod.type; // Use the specific gas type
-              primaryColor = prod.color;
-            } else if (prod.type === 'liquid' && !primaryType) {
-              primaryType = 'liquid';
-              primaryColor = prod.color;
-            }
-
-            // If it's a liquid, add to the visualColors list so it mingles with other liquids
-            if (prod.type === 'liquid' && prod.color) {
-              visualColors.push(prod.color);
-            }
+            const colors = getColors([bId]);
+            if (colors.length > 0) visualColors.push(colors[0]);
           }
         });
 
-        // Temperature Averaging
-        let totalTemp = 0;
-        let tempCount = 0;
-        outcomes.forEach(o => {
-          if (o.temp) { totalTemp += parseInt(o.temp); tempCount++; }
-        });
-        if (tempCount > 0) {
-          state.temp = Math.floor(totalTemp / tempCount);
-        } else if (reactionData && reactionData.temp) {
-          state.temp = parseInt(reactionData.temp);
+        if (outcome) {
+          // Normalize to array
+          const outcomes = Array.isArray(outcome) ? outcome : [outcome];
+          state.products = outcomes;
+
+          let productNames = [];
+          let productScripts = [];
+          let primaryType = null;
+          let primaryColor = null;
+
+          outcomes.forEach(prod => {
+            // Visuals: If any product is solid/gas, tracking it might be useful for rendering override?
+            // Currently, 'visualColors' tracks LIQUIDS. 
+            // 'prodType'/'prodColor' tracks the SPECIAL state (solid block/gas).
+            // If we have multiple, we need a strategy.
+            // For now, let's say if ANY is solid, we show solid. If ANY is gas, we show gas (or maybe both?).
+            // The renderer uses 'productType' and 'productColor'.
+            // Let's stick to the FIRST non-liquid type found for the 'productType' state used by partial renderers,
+            // OR better: Just grab data for names/scripts here. Visuals are handled by 'visualColors' 
+            // and specific tokens.
+
+            if (typeof prod === 'string') {
+              if (prod === 'solid') {
+                if (!primaryType) { primaryType = 'solid'; primaryColor = reactionData.solidcolor; }
+              }
+              productNames.push("Unknown Product");
+            } else {
+              productNames.push(prod.id || "Unknown Product");
+              if (prod.script) productScripts.push(prod.script);
+
+              // Simple priority for single-state legacy renderers: Solid > Gas > Liquid
+              if (prod.type === 'solid') {
+                primaryType = 'solid';
+                primaryColor = prod.color;
+              } else if ((prod.type === 'gas' || prod.type === 'trapped_gas') && primaryType !== 'solid') {
+                primaryType = prod.type; // Use the specific gas type
+                primaryColor = prod.color;
+              } else if (prod.type === 'liquid' && !primaryType) {
+                primaryType = 'liquid';
+                primaryColor = prod.color;
+              }
+
+              // If it's a liquid, add to the visualColors list so it mingles with other liquids
+              if (prod.type === 'liquid' && prod.color) {
+                visualColors.push(prod.color);
+              }
+            }
+          });
+
+          // Temperature Averaging
+          let totalTemp = 0;
+          let tempCount = 0;
+          outcomes.forEach(o => {
+            if (o.temp) { totalTemp += parseInt(o.temp); tempCount++; }
+          });
+          if (tempCount > 0) {
+            state.temp = Math.floor(totalTemp / tempCount);
+          } else if (reactionData && reactionData.temp) {
+            state.temp = parseInt(reactionData.temp);
+          }
+
+          // pH Mixture Logic (Treating products as equal volume mix)
+          let totalH_prod = 0;
+          let phCount = 0;
+          outcomes.forEach(o => {
+            if (o.ph !== undefined) {
+              let ph = parseFloat(o.ph);
+              let molesH = Math.pow(10, -ph);
+              let molesOH = Math.pow(10, -(14 - ph));
+              totalH_prod += (molesH - molesOH);
+              phCount++;
+            }
+          });
+
+          if (phCount > 0) {
+            let avgNetH = totalH_prod / phCount;
+            if (avgNetH > 0) {
+              state.ph = -Math.log10(avgNetH);
+            } else if (avgNetH < 0) {
+              state.ph = 14 - (-Math.log10(-avgNetH));
+            } else {
+              state.ph = 7.0;
+            }
+            state.ph = Math.round(state.ph * 100) / 100;
+          }
+
+
+          // Format Reaction Name: $$\ce{Reactant1 + Reactant2 -> Product1 + Product2}$$
+          let reactantIds = [];
+          reactingIndices.forEach(idx => {
+            let id = null;
+            if (typeof idx === 'number') {
+              const attr = getAttributes(idx);
+              if (attr && attr.id) id = attr.id;
+              else if (window.currentLabData && window.currentLabData['beaker' + idx]) id = window.currentLabData['beaker' + idx];
+            } else {
+              // Inventory items: the id is the key used in reactingIndices
+              id = idx;
+            }
+            if (id) reactantIds.push(id);
+          });
+
+          // Helper to strip LaTeX wrappers for the reaction string
+          const cleanForReaction = (name) => {
+            let s = name;
+            // Recursively strip wrappers to handle nested cases like $$\ce{...}$$
+            while (true) {
+              let changed = false;
+              // Remove wrapping $$
+              if (s.startsWith('$$') && s.endsWith('$$')) {
+                s = s.substring(2, s.length - 2);
+                changed = true;
+              }
+              // Remove wrapping \ce{...}
+              if (s.startsWith('\\ce{') && s.endsWith('}')) {
+                s = s.substring(4, s.length - 1);
+                changed = true;
+              }
+              // Remove wrapping \text{...} (if used)
+              if (s.startsWith('\\text{') && s.endsWith('}')) {
+                s = s.substring(6, s.length - 1);
+                changed = true;
+              }
+              // Remove wrapping \(...\)
+              if (s.startsWith('\\(') && s.endsWith('\\)')) {
+                s = s.substring(2, s.length - 2);
+                changed = true;
+              }
+              if (!changed) break;
+            }
+            return s;
+          };
+
+          const reactantsStr = reactantIds.map(cleanForReaction).join(" + ");
+          const productsStr = productNames.map(cleanForReaction).join(" + ");
+
+          // Save raw lists for measurement bar
+          // Save raw lists for measurement bar (must match resolvedId exactly)
+          state.reactantList = reactantIds;
+          state.productList = productNames; // These are from outcomes which are usually raw IDs too? Check downstream.
+
+          const arrow = state.isEquilibrium ? "<=>" : "->";
+
+          state.reactionName = `$$\\ce{${reactantsStr} ${arrow} ${productsStr}}$$`;
+          state.productName = productsStr;
+          state.script = productScripts.join(";");
+
+          // Legacy single-state support (best guess)
+          if (primaryType) {
+            state.productType = primaryType;
+            state.productColor = primaryColor;
+          } else if (outcomes.length > 0 && typeof outcomes[0] === 'object') {
+            state.productType = outcomes[0].type;
+            state.productColor = outcomes[0].color;
+          }
+
         }
 
-        // pH Mixture Logic (Treating products as equal volume mix)
-        let totalH_prod = 0;
-        let phCount = 0;
-        outcomes.forEach(o => {
-          if (o.ph !== undefined) {
-            let ph = parseFloat(o.ph);
-            let molesH = Math.pow(10, -ph);
-            let molesOH = Math.pow(10, -(14 - ph));
-            totalH_prod += (molesH - molesOH);
-            phCount++;
-          }
-        });
+        // Note: 'visualColors' was already pushed with liquid products above.
 
-        if (phCount > 0) {
-          let avgNetH = totalH_prod / phCount;
-          if (avgNetH > 0) {
-            state.ph = -Math.log10(avgNetH);
-          } else if (avgNetH < 0) {
-            state.ph = 14 - (-Math.log10(-avgNetH));
-          } else {
-            state.ph = 7.0;
-          }
-          state.ph = Math.round(state.ph * 100) / 100;
+        state.visualColors = visualColors;
+        // state.productType is set above
+        // state.productColor is set above
+
+        // Check for conditional trigger in products
+        if (state.products) {
+          state.products.forEach(p => {
+            if (p && (p.conditional === "true" || p.conditional === true || p.conditional === 1)) {
+              state.triggerConditional = true;
+            }
+          });
         }
-
-
-        // Format Reaction Name: $$\ce{Reactant1 + Reactant2 -> Product1 + Product2}$$
-        let reactantIds = [];
-        reactingIndices.forEach(idx => {
-          let id = null;
-          if (typeof idx === 'number') {
-            const attr = getAttributes(idx);
-            if (attr && attr.id) id = attr.id;
-            else if (labData && labData['beaker' + idx]) id = labData['beaker' + idx];
-          } else {
-            // Inventory items: the id is the key used in reactingIndices
-            id = idx;
-          }
-          if (id) reactantIds.push(id);
-        });
-
-        // Helper to strip LaTeX wrappers for the reaction string
-        const cleanForReaction = (name) => {
-          let s = name;
-          // Recursively strip wrappers to handle nested cases like $$\ce{...}$$
-          while (true) {
-            let changed = false;
-            // Remove wrapping $$
-            if (s.startsWith('$$') && s.endsWith('$$')) {
-              s = s.substring(2, s.length - 2);
-              changed = true;
-            }
-            // Remove wrapping \ce{...}
-            if (s.startsWith('\\ce{') && s.endsWith('}')) {
-              s = s.substring(4, s.length - 1);
-              changed = true;
-            }
-            // Remove wrapping \text{...} (if used)
-            if (s.startsWith('\\text{') && s.endsWith('}')) {
-              s = s.substring(6, s.length - 1);
-              changed = true;
-            }
-            // Remove wrapping \(...\)
-            if (s.startsWith('\\(') && s.endsWith('\\)')) {
-              s = s.substring(2, s.length - 2);
-              changed = true;
-            }
-            if (!changed) break;
-          }
-          return s;
-        };
-
-        const reactantsStr = reactantIds.map(cleanForReaction).join(" + ");
-        const productsStr = productNames.map(cleanForReaction).join(" + ");
-
-        // Save raw lists for measurement bar
-        state.reactantList = reactantIds.map(cleanForReaction);
-        state.productList = productNames.map(cleanForReaction);
-
-        const arrow = state.isEquilibrium ? "<=>" : "->";
-
-        state.reactionName = `$$\\ce{${reactantsStr} ${arrow} ${productsStr}}$$`;
-        state.productName = productsStr;
-        state.script = productScripts.join(";");
-
-        // Legacy single-state support (best guess)
-        if (primaryType) {
-          state.productType = primaryType;
-          state.productColor = primaryColor;
-        } else if (outcomes.length > 0 && typeof outcomes[0] === 'object') {
-          state.productType = outcomes[0].type;
-          state.productColor = outcomes[0].color;
-        }
-
-      }
-
-      // Note: 'visualColors' was already pushed with liquid products above.
-
-      state.visualColors = visualColors;
-      // state.productType is set above
-      // state.productColor is set above
-
-      // Check for conditional trigger in products
-      if (state.products) {
-        state.products.forEach(p => {
-          if (p && (p.conditional === "true" || p.conditional === true || p.conditional === 1)) {
-            state.triggerConditional = true;
-          }
-        });
       }
 
       return state;
     };
 
     // --- Reaction Queue Globals ---
-    let visualStack = []; // Array of { ids: [beakerId], color: string, type: 'liquid'/'solid'/'gas' }
+    // Start Lab Logic
+    // ...
+    // Note: visualStack is GLOBAL and persistent. Do NOT clear it here unless rebuilding from another state.
+    // visualStack.length = 0; // REMOVED: Caused state reset
+
     let reactionQueue = Promise.resolve();
     let logicUpdateTimer = null; // Debounce timer
     let processedBeakersCount = 0;
@@ -1880,85 +2116,48 @@ document.addEventListener('DOMContentLoaded', () => {
     const renderVisualStack = (opts = {}) => {
       // Map visualStack items to colors for the renderer
       const liquidColors = visualStack.filter(v => v.type === 'liquid' || !v.type).map(v => v.color);
-      // Determine product type/color based on visualStack items (solid/gas presence).
 
-      let pType = null;
-      let pColor = null;
-      let isProductGas = false;
-
-      // Check if any solid exists in stack
+      // 1. Solid Logic
+      let solidType = null;
+      let solidColor = null;
       const solidItem = visualStack.find(v => v.type === 'solid');
       if (solidItem) {
-        pType = 'solid';
-        pColor = solidItem.color;
+        solidType = 'solid';
+        solidColor = solidItem.color;
+      }
+
+      // 2. Gas Logic
+      let gasType = null;
+      let gasColor = null;
+      let isProductGas = false;
+      let bubbleColor = null;
+
+      const gasProd = visualStack.find(v => (v.type === 'gas' || v.type === 'trapped_gas') && v.isProduct);
+      const gasReact = visualStack.find(v => (v.type === 'gas' || v.type === 'trapped_gas') && !v.isProduct);
+
+      if (gasProd) {
+        gasType = gasProd.type; // Cloud type
+        gasColor = gasProd.color;
+        isProductGas = true;
+      }
+
+      if (gasReact) {
+        bubbleColor = gasReact.color;
+      }
+
+      // Pass to renderer
+      // Pass to renderer
+      if (typeof renderVisuals === 'function') {
+        renderVisuals(liquidColors, { type: solidType, color: solidColor }, { type: gasType, color: gasColor, isProduct: isProductGas, bubbleColor: bubbleColor }, opts.resetLiquids);
       } else {
-        // Check for gas
-        // Check for gas: Prioritize products (clouds) over reactants (bubbles)
-        const gasProd = visualStack.find(v => (v.type === 'gas' || v.type === 'trapped_gas') && v.isProduct);
-        const gasReact = visualStack.find(v => (v.type === 'gas' || v.type === 'trapped_gas') && !v.isProduct);
-
-        let bubbleColor = null;
-
-        if (gasProd) {
-          pType = gasProd.type; // Cloud type
-          pColor = gasProd.color;
-          isProductGas = true;
-        }
-
-        if (gasReact) {
-          bubbleColor = gasReact.color;
-          // If no cloud, ensure we trigger gas logic if needed?
-          // renderVisuals logic now checks pType OR bubbleColor?
-          // No, renderVisuals checks pType for cloud, bubbleColor for bubbles.
-          // But "gas layer" visibility depended on pType.
-          // If ONLY gasReact, pType is null above.
-          // We should set pType='gas' if only reactants exist TO ENABLE THE CONTAINER?
-          // Actually my new renderVisuals code checks `if (typeof flaskGas ...)` always.
-          // And handles cloud/bubbles separately.
-          // BUT existing calls might rely on pType?
-          // Let's safe-guard: if no gasProd but gasReact, set pType='gas' implies "Gas Layer Logic active".
-          // But my new logic says "if pType=gas/trapped => cloud".
-          // So for only Bubbles, pType should be NULL or 'gas-bubbles' to avoid cloud loop?
-          // Logic: "if (pType === 'gas' || pType === 'trapped_gas')" -> Enters Cloud Logic.
-          // If I have only bubbles, I don't want cloud logic.
-          // So pType can be null. Bubble logic is separate block "if (bubbleColor)".
-        }
-
-        // Legacy Fallback for single "pType='gas'" which meant bubbles previously?
-        // Pre-refactor: if pType='gas' && !isProductGas -> Bubbles.
-        // My new code: if bubbleColor -> Bubbles.
-
-        // So if ONLY gasReact:
-        // gasProd=undefined. pType=null.
-        // gasReact=exists. bubbleColor=color.
-        // renderVisuals(..., null, null, false, ..., color)
-        // Inside: 
-        // Cloud check: pType (null) != gas/trapped. Cloud skipped.
-        // Bubble check: bubbleColor exists. Bubbles drawn.
-        // This works!
-
-        // If BOTH:
-        // gasProd exists. pType=trapped_gas.
-        // gasReact exists. bubbleColor=color.
-        // renderVisuals(..., trapped_gas, cloudColor, true, ..., bubbleColor)
-        // Inside:
-        // Cloud check: pType=trapped. Cloud drawn.
-        // Bubble check: bubbleColor exists. Bubbles drawn.
-        // This works!
-
-        // Pass to renderer
-        if (typeof renderVisuals === 'function') {
-          renderVisuals(liquidColors, pType, pColor, isProductGas, opts.resetLiquids, bubbleColor);
-        } else {
-          console.error("renderVisuals function missing!");
-        }
-      };
+        console.error("renderVisuals function missing!");
+      }
 
       // Update displays to match visual state using current globals (which update upon reaction execution).
 
       if (tempDisplay && tempDisplay.innerText !== "") tempDisplay.innerText = "Temperature: " + currentTemperature.toFixed(1) + " K";
       if (phDisplay && phDisplay.innerText !== "") {
-        if (liquidColors.length > 0 || pType === 'solid') { // Show pH if content
+        if (liquidColors.length > 0 || solidType === 'solid') { // Show pH if content
           phDisplay.innerText = "pH: " + currentPH.toFixed(1);
         } else {
           phDisplay.innerText = "pH: n/a";
@@ -1967,6 +2166,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (reactionNameDisplay && reactionNameDisplay.innerHTML !== "") {
         reactionNameDisplay.innerHTML = "Reaction: " + currentReactionName;
         if (typeof MathJax !== 'undefined') MathJax.typesetPromise([reactionNameDisplay]);
+      }
+
+      // 3. Sync Measurement Bars automatically on any visual change
+      if (typeof updateMeasurementBars === 'function') {
+        updateMeasurementBars(); // Strict Sync with visualStack
       }
     };
 
@@ -1986,7 +2190,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (v.isProduct && v.type === 'gas') return;
 
         if (v.ids && v.ids.length > 0) {
-          allIds.push(...v.ids);
+          const qty = v.quantity !== undefined ? v.quantity : 1.0;
+          v.ids.forEach(id => {
+            allIds.push({ id: id, qty: qty });
+          });
         }
       });
       console.log("Current Flask IDs (excluding gas products):", allIds);
@@ -1999,13 +2206,37 @@ document.addEventListener('DOMContentLoaded', () => {
       if (state.reactionKey) {
         // Prevent Infinite Loop: Check if this reaction is just re-identifying an existing product.
         // If all reacting IDs are contained within a SINGLE product token, ignore it.
-        const internalReaction = visualStack.some(v =>
-          v.isProduct &&
-          state.reactingIndices.every(reqId => v.ids && v.ids.includes(reqId))
+        const loopCandidates = visualStack.filter(v =>
+          v.isProduct && state.reactingIndices.every(reqId => v.ids && v.ids.includes(reqId))
         );
+        const internalReaction = loopCandidates.length > 0;
 
         if (internalReaction) {
           console.log("Skipping self-reaction loop for: " + state.reactionKey);
+
+          // RETRY 1: Check for Excess Ingredients by removing the locked ones and checking again
+          // logic: "If these locked ingredients didn't exist, would the reaction still happen?"
+          const freeIds = [...allIds];
+
+          state.reactingIndices.forEach(lockedId => {
+            // Find FIRST matching instance in freeIds (which are objects {id, qty})
+            const idx = freeIds.findIndex(item => String(item.id) === String(lockedId));
+            if (idx > -1) freeIds.splice(idx, 1);
+          });
+
+          const freeState = getFlaskState(freeIds);
+          if (freeState.reactionKey) {
+            console.log("Found reaction using free ingredients:", freeState.reactionKey);
+            queueReaction(freeState);
+            return;
+          }
+
+          // RETRY 2: Try finding a DIFFERENT reaction type (e.g. Reverse) typically by excluding the key
+          const nextState = getFlaskState(allIds, state.reactionKey);
+          if (nextState.reactionKey && nextState.reactionKey !== state.reactionKey) {
+            console.log("Found alternative reaction (e.g. Reverse):", nextState.reactionKey);
+            queueReaction(nextState);
+          }
         } else {
           console.log("Chained reaction detected: " + state.reactionKey);
           queueReaction(state);
@@ -2019,124 +2250,107 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const queueReaction = (state) => {
       reactionQueue = reactionQueue.then(async () => {
-        // Trigger measurement animation
-        // Trigger measurement animation
-        try {
-          if (state.reactantList && state.productList) {
-            updateMeasurementBars(state.reactantList, state.productList);
-          }
-        } catch (e) {
-          console.error("Error updating measurement bars:", e);
-        }
-
-        // Wait 2s
-        await new Promise(r => setTimeout(r, 2000));
+        // Wait for previous visual transition if any
+        await new Promise(r => setTimeout(r, 500));
 
         // Identify Reagents & Products
+        // Normalize set for consistent matching
         const idsToconsume = new Set(state.reactingIndices);
+        const consumeSetEarly = new Set(Array.from(idsToconsume).map(String));
+
+        const yieldFraction = state.limitingYield || 1.0;
+        console.log("Processing reaction with yield:", yieldFraction);
 
         // Strict Check: Ensure all reactants are still present in the stack
-        // This prevents "ghost" reactions if ingredients were consumed by a previous reaction in the queue.
-        // Removed: This check is too strict and prevents valid chained reactions where a product is consumed.
-        // The visualStack filtering logic handles actual consumption.
-        // const currentIds = new Set();
-        // visualStack.forEach(v => {
-        //   if (v.ids) v.ids.forEach(id => currentIds.add(id));
-        // });
-        // const missingReactants = state.reactingIndices.some(id => !currentIds.has(id));
-        // if (missingReactants) {
-        //   console.log("QueueReaction: Aborting, reactants missing:", state.reactingIndices);
-        //   return;
-        // }
-
-        console.log("QueueReaction: Target IDs:", Array.from(idsToconsume));
-        console.log("QueueReaction: VisualStack:", JSON.parse(JSON.stringify(visualStack)));
 
         let consumed = false;
-        let totalLiquidLayersConsumed = 0;
 
-        // Iterate visualStack to mark reactants and count liquid layers.
-        visualStack.forEach((item, idx) => {
-          const hasReactant = item.ids.some(id => idsToconsume.has(id));
+        // 0. Accumulate IDs from consumed items (to allow products to mimic their ingredients)
+        const consumedIds = [];
+
+        // Normalize consumption set for robust matching
+        const consumeSet = new Set(Array.from(idsToconsume).map(String));
+
+        // Consume Logic: Reduce partial quantities
+        visualStack.forEach(token => {
+          if (state.isEquilibrium) return;
+
+          const hasReactant = token.ids.some(id => consumeSet.has(String(id)));
           if (hasReactant) {
-            consumed = true;
-            // Count consumed volume
-            if (item.type === 'liquid' || !item.type) {
-              totalLiquidLayersConsumed++;
+            // Assume 1 token contribution = yieldFraction amount
+            const reduction = yieldFraction;
+            token.quantity = (token.quantity !== undefined ? token.quantity : 1.0) - reduction;
+
+            if (token.quantity <= 0.01) {
+              token.toRemove = true; // Mark for removal
             }
+
+            consumed = true;
+            consumedIds.push(...token.ids);
           }
         });
 
-        console.log("QueueReaction: Consumed?", consumed);
+        // Filter removed tokens
+        const newStack = visualStack.filter(t => !t.toRemove);
 
-        if (consumed) {
-          const products = state.products || [];
-
-          // If single legacy product exists but no array, wrap it
-          if (products.length === 0 && state.productType) {
-            products.push({
-              type: state.productType,
-              color: state.productColor
-            });
-          }
-
-          // 0. Accumulate IDs from consumed items (to allow products to mimic their ingredients)
-          const consumedIds = [];
-          visualStack.forEach(token => {
-            const intersection = token.ids.filter(id => idsToconsume.has(id));
-            if (intersection.length > 0) {
-              consumedIds.push(...token.ids);
-            }
-          });
-          const uniqueConsumedIds = [...new Set(consumedIds)];
-
-          // 1. Filter out tokens whose IDs were fully consumed.
-          let newStack = visualStack.filter(token => {
-            if (state.isEquilibrium) return true; // Persistent Reagents: Don't remove anything
-            const intersection = token.ids.filter(id => idsToconsume.has(id)); // intersection with set
-            // If any ID in token is being consumed, remove the token.
-            // Simplification: if intersection > 0, remove.
-            return intersection.length === 0;
-          });
-
-          // 2. Add ALL Products
-          if (products.length > 0) {
-            products.forEach(prod => {
-              // Merge product ID with consumed IDs to allow Chained "Upgrade" Reactions
-              // e.g. if 1+2 -> P, P carries {P, 1, 2}. P+3 matches {1, 2, 3}.
-              const compoundIds = prod.id ? [prod.id, ...uniqueConsumedIds] : [...uniqueConsumedIds];
-              const finalIds = [...new Set(compoundIds)]; // Deduplicate
-
-              // Equilibrium Check: Avoid duplicate products if they already exist in the mixture
-              if (state.isEquilibrium) {
-                const alreadyPresent = visualStack.some(v => v.ids.includes(prod.id));
-                if (alreadyPresent) return;
-              }
-
-              const token = {
-                ids: finalIds,
-                color: prod.color,
-                type: prod.type || 'liquid',
-                isProduct: true
-              };
-              newStack.push(token);
-
-              // If product is gas, schedule its removal (ephemeral)
-              // trapped_gas remains, and any gas in an equilibrium reaction remains
-              if (prod.type === 'gas' && !state.isEquilibrium) {
-                setTimeout(() => {
-                  // Remove this specific gas instance from visualStack
-                  visualStack = visualStack.filter(v => v !== token);
-                  renderVisualStack();
-                }, 4000);
-              }
-            });
-          }
-
-          visualStack = newStack;
+        if (!consumed && !state.isEquilibrium) {
+          console.log("Reaction queued but reactants missing (already consumed?). Skipping.");
+          return;
         }
 
-        // Update Globals (Trigger Visual Change)
+        const uniqueConsumedIds = [...new Set(consumedIds)];
+        // Prefer state.outcome (full objects from JSON) over state.products (legacy)
+        const products = state.outcome || state.products || [];
+
+        // If single legacy product exists but no array, wrap it
+        if (products.length === 0 && state.productType) {
+          products.push({
+            type: state.productType,
+            color: state.productColor || '#fff',
+            id: state.productName // Fallback to name if ID not available
+          });
+        }
+
+        if (products.length > 0) {
+          products.forEach(prod => {
+            let finalType = prod.type || 'liquid';
+            let finalColor = prod.color || '#fff';
+
+            // Use limiting yield for product quantity
+            const productQty = yieldFraction;
+
+            const compoundIds = prod.id ? [prod.id, ...uniqueConsumedIds] : [...uniqueConsumedIds];
+            const finalIds = [...new Set(compoundIds)]; // Deduplicate
+
+            // Equilibrium check
+            if (state.isEquilibrium) {
+              const alreadyPresent = visualStack.some(v => v.ids.includes(prod.id));
+              if (alreadyPresent) return;
+            }
+
+            const token = {
+              ids: finalIds,
+              type: finalType,
+              color: finalColor,
+              isProduct: true,
+              quantity: productQty
+            };
+
+            newStack.push(token);
+
+            // Ephemeral Gas Logic
+            if (prod.type === 'gas' && !state.isEquilibrium) {
+              setTimeout(() => {
+                visualStack = visualStack.filter(v => v !== token);
+                renderVisualStack();
+              }, 4000);
+            }
+          });
+        }
+
+        visualStack = newStack;
+
+        // Update Globals
         currentPH = state.ph;
         currentTemperature = state.temp;
         currentReactionName = state.reactionName;
@@ -2146,11 +2360,10 @@ document.addEventListener('DOMContentLoaded', () => {
         currentProductColor = state.productColor || 'white';
         currentProducts = state.products || [];
 
-
         // Animate Flask
         if (typeof flask !== 'undefined' && flask) {
           flask.classList.add('flask-active');
-          setTimeout(() => flask.classList.remove('flask-active'), 1000); // Shake
+          setTimeout(() => flask.classList.remove('flask-active'), 1000);
         }
 
         try {
@@ -2159,13 +2372,13 @@ document.addEventListener('DOMContentLoaded', () => {
           console.error("Error rendering visual stack:", e);
         }
 
-        // Trigger Conditional if applicable
+        // Trigger Conditional
         if (state.triggerConditional) {
           console.log("Reaction triggered conditional flag!");
           window.conditional = true;
         }
 
-        // Trigger Chained Reactions after a short delay
+        // Trigger Chained Reactions
         setTimeout(() => {
           checkFlaskReactions();
         }, 500);
@@ -2205,7 +2418,8 @@ document.addEventListener('DOMContentLoaded', () => {
         visualStack.push({
           ids: [id],
           color: colors[0],
-          type: itemType
+          type: itemType,
+          quantity: 1.0 // Default 1.0 unit
         });
       }
 
@@ -2268,7 +2482,6 @@ document.addEventListener('DOMContentLoaded', () => {
         beakerWrapper.appendChild(cloudSvg);
 
         // Reactant type is gas: do not display a beaker with liquid inside
-        // beakerWrapper.appendChild(beakerImage); // Removed to show ONLY the gas cloud
       } else {
         // Render as Beaker (Default)
         if (fluidColor) {
@@ -2756,12 +2969,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
   // Mobile Inventory Toggles
-  const invTrigger = document.getElementById('inventory-trigger');
+  const mobileInvTrigger = document.getElementById('inventory-trigger');
   const invModal = document.getElementById('inventory-modal');
   const invClose = document.querySelector('.close-modal');
 
-  if (invTrigger && invModal) {
-    invTrigger.onclick = () => {
+  if (mobileInvTrigger && invModal) {
+    mobileInvTrigger.onclick = () => {
       invModal.classList.toggle('hidden');
     };
     invClose.onclick = () => {
@@ -2788,7 +3001,25 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
 
-  const updateMeasurementBars = (reactants, products) => {
+  // Helper to resolve ID to display name matching addLiquid logic
+  const resolveId = (id) => {
+    // 1. Resolve Beaker Indices (e.g. "1" -> "\(\ce{N2}\)")
+    const lData = window.currentLabData || (typeof labData !== 'undefined' ? labData : {});
+    if (lData && (typeof id === 'number' || (typeof id === 'string' && /^[1-4]$/.test(id)))) {
+      const beakerKey = 'beaker' + id;
+      if (lData[beakerKey]) return lData[beakerKey];
+    }
+
+    // 2. Resolve Items (Prefer ID/Formula over Name)
+    if (window.itemsData) {
+      const item = window.itemsData.find(i => i.id === id);
+      if (item) return item.id;
+    }
+
+    return id;
+  };
+
+  const updateMeasurementBars = () => {
     const container = document.getElementById('measurement-container');
     if (!container) return;
 
@@ -2796,82 +3027,232 @@ document.addEventListener('DOMContentLoaded', () => {
     // container.innerHTML = '';
     container.style.opacity = '1';
 
-    // Helper to create a bar
-    const createBar = (label, isReactant) => {
-      const row = document.createElement('div');
-      row.className = 'measure-row';
+    // Helper to create or reuse a bar
+    const createBar = (info) => {
+      // Check for existing bar
+      let row = Array.from(container.querySelectorAll('.measure-row')).find(r => r.getAttribute('data-label') === info.label);
+      let barFill, valDiv;
+      let animationStart = info.start;
 
-      const nameDiv = document.createElement('div');
-      nameDiv.className = 'measure-label';
-      nameDiv.innerText = label;
-      nameDiv.title = label;
+      if (row) {
+        // Reuse
+        barFill = row.querySelector('.measure-bar-fill');
+        valDiv = row.querySelector('.measure-value');
 
-      const barBg = document.createElement('div');
-      barBg.className = 'measure-bar-bg';
+        // Capture current visual width to prevent snapping
+        // Use style.width if set, otherwise computed style
+        const currentWidth = parseFloat(barFill.style.width) || parseFloat(getComputedStyle(barFill).width) / barFill.parentElement.offsetWidth * 100 || 0;
 
-      const barFill = document.createElement('div');
-      barFill.className = 'measure-bar-fill';
-      // Reactant starts full, Product starts empty
-      barFill.style.width = isReactant ? '100%' : '0%';
+        // If bar exists, start animation from CURRENT width, not calculated start
+        animationStart = currentWidth;
 
-      barBg.appendChild(barFill);
+        // Reset width immediately to start position (no transition yet)
+        barFill.style.transition = 'none';
+        barFill.style.width = animationStart + '%';
+        // Force reflow
+        barFill.offsetHeight;
+      } else {
+        // Create New
+        row = document.createElement('div');
+        row.className = 'measure-row';
+        row.setAttribute('data-label', info.label);
 
-      const valDiv = document.createElement('div');
-      valDiv.className = 'measure-value';
-      valDiv.innerText = isReactant ? '100%' : '0%';
+        const nameDiv = document.createElement('div');
+        nameDiv.className = 'measure-label';
+        nameDiv.innerText = info.label;
+        nameDiv.title = info.label;
 
-      row.appendChild(nameDiv);
-      row.appendChild(barBg);
-      row.appendChild(valDiv);
+        const barBg = document.createElement('div');
+        barBg.className = 'measure-bar-bg';
 
-      // Append new bars to the top or bottom? 
-      // User said "something new gets added", implying append order.
-      container.appendChild(row);
+        barFill = document.createElement('div');
+        barFill.className = 'measure-bar-fill';
 
-      return { barFill, valDiv, isReactant };
+        // Set Initial Width
+        barFill.style.width = animationStart + '%';
+
+        barBg.appendChild(barFill);
+
+        valDiv = document.createElement('div');
+        valDiv.className = 'measure-value';
+        valDiv.innerText = Math.round(animationStart) + '%';
+
+        row.appendChild(nameDiv);
+        row.appendChild(barBg);
+        row.appendChild(valDiv);
+
+        container.appendChild(row);
+      }
+
+      // Return animationStart (which might be currentWidth) so interpolation works smoothly
+      return { barFill, valDiv, start: animationStart, end: info.end };
     };
 
-    const barData = [];
-    reactants.forEach(r => barData.push(createBar(r, true)));
-    products.forEach(p => barData.push(createBar(p, false)));
+    // 1. Filter and Deduplicate Lists
+    const isNotGas = (identifier) => {
+      if (!identifier || identifier === "Unknown Product") return false; // Treat unknown as filtered (safe default)
 
-    // Animate
+      let type = 'liquid';
+      // Try finding by ID first
+      let item = window.itemsData.find(i => i.id === identifier);
+
+      if (!item) {
+        // Fallback: Try cleaning LaTeX or HTML
+        // Note: cleanLatex is defined in global scope closure
+        const cleanId = typeof cleanLatex === 'function' ? cleanLatex(identifier) : identifier;
+        const cleanName = typeof stripHtml === 'function' ? stripHtml(identifier) : identifier;
+
+        item = window.itemsData.find(i => {
+          const iId = i.id;
+          const iName = typeof stripHtml === 'function' ? stripHtml(i.name) : i.name;
+
+          // Match against ID or Name
+          // Also enable cleaning on the ITEM side if that helps matching
+          return iId === identifier || iName === identifier ||
+            (typeof cleanLatex === 'function' && cleanLatex(iId) === cleanId) ||
+            iName === cleanName;
+        });
+      }
+
+      if (item && item.attributes) {
+        const attr = typeof item.attributes === 'string' ? JSON.parse(item.attributes) : item.attributes;
+        if (attr.type) type = attr.type;
+      }
+
+      // Final Fallback: If item not found/type unknown, check if name implies gas
+      // This catches ephemeral items like "red gas" defined only in reaction strings
+      if (type === 'liquid' && typeof identifier === 'string' && identifier.toLowerCase().includes('gas')) {
+        return false;
+      }
+
+      return type !== 'gas';
+    };
+
+    let startSet, endSet;
+    const existingLabels = Array.from(container.querySelectorAll('.measure-row')).map(row => row.getAttribute('data-label'));
+
+    // --- STRICT SYNC MODE (Used by renderVisualStack) ---
+    // Check against CURRENT CONTENTS of flask (visualStack)
+    const currentFlaskIds = {};
+    // console.log("DEBUG: visualStack for Bars:", JSON.parse(JSON.stringify(visualStack)));
+
+    visualStack.forEach(v => {
+      // In strict mode, we can trust visualStack types directly!
+      // Filter ephemeral gases that are just visual effects (not 'trapped')
+      if (v.type === 'gas' && !v.type.includes('trapped') && !v.isProduct) return;
+
+      const qty = v.quantity !== undefined ? v.quantity : 1.0;
+
+      // Only count Primary ID to avoid masking
+      // If product, it only shows itself.
+      // If reactant, it shows itself.
+      const id = resolveId(v.ids[0]);
+      if (id && isNotGas(id)) { // Apply gas filtering here
+        currentFlaskIds[id] = (currentFlaskIds[id] || 0) + qty;
+      }
+    });
+
+    // Ensure ALL products in visual stack (even solids) are counted
+    // console.log("DEBUG: currentFlaskIds:", currentFlaskIds);
+
+    // Start State = Whatever is on screen
+    startSet = new Set(existingLabels);
+
+    // End State = Whatever is in the flask
+    endSet = new Set(Object.keys(currentFlaskIds));
+
+    // Union for calculations
+    // Note: StartSet will have items that might be removed (consumed)
+    // EndSet will have items (new or persisting)
+
+    // 2. Determine Start & End Popuilations (Calculated above)
+
+
+    // 3. Calculate Percentages (Normalize to 100% integers with remainder distribution)
+    const getDistributions = (count) => {
+      if (count <= 0) return { base: 0, remainder: 0 };
+      return {
+        base: Math.floor(100 / count),
+        remainder: 100 % count
+      };
+    };
+
+    const startDist = getDistributions(startSet.size);
+    const endDist = getDistributions(endSet.size);
+
+    // 4. Build Data Map
+    const barMap = {};
+    const allLabels = new Set([...startSet, ...endSet]);
+    let startIdx = 0;
+    let endIdx = 0;
+
+    allLabels.forEach(label => {
+      const isStart = startSet.has(label);
+      const isEnd = endSet.has(label);
+
+      let startVal = 0;
+      if (isStart) {
+        startVal = startDist.base + (startIdx < startDist.remainder ? 1 : 0);
+        startIdx++;
+      }
+
+      let endVal = 0;
+      if (isEnd) {
+        endVal = endDist.base + (endIdx < endDist.remainder ? 1 : 0);
+        endIdx++;
+      }
+
+      barMap[label] = {
+        label: label,
+        start: startVal,
+        end: endVal
+      };
+    });
+
+    // 5. Create DOM Elements
+    const barData = [];
+
+    Object.values(barMap).forEach(info => {
+      barData.push(createBar(info));
+    });
+
+    // Render MathJax labels for new bars
+    if (typeof safeTypeset === 'function') {
+      safeTypeset([container]);
+    }
+
+    // 4. Animate
     // Force reflow
     container.getBoundingClientRect();
 
-    // Start Animation with Kinetic Curves
-    // Reactant (Decay): Fast drop, slow tail
-    // Product (Growth): Fast rise, slow tail
-    // Both mapped to ease-out quint/quart
-
     requestAnimationFrame(() => {
-      barData.forEach(({ barFill, valDiv, isReactant }) => {
-        barFill.style.transition = 'width 2s cubic-bezier(0.22, 1, 0.36, 1)';
-        barFill.style.width = isReactant ? '0%' : '100%';
+      barData.forEach((data) => {
+        // Use linear easing to match the 3.5s wait time exactly
+        data.barFill.style.transition = 'width 3.5s linear';
+        data.barFill.style.width = data.end + '%';
       });
 
       // Numeric ticker
       const startTime = performance.now();
-      const duration = 2000;
+      const duration = 3500;
 
       const tick = (now) => {
         const elapsed = now - startTime;
         const progress = Math.min(elapsed / duration, 1);
-        // Quartic ease-out for numbers to match bars
-        const eased = 1 - Math.pow(1 - progress, 4);
+        // Linear easing
+        const eased = progress;
 
-        barData.forEach(({ valDiv, isReactant }) => {
-          const start = isReactant ? 100 : 0;
-          const end = isReactant ? 0 : 100;
-          const current = start + (end - start) * eased;
-          valDiv.innerText = Math.round(current) + '%';
+        barData.forEach((data) => {
+          const current = data.start + (data.end - data.start) * eased;
+          data.valDiv.innerText = Math.round(current) + '%';
         });
 
         if (progress < 1) requestAnimationFrame(tick);
-        // No fadeout
       };
       requestAnimationFrame(tick);
     });
+
+    return new Promise(resolve => setTimeout(resolve, 1000));
   };
 
   // Start
