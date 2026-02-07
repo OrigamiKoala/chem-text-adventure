@@ -2253,33 +2253,52 @@ document.addEventListener('DOMContentLoaded', () => {
         // Wait for previous visual transition if any
         await new Promise(r => setTimeout(r, 500));
 
-        // Identify Reagents & Products
-        // Normalize set for consistent matching
-        const idsToconsume = new Set(state.reactingIndices);
-        const consumeSetEarly = new Set(Array.from(idsToconsume).map(String));
-
         const yieldFraction = state.limitingYield || 1.0;
         console.log("Processing reaction with yield:", yieldFraction);
 
-        // Strict Check: Ensure all reactants are still present in the stack
+        // 1. Determine Stoichiometry & Total Consumption Needs
+        // Parse Reactant Coefficients from Key (e.g. "1_3*2eqK1")
+        const consumptionNeeds = {}; // { "ID": AmountNeeded }
+        const reactantCoeffs = {};
+
+        if (state.reactionKey) {
+          // Strip suffix (eqK...) and product part if any
+          const reactionStr = state.reactionKey.split('eq')[0].split('->')[0];
+          const parts = reactionStr.split('_');
+          parts.forEach(p => {
+            let count = 1;
+            let id = p;
+            if (p.includes('*')) {
+              const pieces = p.split('*');
+              count = parseFloat(pieces[0]);
+              id = pieces[1];
+            }
+            reactantCoeffs[id] = count;
+            consumptionNeeds[id] = count * yieldFraction;
+          });
+        }
+
+        console.log("Consumption Needs:", consumptionNeeds);
 
         let consumed = false;
-
-        // 0. Accumulate IDs from consumed items (to allow products to mimic their ingredients)
         const consumedIds = [];
 
-        // Normalize consumption set for robust matching
-        const consumeSet = new Set(Array.from(idsToconsume).map(String));
-
-        // Consume Logic: Reduce partial quantities
+        // 2. Consume Logic: Satisfy needs from available tokens
         visualStack.forEach(token => {
           if (state.isEquilibrium) return;
 
-          const hasReactant = token.ids.some(id => consumeSet.has(String(id)));
-          if (hasReactant) {
-            // Assume 1 token contribution = yieldFraction amount
-            const reduction = yieldFraction;
-            token.quantity = (token.quantity !== undefined ? token.quantity : 1.0) - reduction;
+          // Check if this token matches any needed reactant
+          // Tokens usually have 1 ID, but can be mixtures. We check matches.
+          const matchId = token.ids.find(id => consumptionNeeds[String(id)] > 0.0001);
+
+          if (matchId) {
+            const needed = consumptionNeeds[String(matchId)];
+            const available = token.quantity !== undefined ? token.quantity : 1.0;
+
+            const take = Math.min(available, needed);
+
+            token.quantity = available - take;
+            consumptionNeeds[String(matchId)] -= take;
 
             if (token.quantity <= 0.01) {
               token.toRemove = true; // Mark for removal
@@ -2290,11 +2309,10 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         });
 
-        // Filter removed tokens
         const newStack = visualStack.filter(t => !t.toRemove);
 
         if (!consumed && !state.isEquilibrium) {
-          console.log("Reaction queued but reactants missing (already consumed?). Skipping.");
+          console.log("Reaction queued but no reactants consumed. Skipping.");
           return;
         }
 
@@ -2316,13 +2334,13 @@ document.addEventListener('DOMContentLoaded', () => {
             let finalType = prod.type || 'liquid';
             let finalColor = prod.color || '#fff';
 
-            // Use limiting yield for product quantity
-            const productQty = yieldFraction;
+            // Use Product count if defined (default 1) * Yield
+            const pCount = prod.count || 1;
+            const productQty = yieldFraction * pCount;
 
             const compoundIds = prod.id ? [prod.id, ...uniqueConsumedIds] : [...uniqueConsumedIds];
-            const finalIds = [...new Set(compoundIds)]; // Deduplicate
+            const finalIds = [...new Set(compoundIds)];
 
-            // Equilibrium check
             if (state.isEquilibrium) {
               const alreadyPresent = visualStack.some(v => v.ids.includes(prod.id));
               if (alreadyPresent) return;
@@ -2338,7 +2356,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             newStack.push(token);
 
-            // Ephemeral Gas Logic
             if (prod.type === 'gas' && !state.isEquilibrium) {
               setTimeout(() => {
                 visualStack = visualStack.filter(v => v !== token);
@@ -3161,101 +3178,44 @@ document.addEventListener('DOMContentLoaded', () => {
     // End State = Whatever is in the flask
     endSet = new Set(Object.keys(currentFlaskIds));
 
-    // Union for calculations
-    // Note: StartSet will have items that might be removed (consumed)
-    // EndSet will have items (new or persisting)
+    // Union logic: update existing, add new, remove old
+    const unionSet = new Set([...startSet, ...endSet]);
 
-    // 2. Determine Start & End Popuilations (Calculated above)
+    unionSet.forEach(label => {
+      const currentVal = currentFlaskIds[label] || 0;
 
+      // Calculate Percentage for Bar Width (1 unit = 25%)
+      const targetPercent = Math.min(currentVal * 25, 100);
 
-    // 3. Calculate Percentages (Normalize to 100% integers with remainder distribution)
-    const getDistributions = (count) => {
-      if (count <= 0) return { base: 0, remainder: 0 };
-      return {
-        base: Math.floor(100 / count),
-        remainder: 100 % count
-      };
-    };
+      // Display Text: fractional if needed
+      const displayVal = Math.abs(currentVal - Math.round(currentVal)) < 0.05
+        ? Math.round(currentVal).toString()
+        : currentVal.toFixed(2);
 
-    const startDist = getDistributions(startSet.size);
-    const endDist = getDistributions(endSet.size);
-
-    // 4. Build Data Map
-    const barMap = {};
-    const allLabels = new Set([...startSet, ...endSet]);
-    let startIdx = 0;
-    let endIdx = 0;
-
-    allLabels.forEach(label => {
-      const isStart = startSet.has(label);
-      const isEnd = endSet.has(label);
-
-      let startVal = 0;
-      if (isStart) {
-        startVal = startDist.base + (startIdx < startDist.remainder ? 1 : 0);
-        startIdx++;
-      }
-
-      let endVal = 0;
-      if (isEnd) {
-        endVal = endDist.base + (endIdx < endDist.remainder ? 1 : 0);
-        endIdx++;
-      }
-
-      barMap[label] = {
+      const info = createBar({
         label: label,
-        start: startVal,
-        end: endVal
-      };
-    });
+        start: targetPercent,
+        text: displayVal
+      });
 
-    // 5. Create DOM Elements
-    const barData = [];
-
-    Object.values(barMap).forEach(info => {
-      barData.push(createBar(info));
+      // Update the bar and text immediately
+      if (info) {
+        info.barFill.style.transition = 'width 1s ease-in-out';
+        info.barFill.style.width = targetPercent + '%';
+        info.valDiv.innerText = displayVal + (displayVal.includes('.') ? '' : ''); // No % sign needed if it's mole-like, but user might want it.
+        // Actually, let's just stick to the text provided.
+        info.valDiv.innerText = displayVal;
+      }
     });
 
     // Render MathJax labels for new bars
     if (typeof safeTypeset === 'function') {
       safeTypeset([container]);
+    } else if (typeof MathJax !== 'undefined') {
+      MathJax.typesetPromise([container]);
     }
-
-    // 4. Animate
-    // Force reflow
-    container.getBoundingClientRect();
-
-    requestAnimationFrame(() => {
-      barData.forEach((data) => {
-        // Use linear easing to match the 3.5s wait time exactly
-        data.barFill.style.transition = 'width 3.5s linear';
-        data.barFill.style.width = data.end + '%';
-      });
-
-      // Numeric ticker
-      const startTime = performance.now();
-      const duration = 3500;
-
-      const tick = (now) => {
-        const elapsed = now - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        // Linear easing
-        const eased = progress;
-
-        barData.forEach((data) => {
-          const current = data.start + (data.end - data.start) * eased;
-          data.valDiv.innerText = Math.round(current) + '%';
-        });
-
-        if (progress < 1) requestAnimationFrame(tick);
-      };
-      requestAnimationFrame(tick);
-    });
-
-    return new Promise(resolve => setTimeout(resolve, 1000));
   };
 
-  // Start
 });
 
 

@@ -2,3 +2,6 @@
 .vscode
 .agent
 .agent/rules
+.brace_counter.py
+.brace_tracer.py
+.brace_counter_v2.py
