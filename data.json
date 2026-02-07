@@ -3024,7 +3024,7 @@
       "attributes3": null,
       "beaker4": null,
       "attributes4": null,
-      "reaction": "{\n\"1_3*2eqK1\":[{\"id\":\"\\(\\ce{NH3}\\)\", \"name\":\"ammonia\", \"type\":\"trapped_gas\",\"conditional\":\"true\"}]\n}"
+      "reaction": "{\n\"1_3*2eqK1\":[{\"id\":\"\\(\\ce{NH3}\\)\", \"name\":\"ammonia\", \"type\":\"trapped_gas\",\"conditional\":\"true\", \"count\": 2}]\n}"
     }
   ],
   "items": [

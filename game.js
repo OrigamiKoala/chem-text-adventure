@@ -3181,16 +3181,21 @@ document.addEventListener('DOMContentLoaded', () => {
     // Union logic: update existing, add new, remove old
     const unionSet = new Set([...startSet, ...endSet]);
 
+    // Calculate total quantity for normalization
+    const totalQty = Object.values(currentFlaskIds).reduce((sum, qty) => sum + qty, 0);
+
     unionSet.forEach(label => {
       const currentVal = currentFlaskIds[label] || 0;
 
-      // Calculate Percentage for Bar Width (1 unit = 25%)
-      const targetPercent = Math.min(currentVal * 25, 100);
+      // Calculate Percentage for Bar Width (Relative to total)
+      const targetPercent = totalQty > 0 ? (currentVal / totalQty) * 100 : 0;
 
-      // Display Text: fractional if needed
-      const displayVal = Math.abs(currentVal - Math.round(currentVal)) < 0.05
+      // Display Text: raw amount + percentage
+      const rawVal = Math.abs(currentVal - Math.round(currentVal)) < 0.05
         ? Math.round(currentVal).toString()
         : currentVal.toFixed(2);
+
+      const displayVal = rawVal + " (" + Math.round(targetPercent) + "%)";
 
       const info = createBar({
         label: label,
@@ -3202,8 +3207,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (info) {
         info.barFill.style.transition = 'width 1s ease-in-out';
         info.barFill.style.width = targetPercent + '%';
-        info.valDiv.innerText = displayVal + (displayVal.includes('.') ? '' : ''); // No % sign needed if it's mole-like, but user might want it.
-        // Actually, let's just stick to the text provided.
         info.valDiv.innerText = displayVal;
       }
     });
