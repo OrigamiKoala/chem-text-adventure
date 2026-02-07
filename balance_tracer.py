@@ -17,15 +17,15 @@ def trace_balance(filename):
             if char == '{': b_stack.append(i)
             elif char == '}': 
                 if b_stack: b_stack.pop()
-                else: print(f"Extra }} at {i}")
+                else: print(f"{filename}: Extra }} at {i}")
             elif char == '(': p_stack.append(i)
             elif char == ')':
                 if p_stack: p_stack.pop()
-                else: print(f"Extra ) at {i}")
+                else: print(f"{filename}: Extra ) at {i}")
             elif char == '[': br_stack.append(i)
             elif char == ']':
                 if br_stack: br_stack.pop()
-                else: print(f"Extra ] at {i}")
+                else: print(f"{filename}: Extra ] at {i}")
             elif char == '"': state = "STRING_Q"
             elif char == "'": state = "STRING_S"
             elif char == "`": state = "STRING_B"
@@ -44,8 +44,7 @@ def trace_balance(filename):
             if char == "*" and i+1 < len(content) and content[i+1] == "/": state = "NORMAL"; i += 1
         i += 1
 
-    print(f"Unbalanced Braces: {len(b_stack)}")
-    print(f"Unbalanced Parens: {len(p_stack)}")
-    print(f"Unbalanced Brackets: {len(br_stack)}")
+    print(f"{filename}: Br {len(b_stack)} Pa {len(p_stack)} Bk {len(br_stack)}")
 
-trace_balance('/Users/carlliu/chem-text-adventure/game.js')
+if len(sys.argv) > 1:
+    trace_balance(sys.argv[1])
