@@ -524,7 +524,7 @@
     },
     {
       "id": "parts of an atom",
-      "text": "That's right!\n--\nThe positive parts are called protons, and the negative parts are called electrons. (There is also a neutral part called a neutron). The protons and electrons exert magnetic fields that interacted with the bolt. The more atoms, the more magnetic fields, and the stronger the pull, so the easier it was to move the bolt.\n--\nThere are different types of atoms, called <i>elements</i>, each with a different number of protons. A bunch of ata about the elements are displayed in the Periodic Table of the Elements\n--\n<img src = \"periodic-table1.png\" alt = \"Periodic Table>\nSource: <a href=\"ptable.com\">ptable.com</a>\n--\nEach element has a symbol (eg \"H\" for \"hydrogen\") and an <i>atomic number</i> - the number of protons (the number on top of the symbol).\n--\nIn the future, type 'periodic table' to summon the periodic table.\n--\nYou step outside your cell.\n--\nType anything to continue.",
+      "text": "That's right!\n--\nThe positive parts are called protons, and the negative parts are called electrons. (There is also a neutral part called a neutron). The protons and electrons exert magnetic fields that interacted with the bolt. The more atoms, the more magnetic fields, and the stronger the pull, so the easier it was to move the bolt.\n--\nThere are different types of atoms, called <i>elements</i>, each with a different number of protons. A bunch of ata about the elements are displayed in the Periodic Table of the Elements\n--\n<img src = \"periodic-table1.png\" alt = \"Periodic Table\">\nSource: <a href=\"ptable.com\">ptable.com</a>\n--\nEach element has a symbol (eg \"H\" for \"hydrogen\") and an <i>atomic number</i> - the number of protons (the number on top of the symbol).\n--\nIn the future, type 'periodic table' to summon the periodic table.\n--\nYou step outside your cell.\n--\nType anything to continue.",
       "type": "fr",
       "next": "outside cell",
       "roll": null,
@@ -883,7 +883,7 @@
       "hint2": null
     },
     {
-      "id": "neutrons nucleus",
+      "id": "neutrons in nucleus",
       "text": "The neutrons must also be bundled in the center of the atom with the protons.\n--\nIs it easier for the beam to knock out the electrons 'farthest' from the nucleus, or 'closest'? Remember that the nucleus pulls on the electrons, and pulls harder on closer ones.",
       "type": "frq",
       "next": "farther or closer higher or lower electrons",
@@ -2830,7 +2830,7 @@
       "id": "made ammonia",
       "text": "Good job!\n--\nNow, add the solution to your inventory. What do you notice?",
       "type": "fr",
-      "next": null,
+      "next": "unreacted stuff",
       "roll": null,
       "success": null,
       "fail": null,
@@ -2845,10 +2845,10 @@
       "hint2": null
     },
     {
-      "id": null,
+      "id": "unreacted stuff",
       "text": "Uhhh...why are there still nitrogen and hydrogen left over? The reaction seems to have stopped partway.\n--\nHmmmm...\n--\nTry putting the ammonia back into the beaker, leave it for a little bit, and see what happens.\n--\nWhat do you see?",
       "type": "fr",
-      "next": null,
+      "next": "two reactions",
       "roll": null,
       "success": null,
       "fail": null,
@@ -2863,10 +2863,10 @@
       "hint2": null
     },
     {
-      "id": null,
+      "id": "two reactions",
       "text": "Looks like part of the ammonia turned back into nitrogen and hydrogen, so we actually had two reactions:\n\\[\\ce{N2 + 3 H2 -> 2 NH3}\\]\n\\[\\ce{2 NH3 -> N2 + 3 H2}\\]\n--\nSo that's why the arrow was funky in the book! It's actually a double arrow, pointing both ways.\n--\nAfter some of the nitrogen and hydrogen reacted, and everything settled down, the reaction is said to have reached <i>equilibrium</i>, a place of stability.",
-      "type": null,
-      "next": null,
+      "type": "fr",
+      "next": "end",
       "roll": null,
       "success": null,
       "fail": null,
@@ -2895,7 +2895,7 @@
     {
       "reference_num": 1.2,
       "content": "Atomic Structure",
-      "div": "magnets"
+      "div": "fail force door"
     },
     {
       "reference_num": 1.3,
@@ -3024,7 +3024,7 @@
       "attributes3": null,
       "beaker4": null,
       "attributes4": null,
-      "reaction": "{\n\"1_3*2eqK1\":[{\"id\":\"\\(\\ce{NH3}\\)\", \"name\":\"ammonia\", \"type\":\"trapped_gas\",\"conditional\":\"true\", \"count\": 2}]\n}"
+      "reaction": "{\n\"1_3*2eqK1\":[{\"id\":\"\\(\\ce{NH3}\\)\", \"name\":\"ammonia\", \"type\":\"trapped_gas\",\"conditional\":\"true\",\"count\":\"2\"}]\n}"
     }
   ],
   "items": [
