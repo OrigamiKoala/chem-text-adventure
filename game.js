@@ -1688,6 +1688,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
               // --- EQUILIBRIUM LOGIC ---
               if (isEq && kVal !== null) {
+                state.isEquilibrium = true;
+                state.K = kVal;
+
                 // 1. Gather Reactant Data (We need it again in a structured way for the solver)
                 // Re-parse reactantParts to get coefficients and available amounts
                 const reactants = [];
@@ -1740,46 +1743,47 @@ document.addEventListener('DOMContentLoaded', () => {
                 // But here we know reactants > 0 due to 'match' check.
 
                 let Q0 = num0 / den0;
-                if (Q0 >= kVal) {
-                  // Already at or past equilibrium
-                  finalYield = 0;
-                } else {
-                  // Search for positive delta
-                  let low = 0;
-                  let high = minYield;
+                let maxReverseYield = Infinity;
+                products.forEach(p => {
+                  const theoreticalRev = p.available / p.count;
+                  if (theoreticalRev < maxReverseYield) maxReverseYield = theoreticalRev;
+                });
+                if (products.length === 0) maxReverseYield = 0;
 
-                  for (let i = 0; i < 20; i++) {
-                    const mid = (low + high) / 2;
+                let low = -maxReverseYield;
+                let high = minYield;
 
-                    // Avoid division by zero at strict limit
-                    if (mid >= minYield * 0.999999) {
-                      high = mid; continue;
-                    }
+                for (let i = 0; i < 30; i++) {
+                  const mid = (low + high) / 2;
 
-                    let num = 1;
-                    products.forEach(p => num *= Math.pow(p.available + p.count * mid, p.count));
-                    let den = 1;
-                    reactants.forEach(r => den *= Math.pow(r.available - r.count * mid, r.count)); // Can be small
-
-                    if (den <= 1e-9) {
-                      // Effectively purely products -> Infinite Q -> Too high
-                      high = mid; continue;
-                    }
-
-                    const Q = num / den;
-
-                    if (Q < kVal) {
-                      low = mid; // Q too small, need more reaction (more products)
-                    } else {
-                      high = mid; // Q too big, backed off
-                    }
+                  if (mid >= minYield * 0.999999) {
+                    high = mid; continue;
                   }
-                  finalYield = low;
+                  if (mid <= -maxReverseYield * 0.999999) {
+                    low = mid; continue;
+                  }
+
+                  let num = 1;
+                  products.forEach(p => num *= Math.pow(Math.max(0, p.available + p.count * mid), p.count));
+                  let den = 1;
+                  reactants.forEach(r => den *= Math.pow(Math.max(0, r.available - r.count * mid), r.count));
+
+                  if (den <= 1e-9) {
+                    high = mid; continue;
+                  }
+
+                  const Q = num / den;
+                  if (Q < kVal) {
+                    low = mid;
+                  } else {
+                    high = mid;
+                  }
                 }
+                finalYield = low;
               }
 
               // Apply Yield Lower Bound filter to prevent micro-reactions
-              if (finalYield < 0.001) {
+              if (Math.abs(finalYield) < 0.001) {
                 // Treat as no reaction
                 continue;
               }
@@ -2182,9 +2186,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (v.ids && v.ids.length > 0) {
           const qty = v.quantity !== undefined ? v.quantity : 1.0;
-          v.ids.forEach(id => {
-            allIds.push({ id: id, qty: qty });
-          });
+          allIds.push({ id: v.ids[0], qty: qty }); // Use primary ID for stoichiometric state
         }
       });
       console.log("Current Flask IDs (excluding gas products):", allIds);
@@ -2200,7 +2202,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const loopCandidates = visualStack.filter(v =>
           v.isProduct && state.reactingIndices.every(reqId => v.ids && v.ids.includes(reqId))
         );
-        const internalReaction = loopCandidates.length > 0;
+        const internalReaction = loopCandidates.length > 0 && !state.isEquilibrium;
 
         if (internalReaction) {
           console.log("Skipping self-reaction loop for: " + state.reactionKey);
@@ -2276,17 +2278,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 2. Consume Logic: Satisfy needs from available tokens
         visualStack.forEach(token => {
-          if (state.isEquilibrium) return;
 
           // Check if this token matches any needed reactant
-          // Tokens usually have 1 ID, but can be mixtures. We check matches.
-          const matchId = token.ids.find(id => consumptionNeeds[String(id)] > 0.0001);
+          // Match using primary ID only!
+          const primaryId = token.ids.length > 0 ? token.ids[0] : null;
+          const matchId = primaryId && Math.abs(consumptionNeeds[String(primaryId)]) > 0.0001 ? primaryId : null;
 
           if (matchId) {
             const needed = consumptionNeeds[String(matchId)];
             const available = token.quantity !== undefined ? token.quantity : 1.0;
 
-            const take = Math.min(available, needed);
+            let take;
+            if (needed > 0) {
+              take = Math.min(available, needed);
+            } else {
+              take = needed; // Negative take increases available quantity
+            }
 
             token.quantity = available - take;
             consumptionNeeds[String(matchId)] -= take;
@@ -2297,6 +2304,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
             consumed = true;
             consumedIds.push(...token.ids);
+          }
+        });
+
+        // Add any negatively needed reactants that had no existing token
+        Object.keys(consumptionNeeds).forEach(id => {
+          if (consumptionNeeds[id] < -0.0001) {
+            const addedQty = -consumptionNeeds[id];
+            let color = 'rgba(255, 255, 255, 0.2)';
+            let type = 'liquid';
+
+            let attr = null;
+            if (!isNaN(id)) attr = getAttributes(parseInt(id));
+            else attr = getAttributes(id);
+
+            if (attr) {
+              if (attr.color) color = attr.color;
+              if (attr.type) type = attr.type;
+            }
+
+            newStack.push({
+              ids: [id],
+              type: type,
+              color: color,
+              quantity: addedQty
+            });
+            consumed = true;
           }
         });
 
@@ -2333,30 +2366,39 @@ document.addEventListener('DOMContentLoaded', () => {
             const finalIds = [...new Set(compoundIds)];
 
             if (state.isEquilibrium) {
-              const alreadyPresent = visualStack.some(v => v.ids.includes(prod.id));
-              if (alreadyPresent) return;
+              const existingToken = newStack.find(v => v.ids.includes(prod.id));
+              console.log("Equilibrium Product Generation:", prod.id, "Qty:", productQty, "Existing:", existingToken);
+              if (existingToken) {
+                existingToken.quantity = (existingToken.quantity || 1.0) + productQty;
+                if (existingToken.quantity <= 0.01) {
+                  existingToken.toRemove = true;
+                }
+                return; // Do not push a new token, we just added to current
+              }
             }
 
-            const token = {
-              ids: finalIds,
-              type: finalType,
-              color: finalColor,
-              isProduct: true,
-              quantity: productQty
-            };
+            if (productQty > 0.01) {
+              const token = {
+                ids: finalIds,
+                type: finalType,
+                color: finalColor,
+                isProduct: true,
+                quantity: productQty
+              };
 
-            newStack.push(token);
+              newStack.push(token);
 
-            if (prod.type === 'gas' && !state.isEquilibrium) {
-              setTimeout(() => {
-                visualStack = visualStack.filter(v => v !== token);
-                renderVisualStack();
-              }, 4000);
+              if (prod.type === 'gas' && !state.isEquilibrium) {
+                setTimeout(() => {
+                  visualStack = visualStack.filter(v => v !== token);
+                  renderVisualStack();
+                }, 4000);
+              }
             }
           });
         }
 
-        window.visualStack = newStack;
+        window.visualStack = newStack.filter(t => !t.toRemove);
         visualStack = window.visualStack;
 
         // Update Globals
@@ -3145,6 +3187,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // console.log("DEBUG: visualStack for Bars:", JSON.parse(JSON.stringify(visualStack)));
 
     visualStack.forEach(v => {
+      if (v.toRemove) return; // Skip tokens flagged for removal
       // In strict mode, we can trust visualStack types directly!
       // Filter ephemeral gases that are just visual effects (not 'trapped')
       if (v.type === 'gas' && !v.type.includes('trapped') && !v.isProduct) return;
