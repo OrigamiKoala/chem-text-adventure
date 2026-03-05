@@ -33,6 +33,8 @@ So the text is under the [CC BY-SA 4.0](https://creativecommons.org/licenses/by-
 
 Log:
 
+2026 March 4: Added 3.1: K, adjusted lab setup
+
 2026 February 4: Added 2.4: Limiting Reagents
 
 2026 February 3: Added 1.7-2.3

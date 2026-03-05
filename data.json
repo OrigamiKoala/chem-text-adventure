@@ -524,7 +524,7 @@
     },
     {
       "id": "parts of an atom",
-      "text": "That's right!\n--\nThe positive parts are called protons, and the negative parts are called electrons. (There is also a neutral part called a neutron). The protons and electrons exert magnetic fields that interacted with the bolt. The more atoms, the more magnetic fields, and the stronger the pull, so the easier it was to move the bolt.\n--\nThere are different types of atoms, called <i>elements</i>, each with a different number of protons. A bunch of ata about the elements are displayed in the Periodic Table of the Elements\n--\n<img src = \"periodic-table1.png\" alt = \"Periodic Table\">\nSource: <a href=\"ptable.com\">ptable.com</a>\n--\nEach element has a symbol (eg \"H\" for \"hydrogen\") and an <i>atomic number</i> - the number of protons (the number on top of the symbol).\n--\nIn the future, type 'periodic table' to summon the periodic table.\n--\nYou step outside your cell.\n--\nType anything to continue.",
+      "text": "That's right!\n--\nThe positive parts are called protons, and the negative parts are called electrons. (There is also a neutral part called a neutron). The protons and electrons exert magnetic fields that interacted with the bolt. The more atoms, the more magnetic fields, and the stronger the pull, so the easier it was to move the bolt.\n--\nThere are different types of atoms, called <i>elements</i>, each with a different number of protons. A bunch of data about the elements are displayed in the Periodic Table of the Elements\n--\n<img src = \"periodic-table1.png\" alt = \"Periodic Table\">\nSource: <a href=\"ptable.com\">ptable.com</a>\n--\nEach element has a symbol (eg \"H\" for \"hydrogen\") and an <i>atomic number</i> - the number of protons (the number on top of the symbol).\n--\nIn the future, type 'periodic table' to summon the periodic table.\n--\nYou step outside your cell.\n--\nType anything to continue.",
       "type": "fr",
       "next": "outside cell",
       "roll": null,
@@ -1118,7 +1118,7 @@
     },
     {
       "id": "examine machine, wait battery",
-      "text": "You approach the machine on the table in the center of the room. It is a huge beast that looks something like a large printer. There is a small screen, which is currently off.\n--\nYou press the red power button next to the screen, and a loading screen pops up. The machine begins whirring loudly. When it finishes booting, the screen displays \"\"Insert sample\"\".\n<script>machineon=true</script>\n--\nYou can put anything in your inventory into this machine, while it is on, by right-clicking on the item.\n--\nWhat would you like to do next?\n--\n<ol>\n<li>Examine the cabinets</li>\n<li>Read the book</li>\n<li>Check on the battery</li>\n</ol>",
+      "text": "You approach the machine on the table in the center of the room. It is a huge beast that looks something like a large printer. There is a small screen, which is currently off.\n--\nYou press the red power button next to the screen, and a loading screen pops up. The machine begins whirring loudly. When it finishes booting, the screen displays \"Insert sample\".\n<script>machineon=true</script>\n--\nYou can put anything in your inventory into this machine, while it is on, by right-clicking on the item.\n--\nWhat would you like to do next?\n--\n<ol>\n<li>Examine the cabinets</li>\n<li>Read the book</li>\n<li>Check on the battery</li>\n</ol>",
       "type": "mcq",
       "next": null,
       "roll": null,
@@ -2812,24 +2812,6 @@
       "id": "equilibrium cover",
       "text": "When you head outside to touch grass :) you notice that the grass is dying.\n--\nThe grass has plenty of sun, and water from the frequent storms. It must be lacking fertilizer, so you're going to need to make some.\n--\nThe book says a compound called 'ammonia', \\(\\ce{NH3}\\) is a great fertilizer. Under the production section, you find:\n\\[\\ce{3 H2 + N2 <=> 2 NH3}\\]\n--\n<script>currentlab=\"ammonia\"</script>\nLaunch the lab workspace to try out making ammonia!\n--\nType anything once you have made ammonia.",
       "type": "fr",
-      "next": "made ammonia",
-      "roll": null,
-      "success": null,
-      "fail": null,
-      "correct": null,
-      "hint": null,
-      "op1": null,
-      "op2": null,
-      "op3": null,
-      "op4": null,
-      "conditional": null,
-      "altcorrect": null,
-      "hint2": null
-    },
-    {
-      "id": "made ammonia",
-      "text": "Good job!\n--\nNow, add the solution to your inventory. What do you notice?",
-      "type": "fr",
       "next": "unreacted stuff",
       "roll": null,
       "success": null,
@@ -2846,7 +2828,7 @@
     },
     {
       "id": "unreacted stuff",
-      "text": "Uhhh...why are there still nitrogen and hydrogen left over? The reaction seems to have stopped partway.\n--\nHmmmm...\n--\nTry putting the ammonia back into the beaker, leave it for a little bit, and see what happens.\n--\nWhat do you see?",
+      "text": "Uhhh...why are there still nitrogen and hydrogen left over? The reaction seems to have stopped partway.\n--\nHmmmm...\n--\nAdd everything to your inventory.\n--\nTry putting the ammonia back into the beaker, leave it for a little bit, and see what happens.\n--\nWhat do you see?",
       "type": "fr",
       "next": "two reactions",
       "roll": null,
@@ -2864,9 +2846,99 @@
     },
     {
       "id": "two reactions",
-      "text": "Looks like part of the ammonia turned back into nitrogen and hydrogen, so we actually had two reactions:\n\\[\\ce{N2 + 3 H2 -> 2 NH3}\\]\n\\[\\ce{2 NH3 -> N2 + 3 H2}\\]\n--\nSo that's why the arrow was funky in the book! It's actually a double arrow, pointing both ways.\n--\nAfter some of the nitrogen and hydrogen reacted, and everything settled down, the reaction is said to have reached <i>equilibrium</i>, a place of stability.",
+      "text": "Looks like part of the ammonia turned back into nitrogen and hydrogen, so we actually had two reactions:\n\\[\\ce{N2 + 3 H2 -> 2 NH3}\\]\n\\[\\ce{2 NH3 -> N2 + 3 H2}\\]\n--\nSo that's why the arrow, \\(\\ce{<=>}\\), was funky in the book! It's actually a double arrow, pointing both ways.\n--\nAfter some of the nitrogen and hydrogen reacted, and everything settled down, the reaction is said to have reached <i>equilibrium</i>, a place of stability.\n--\nTry playing around with the lab a little bit, and type your observations.",
       "type": "fr",
-      "next": "end",
+      "next": "find k",
+      "roll": null,
+      "success": null,
+      "fail": null,
+      "correct": null,
+      "hint": null,
+      "op1": null,
+      "op2": null,
+      "op3": null,
+      "op4": null,
+      "conditional": null,
+      "altcorrect": null,
+      "hint2": null
+    },
+    {
+      "id": "find k",
+      "text": "Nice!\n--\nNow, put in any nonzero amount of nitrogen and hydrogen in the flask, and calculate the following number, which we'll call \\(K\\):\n\\[\\frac{a_{NH_3}^2}{a_{N_2}a_{H_2}^3}\\]\nwhere \\(a_{NH_3}\\) is the activity of \\(\\ce{NH3}\\), \\(p_{N_2}\\) is the activity of \\(\\ce{N2}\\), and so on so forth.\n--\nWhat is activity? We'll get into it more later, but for now, just think of it as a way of measuring how much of something there is. For gases, it's the partial pressure of the gas (the number to the right of the bar).\n--\nDon't worry, we'll get around to partial pressure later!\n--\nWhat do you notice about \\(K\\)? Try again with different amounts of \\(\\ce{N2}\\) and \\(\\ce{H2}\\). What do you notice?",
+      "type": "fr",
+      "next": "different lab",
+      "roll": null,
+      "success": null,
+      "fail": null,
+      "correct": null,
+      "hint": null,
+      "op1": null,
+      "op2": null,
+      "op3": null,
+      "op4": null,
+      "conditional": null,
+      "altcorrect": null,
+      "hint2": null
+    },
+    {
+      "id": "different lab",
+      "text": "That's right!\n--\nFor some reason, \\(K\\) is always about 0.00001...\n--\nHmmmm... let's try a different reaction. <script>currentlab=\"ABeq\";closelab();launch(currentlab);</script>\n--\nType anything to continue.",
+      "type": "fr",
+      "next": "different k",
+      "roll": null,
+      "success": null,
+      "fail": null,
+      "correct": null,
+      "hint": null,
+      "op1": null,
+      "op2": null,
+      "op3": null,
+      "op4": null,
+      "conditional": null,
+      "altcorrect": null,
+      "hint2": null
+    },
+    {
+      "id": "different k",
+      "text": "Now we have a much simpler case, where \\(\\ce{A <=> B}\\)\n--\nNow try calculating \\(K\\), which is: \\[\\frac{a_B}{a_A}\\]\n--\nWhat do you notice? Change around the amount of A and B. What do you notice about \\(K\\)?",
+      "type": "fr",
+      "next": "exp for k",
+      "roll": null,
+      "success": null,
+      "fail": null,
+      "correct": null,
+      "hint": null,
+      "op1": null,
+      "op2": null,
+      "op3": null,
+      "op4": null,
+      "conditional": null,
+      "altcorrect": null,
+      "hint2": null
+    },
+    {
+      "id": "exp for k",
+      "text": "Good job!\n--\nThis time, \\(K\\) is always about 2...\n--\nIn fact, at a constant temperature, the \\(K\\) value (called the <i>equilibrium constant</i>) of a reaction is always the same. But different reactions can have different \\(K\\) values.\n--\nBut the expression for \\(K\\) is best explained through some examples:\n\\[\\ce{A <=> B} \\quad K = \\frac{a_B}{a_A}\\]\n\\[\\ce{A <=> 2B} \\quad K = \\frac{a_B^2}{a_A}\\]\n\\[\\ce{A <=> 3B} \\quad K = \\frac{a_B^3}{a_A}\\]\n\\[\\ce{2A <=> 3B} \\quad K = \\frac{a_B^3}{a_A^2}\\]\n\\[\\ce{A + 2B <=> 3C + 4D} \\quad K = \\frac{a_C^3a_D^4}{a_Aa_B^2}\\]\n--\nI think you're getting the hang of this. What's the \\(K\\) value for the reaction \\(\\ce{A + B <=> C}\\)?\n--\n<ol>\n<li>\\[\\frac{a_C}{a_A}\\]</li>\n<li>\\[\\frac{a_C}{a_Aa_B}\\]</li>\n<li>\\[\\frac{1}{a_Aa_Ba_C}\\]<li>\n<li>\\[\\frac{a_Aa_B}{a_C}\\]</li>\n</ol>",
+      "type": "frq",
+      "next": "make ammonia",
+      "roll": null,
+      "success": null,
+      "fail": null,
+      "correct": "2",
+      "hint": null,
+      "op1": null,
+      "op2": null,
+      "op3": null,
+      "op4": null,
+      "conditional": null,
+      "altcorrect": null,
+      "hint2": null
+    },
+    {
+      "id": "make ammonia",
+      "text": "Back to trying to make ammonia! <script>pickup(\"\\(\\ce{NH_3}\\)\");currentlab=\"ammonia\";closelab();launch(currentlab);</script>\n--\nTinker around a little bit. If you add more hydrogen in, what happens to the amount of ammonia?",
+      "type": null,
+      "next": null,
       "roll": null,
       "success": null,
       "fail": null,
@@ -2951,6 +3023,11 @@
       "reference_num": 3,
       "content": "Equilibrium",
       "div": "equilibrium cover"
+    },
+    {
+      "reference_num": 3.1,
+      "content": "\\(K\\)",
+      "div": "find k"
     }
   ],
   "labs": [
@@ -3017,14 +3094,26 @@
     {
       "labid": "ammonia",
       "beaker1": "\\(\\ce{N2}\\)",
-      "attributes1": "{\"type\":\"trapped_gas\", \"color\":\"#fff\"}",
+      "attributes1": "{\"type\":\"trapped_gas\", \"color\":\"#fff\",\"M\":\"28.014\"}",
       "beaker2": "\\(\\ce{H2}\\)",
-      "attributes2": "{\"type\":\"trapped_gas\", \"color\":\"#fff\"}",
+      "attributes2": "{\"type\":\"trapped_gas\", \"color\":\"#fff\",\"M\":\"2.016\"}",
       "beaker3": null,
       "attributes3": null,
       "beaker4": null,
       "attributes4": null,
-      "reaction": "{\n\"1_3*2eqK1\":[{\"id\":\"\\(\\ce{NH3}\\)\", \"name\":\"ammonia\", \"type\":\"trapped_gas\",\"conditional\":\"true\",\"count\":\"2\"}]\n}"
+      "reaction": "{\n\"1_3*2eqK0.00001\":[{\"id\":\"\\(\\ce{NH3}\\)\"}]\n}"
+    },
+    {
+      "labid": "ABeq",
+      "beaker1": "A",
+      "attributes1": "{\"type\":\"trapped_gas\",\"color\":\"#000\"}",
+      "beaker2": null,
+      "attributes2": null,
+      "beaker3": null,
+      "attributes3": null,
+      "beaker4": null,
+      "attributes4": null,
+      "reaction": "{\n\"1eqK2\":[{\"id\":\"B\",\"type\":\"trapped_gas\", \"color\":\"#fff\"}]\n}"
     }
   ],
   "items": [
@@ -3153,6 +3242,13 @@
       "use": "Fuel",
       "attributes": "{\"type\":\"liquid\"}",
       "script": "conditional=true;"
+    },
+    {
+      "id": "\\(\\ce{NH_3}\\)",
+      "name": "Ammonia",
+      "use": "Fertilizer, cleaner, used in synthesizing molecules",
+      "attributes": "{\"type\":\"trapped_gas\",\"conditional\":\"true\",\"count\":\"2\",\"M\":\"17.031\"}",
+      "script": null
     }
   ]
 }

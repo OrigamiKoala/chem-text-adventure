@@ -1242,6 +1242,22 @@ document.addEventListener('DOMContentLoaded', () => {
     labContainer.classList.add('visible');
     formElement.classList.add('shifted-form');
 
+    // Reset Lab State
+    window.visualStack = [];
+    let visualStack = window.visualStack;
+    let selectedBeakers = [];
+    let processedBeakersCount = 0;
+    let currentPH = 7.0;
+    let currentTemperature = 298;
+    let currentReactionName = "";
+    let currentReactionScript = "";
+    let currentProductName = "";
+    let currentProductType = "liquid";
+    let currentProductColor = "white";
+    let currentProducts = [];
+    let reactionQueue = Promise.resolve();
+    let logicUpdateTimer = null;
+
     // Move Inventory Sidebar to Lab Container
     if (invSidebar) {
       invSidebar.classList.remove('desktop-only');
@@ -1412,11 +1428,6 @@ document.addEventListener('DOMContentLoaded', () => {
     beakersContainer.className = 'beakers-container';
     labTable.appendChild(beakersContainer);
 
-    let selectedBeakers = [];
-    let currentTemperature = 298;
-    let currentPH = 7.0;
-    let currentReactionName = "";
-
     showReactionBtn.onclick = () => {
       if (reactionNameDisplay.innerHTML !== "") {
         reactionNameDisplay.innerHTML = "";
@@ -1470,8 +1481,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // Try labData mapping first
         if (lData && lData['beaker' + id]) {
           realId = lData['beaker' + id];
-        } else if (attr && attr.id) { // 'attr' is not defined here, this line might be problematic if 'attr' is expected to exist
-          realId = attr.id;
         }
       } else if (typeof id === 'string') {
         // If it's an item ID (like from a reaction product), keeps it as is (e.g. "\ce{NaHCO3}")
@@ -1613,6 +1622,32 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (reactionData) {
+          // Merge missing attributes from itemsData for all products
+          Object.values(reactionData).forEach(outcome => {
+            const outArr = Array.isArray(outcome) ? outcome : [outcome];
+            outArr.forEach(prod => {
+              if (prod.id) {
+                const cleanId = typeof cleanTeX === 'function' ? cleanTeX(prod.id) : prod.id;
+                const cleanName = typeof stripHtml === 'function' ? stripHtml(prod.id) : prod.id;
+                const itemDef = window.itemsData && window.itemsData.find(i => {
+                  const iId = i.id;
+                  const iName = i.name ? (typeof stripHtml === 'function' ? stripHtml(i.name) : i.name) : '';
+                  return iId === prod.id || iName === prod.id ||
+                    (typeof cleanTeX === 'function' && cleanTeX(iId) === cleanId) ||
+                    iName === cleanName;
+                });
+                if (itemDef && itemDef.attributes) {
+                  try {
+                    const attr = typeof itemDef.attributes === 'string' ? JSON.parse(itemDef.attributes) : itemDef.attributes;
+                    Object.keys(attr).forEach(k => {
+                      if (prod[k] === undefined) prod[k] = attr[k];
+                    });
+                  } catch (e) { }
+                }
+              }
+            });
+          });
+
           // --- NEW LOGIC: Iterate Reactions & Check Stoichiometry ---
           // 2. Iterate All Defined Reactions to find a match
           // We prioritize "complex" reactions (more total reactants) to avoid partial matches
@@ -1649,6 +1684,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const requiredIndicesForReaction = []; // To store exactly which instances are consumed
             let minYield = Infinity;
 
+            let hasReactant = false;
+            let hasProduct = false;
+            let allReactantsPresent = true;
+
+            let productIds = [];
+            if (isEq && reactionData[key]) {
+              const eqOutcomes = Array.isArray(reactionData[key]) ? reactionData[key] : [reactionData[key]];
+              productIds = eqOutcomes.map(o => String(o.id));
+            }
+
             // 4. Verify Stoichiometry & Calculate Yield
             for (const part of reactantParts) {
               let count = 1;
@@ -1664,22 +1709,35 @@ document.addEventListener('DOMContentLoaded', () => {
               }
 
               // Check if flask has enough
-              // NEW: Check Total Quantity vs Required Count
-              // If we have 0.5 units, and need 1, yield is 0.5
               const available = flaskCounts[id] || 0;
 
-              if (available <= 0.0001) { // Use a small epsilon for float comparison
-                match = false;
-                break;
+              if (available > 0.0001) {
+                hasReactant = true;
+              } else {
+                allReactantsPresent = false;
               }
 
               const theoreticalYield = available / count;
               if (theoreticalYield < minYield) minYield = theoreticalYield;
 
               // "Consume" logic for tracking: We don't need to splice instances anymore
-              // We just record the IDs involved.
-              const instancesToUse = flaskInstances[id].map(obj => (typeof obj === 'object' ? obj.id : obj));
-              requiredIndicesForReaction.push(...instancesToUse);
+              // We just record the IDs involved safely
+              if (flaskInstances[id]) {
+                const instancesToUse = flaskInstances[id].map(obj => (typeof obj === 'object' ? obj.id : obj));
+                requiredIndicesForReaction.push(...instancesToUse);
+              }
+            }
+
+            if (isEq) {
+              for (const pid of productIds) {
+                if ((flaskCounts[pid] || 0) > 0.0001) {
+                  hasProduct = true;
+                  break;
+                }
+              }
+              match = hasReactant || hasProduct;
+            } else {
+              match = allReactantsPresent;
             }
 
             if (match) {
@@ -1704,9 +1762,28 @@ document.addEventListener('DOMContentLoaded', () => {
                       id = pieces[1];
                     }
                   }
+                  let type = 'liquid';
+                  if (window.itemsData) {
+                    const item = window.itemsData.find(i => i.id === id || i.name === id);
+                    if (item && item.attributes) {
+                      const attr = typeof item.attributes === 'string' ? JSON.parse(item.attributes) : item.attributes;
+                      if (attr.type) type = attr.type;
+                    }
+                  }
+
+                  const lData = window.currentLabData || (typeof labData !== 'undefined' ? labData : null);
+                  if (lData && lData['attributes' + id]) {
+                    try {
+                      const attrStr = lData['attributes' + id];
+                      const attrParsed = typeof attrStr === 'string' ? JSON.parse(attrStr) : attrStr;
+                      if (attrParsed.type) type = attrParsed.type;
+                    } catch (e) { }
+                  }
+
                   reactants.push({
                     count: count,
-                    available: flaskCounts[id] || 0
+                    available: flaskCounts[id] || 0,
+                    type: type
                   });
                 }
 
@@ -1716,15 +1793,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 const outcome = reactionData[key] || [];
                 // Group outcome items by ID to determine coefficients (e.g. 2 NH3)
                 const productCounts = {};
+                const productTypes = {};
                 outcome.forEach(p => {
                   const pid = p.id;
-                  productCounts[pid] = (productCounts[pid] || 0) + 1;
+                  const pCount = p.count ? parseInt(p.count) : 1;
+                  productCounts[pid] = (productCounts[pid] || 0) + pCount;
+                  if (p.type) productTypes[pid] = p.type;
                 });
 
                 Object.keys(productCounts).forEach(pid => {
+                  let type = productTypes[pid] || 'liquid';
+                  if (!productTypes[pid] && window.itemsData) {
+                    const item = window.itemsData.find(i => i.id === pid || i.name === pid);
+                    if (item && item.attributes) {
+                      const attr = typeof item.attributes === 'string' ? JSON.parse(item.attributes) : item.attributes;
+                      if (attr.type) type = attr.type;
+                    }
+                  }
                   products.push({
                     count: productCounts[pid],
-                    available: flaskCounts[pid] || 0
+                    available: flaskCounts[pid] || 0,
+                    type: type
                   });
                 });
 
@@ -1733,11 +1822,44 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Q(delta) = [Products] / [Reactants]
                 // Q = Prod((P.curr + P.coef*delta)^P.coef) / Prod((R.curr - R.coef*delta)^R.coef)
 
+                let totalLiquidVolume_L = 0;
+                Object.keys(flaskCounts).forEach(fid => {
+                  let itemType = 'liquid';
+                  let molarMass = 10.0;
+                  if (window.itemsData) {
+                    const item = window.itemsData.find(i => i.id === fid || i.name === fid);
+                    if (item) {
+                      if (item.M) molarMass = parseFloat(item.M);
+                      if (item.attributes) {
+                        const attr = typeof item.attributes === 'string' ? JSON.parse(item.attributes) : item.attributes;
+                        if (attr.type) itemType = attr.type;
+                      }
+                    }
+                  }
+                  if (itemType === 'liquid') {
+                    totalLiquidVolume_L += (flaskCounts[fid] * molarMass) / 1000;
+                  }
+                });
+                if (totalLiquidVolume_L === 0) totalLiquidVolume_L = 1.0;
+
+                const getActivity = (moles, type) => {
+                  if (type === 'gas' || type === 'trapped_gas') {
+                    const R = 0.08206;
+                    const T = typeof currentTemperature !== 'undefined' ? currentTemperature : 298;
+                    return (moles * R * T) / 1.0;
+                  } else if (type === 'aqueous') {
+                    return moles / totalLiquidVolume_L;
+                  } else if (type === 'solid' || type === 'liquid') {
+                    return 1.0;
+                  }
+                  return moles;
+                };
+
                 // Check initial Q (delta=0)
                 let num0 = 1;
-                products.forEach(p => num0 *= Math.pow(p.available, p.count));
+                products.forEach(p => num0 *= Math.pow(getActivity(p.available, p.type), p.count));
                 let den0 = 1;
-                reactants.forEach(r => den0 *= Math.pow(r.available, r.count));
+                reactants.forEach(r => den0 *= Math.pow(getActivity(r.available, r.type), r.count));
 
                 // If den0 is 0 (reactants empty), Q is undefined (or infinite). 
                 // But here we know reactants > 0 due to 'match' check.
@@ -1764,9 +1886,9 @@ document.addEventListener('DOMContentLoaded', () => {
                   }
 
                   let num = 1;
-                  products.forEach(p => num *= Math.pow(Math.max(0, p.available + p.count * mid), p.count));
+                  products.forEach(p => num *= Math.pow(getActivity(Math.max(0, p.available + p.count * mid), p.type), p.count));
                   let den = 1;
-                  reactants.forEach(r => den *= Math.pow(Math.max(0, r.available - r.count * mid), r.count));
+                  reactants.forEach(r => den *= Math.pow(getActivity(Math.max(0, r.available - r.count * mid), r.type), r.count));
 
                   if (den <= 1e-9) {
                     high = mid; continue;
@@ -1817,7 +1939,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const outArr = Array.isArray(state.outcome) ? state.outcome : [state.outcome];
                 // Group by ID
                 const counts = {};
-                outArr.forEach(o => counts[o.id] = (counts[o.id] || 0) + 1);
+                outArr.forEach(o => {
+                  const oCount = o.count ? parseInt(o.count) : 1;
+                  counts[o.id] = (counts[o.id] || 0) + oCount;
+                });
 
                 Object.keys(counts).forEach((oid, idx) => {
                   if (idx > 0) rightSide += " + ";
@@ -1846,83 +1971,7 @@ document.addEventListener('DOMContentLoaded', () => {
               return state;
             }
           }
-
-          // Reverse Equilibrium Matching: If we have a product matching an 'eq' reaction, trigger decomposition
-          if (!outcome && indices.length > 0) {
-            for (const key in reactionData) {
-              if (key.includes('eq')) {
-                const eqOutcomes = Array.isArray(reactionData[key]) ? reactionData[key] : [reactionData[key]];
-                const productIds = eqOutcomes.map(o => o.id);
-
-                // If any item in flask matches a product of an equilibrium reaction
-                const matchingProduct = indices.find(id => productIds.includes(id));
-                if (matchingProduct) {
-                  // Trigger Reverse: Generate reactants from the key
-                  const reactantParts = key.split('eq')[0].split('_').filter(p => p);
-                  const reverseOutcomes = [];
-
-                  reactantParts.forEach(part => {
-                    let count = 1;
-                    let rStr = part;
-
-                    // Parse "Count * ID"
-                    // Default count is 1
-                    if (part.includes('*')) {
-                      const pieces = part.split('*');
-                      if (pieces.length === 2 && !isNaN(pieces[0])) {
-                        count = parseInt(pieces[0]);
-                        rStr = pieces[1];
-                      }
-                    }
-
-                    // Generate 'count' copies of this reactant
-                    for (let c = 0; c < count; c++) {
-                      const beakerKey = isNaN(rStr) ? null : 'beaker' + rStr;
-                      // const attrKey = isNaN(rStr) ? null : 'attributes' + rStr; // Unused variable?
-
-                      let id = rStr;
-                      let type = 'liquid';
-                      let color = 'rgba(255, 255, 255, 0.2)';
-
-                      if (beakerKey && window.currentLabData && window.currentLabData[beakerKey]) {
-                        id = window.currentLabData[beakerKey];
-                        const attr = getAttributes(parseInt(rStr));
-                        if (attr) {
-                          if (attr.type) type = attr.type;
-                          if (attr.color) color = attr.color;
-                        }
-                      } else {
-                        // Inventory item fallback
-                        const item = window.itemsData.find(i => i.id === rStr || i.name === rStr);
-                        if (item) {
-                          id = item.id;
-                          if (item.attributes) {
-                            const attr = typeof item.attributes === 'string' ? JSON.parse(item.attributes) : item.attributes;
-                            if (attr.type) type = attr.type;
-                            if (attr.color) color = attr.color;
-                          }
-                        }
-                      }
-
-                      reverseOutcomes.push({
-                        id: id,
-                        type: type,
-                        color: color
-                      });
-                    }
-                  });
-
-                  outcome = reverseOutcomes;
-                  // matchingProduct is defined in the closure
-                  reactingIndices = [matchingProduct];
-                  state.isEquilibrium = true;
-                  state.K = 1; // Default K=1 for reverse
-                  state.direction = 'reverse';
-                  break;
-                }
-              }
-            }
-          }
+          // (Legacy Reverse Equilibrium manual override removed)
         }
 
         state.outcome = outcome;
@@ -2051,8 +2100,23 @@ document.addEventListener('DOMContentLoaded', () => {
           // Helper to strip LaTeX wrappers for the reaction string
           const cleanForReaction = (name) => cleanTeX(name);
 
-          const reactantsStr = reactantIds.map(cleanForReaction).join(" + ");
-          const productsStr = productNames.map(cleanForReaction).join(" + ");
+          const rCounts = {};
+          reactantIds.forEach(id => rCounts[id] = (rCounts[id] || 0) + 1);
+          const reactantsStr = Object.keys(rCounts).map(id => {
+            const count = rCounts[id];
+            return (count > 1 ? count + " " : "") + cleanForReaction(id);
+          }).join(" + ");
+
+          const pCounts = {};
+          outcomes.forEach(prod => {
+            const id = (typeof prod === 'string') ? "Unknown Product" : (prod.id || "Unknown Product");
+            const count = (typeof prod === 'string') ? 1 : (prod.count ? parseInt(prod.count) : 1);
+            pCounts[id] = (pCounts[id] || 0) + count;
+          });
+          const productsStr = Object.keys(pCounts).map(id => {
+            const count = pCounts[id];
+            return (count > 1 ? count + " " : "") + cleanForReaction(id);
+          }).join(" + ");
 
           // Save raw lists for measurement bar
           // Save raw lists for measurement bar (must match resolvedId exactly)
@@ -2100,14 +2164,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // ...
     // Note: visualStack is GLOBAL and persistent. Do NOT clear it here unless rebuilding from another state.
 
-    let reactionQueue = Promise.resolve();
-    let logicUpdateTimer = null; // Debounce timer
-    let processedBeakersCount = 0;
-    let currentReactionScript = ""; // Global for addToInventory
-    let currentProductName = ""; // Global for addToInventory name
-    let currentProductType = "liquid"; // Global for type
-    let currentProductColor = "white"; // Global for color
-    let currentProducts = []; // Global array for multiple products
+    reactionQueue = Promise.resolve();
+    logicUpdateTimer = null; // Debounce timer
+    processedBeakersCount = 0;
+    currentReactionScript = ""; // Global for addToInventory
+    currentProductName = ""; // Global for addToInventory name
+    currentProductType = "liquid"; // Global for type
+    currentProductColor = "white"; // Global for color
+    currentProducts = []; // Global array for multiple products
     const renderVisualStack = (opts = {}) => {
       // Map visualStack items to colors for the renderer
       const liquidColors = visualStack.filter(v => v.type === 'liquid' || !v.type).map(v => v.color);
@@ -2307,6 +2371,8 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         });
 
+        const newStack = visualStack.filter(t => !t.toRemove);
+
         // Add any negatively needed reactants that had no existing token
         Object.keys(consumptionNeeds).forEach(id => {
           if (consumptionNeeds[id] < -0.0001) {
@@ -2333,7 +2399,6 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         });
 
-        const newStack = visualStack.filter(t => !t.toRemove);
 
         if (!consumed && !state.isEquilibrium) {
           console.log("Reaction queued but no reactants consumed. Skipping.");
@@ -2366,15 +2431,33 @@ document.addEventListener('DOMContentLoaded', () => {
             const finalIds = [...new Set(compoundIds)];
 
             if (state.isEquilibrium) {
-              const existingToken = newStack.find(v => v.ids.includes(prod.id));
-              console.log("Equilibrium Product Generation:", prod.id, "Qty:", productQty, "Existing:", existingToken);
-              if (existingToken) {
-                existingToken.quantity = (existingToken.quantity || 1.0) + productQty;
-                if (existingToken.quantity <= 0.01) {
-                  existingToken.toRemove = true;
+              let remainingToAdd = productQty;
+              // Distribute across existing tokens
+              for (let i = 0; i < newStack.length; i++) {
+                const v = newStack[i];
+                if (v.ids.includes(prod.id)) {
+                  if (remainingToAdd < 0) {
+                    const take = Math.min(v.quantity || 1.0, -remainingToAdd);
+                    v.quantity = (v.quantity || 1.0) - take;
+                    remainingToAdd += take;
+                    if (v.quantity <= 0.01) v.toRemove = true;
+                  } else if (remainingToAdd > 0) {
+                    v.quantity = (v.quantity || 1.0) + remainingToAdd;
+                    remainingToAdd = 0;
+                  }
                 }
-                return; // Do not push a new token, we just added to current
               }
+
+              if (Math.abs(remainingToAdd) < 0.001) {
+                return; // Fully handled by existing tokens
+              }
+
+              if (remainingToAdd < 0) {
+                // We consumed all existing tokens and still have debt? Should be mathematically impossible, but just in case
+                return;
+              }
+              // If we reach here, we had remaining positive product to add but no existing token was found
+              // (Shouldn't happen since we usually push new tokens if none exist, but logic falls down to push)
             }
 
             if (productQty > 0.01) {
@@ -2458,19 +2541,70 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      selectedBeakers.push(id);
+      let trueId = id;
+      const lData = window.currentLabData || (typeof labData !== 'undefined' ? labData : null);
+      if (lData && (typeof id === 'number' || (typeof id === 'string' && /^[1-4]$/.test(id)))) {
+        trueId = lData['beaker' + id] || id;
+      }
 
-      const colors = getColors([id]);
+      const itemDef = window.itemsData.find(i => i.id === trueId);
+      let itemName = trueId;
+      if (itemDef && itemDef.name) {
+        itemName = stripHtml(itemDef.name);
+      } else if (typeof cleanTeX === 'function') {
+        itemName = cleanTeX(trueId);
+      }
+      const molarMass = (itemDef && itemDef.M) ? parseFloat(itemDef.M) : 10.0;
+
       let itemType = 'liquid';
       if (attr && attr.type) itemType = attr.type;
+
+      let unit = 'mL';
+      if (itemType === 'solid') {
+        unit = 'g';
+      } else if (itemType === 'gas' || itemType === 'trapped_gas') {
+        unit = 'moles';
+      }
+
+      const amountStr = window.prompt(`How much ${itemName} do you want to add? (in ${unit})`);
+      if (amountStr === null) {
+        return false; // User cancelled
+      }
+
+      const amount = parseFloat(amountStr);
+      if (isNaN(amount) || amount <= 0) {
+        alert("Please enter a valid positive number.");
+        return false;
+      }
+
+      let quantity = amount; // default for gas
+      if (itemType === 'solid') {
+        quantity = amount / molarMass;
+      } else if (itemType === 'liquid') {
+        quantity = amount / molarMass; // assume 1 g/mL
+      }
+
+      let pushedId = id;
+      if (lData) {
+        for (let i = 1; i <= 4; i++) {
+          if (lData['beaker' + i] === id) {
+            pushedId = i;
+            break;
+          }
+        }
+      }
+
+      selectedBeakers.push(pushedId);
+
+      const colors = getColors([pushedId]);
 
       // Immediate Visual Add
       if (colors.length > 0) {
         visualStack.push({
-          ids: [id],
+          ids: [pushedId],
           color: colors[0],
           type: itemType,
-          quantity: 1.0 // Default 1.0 unit
+          quantity: quantity
         });
       }
 
@@ -2802,31 +2936,35 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     // Conditional Wait Logic
     const currentNodeObj = findnode(currentid);
-    if (currentNodeObj && currentNodeObj.conditional === 1 && window.conditional !== true) {
-      console.log("Waiting for conditional triggers...");
-      if (inputField) {
-        inputField.disabled = true;
-        inputField.placeholder = "Waiting...";
-      }
-
-      // Reactive approach: Define setter if not already doing so, or just hook into the property.
-      // We'll define a special callback on the window object that the setter will trigger.
-      window.onConditionalMet = () => {
+    if (currentNodeObj && currentNodeObj.conditional === 1) {
+      if (window.conditional !== true) {
+        console.log("Waiting for conditional triggers...");
         if (inputField) {
-          inputField.disabled = false;
-          inputField.placeholder = "";
-          inputField.focus();
+          inputField.disabled = true;
+          inputField.placeholder = "Waiting...";
         }
-        // Force re-render as if jumped
-        outlineclicked = true;
-        updategame();
-        // Reset flag/handler (don't reset window.conditional to false here if it needs to stay true for other checks, 
-        // but typically it consumes the event. The previous code toggled it.)
-        window.conditional = false; // Original code toggled it.
-        window.onConditionalMet = null;
-      };
 
-      return;
+        // Reactive approach: Define setter if not already doing so, or just hook into the property.
+        // We'll define a special callback on the window object that the setter will trigger.
+        window.onConditionalMet = () => {
+          if (inputField) {
+            inputField.disabled = false;
+            inputField.placeholder = "";
+            inputField.focus();
+          }
+          // Force re-render as if jumped
+          outlineclicked = true;
+          updategame();
+          // Reset flag/handler
+          window.conditional = false;
+          window.onConditionalMet = null;
+        };
+
+        return;
+      } else {
+        // Condition was already met prior to or at load time. Consume the flag.
+        window.conditional = false;
+      }
     }
 
     let splitnewText = newText.split("--");
@@ -2985,7 +3123,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (count > 0) {
           const item = window.itemsData.find(i => i.id === itemId);
           if (item) {
-            html += `<button class="inventory-item-btn" onclick="useItem('${itemId}')" oncontextmenu="event.preventDefault(); machine('${itemId}')">
+            const escapedId = itemId.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
+            html += `<button class="inventory-item-btn" onclick="useItem('${escapedId}')" oncontextmenu="event.preventDefault(); machine('${escapedId}')">
               ${count > 1 ? count + 'x ' : '1x '}${item.id}
             </button>`;
           }
@@ -3138,52 +3277,13 @@ document.addEventListener('DOMContentLoaded', () => {
       return { barFill, valDiv, start: animationStart, end: info.end };
     };
 
-    // 1. Filter and Deduplicate Lists
-    const isNotGas = (identifier) => {
-      if (!identifier || identifier === "Unknown Product") return false; // Treat unknown as filtered (safe default)
-
-      let type = 'liquid';
-      // Try finding by ID first
-      let item = window.itemsData.find(i => i.id === identifier);
-
-      if (!item) {
-        // Fallback: Try cleaning LaTeX or HTML
-        // Note: cleanTeX is defined in global scope closure
-        const cleanId = typeof cleanTeX === 'function' ? cleanTeX(identifier) : identifier;
-        const cleanName = typeof stripHtml === 'function' ? stripHtml(identifier) : identifier;
-
-        item = window.itemsData.find(i => {
-          const iId = i.id;
-          const iName = typeof stripHtml === 'function' ? stripHtml(i.name) : i.name;
-
-          // Match against ID or Name
-          // Also enable cleaning on the ITEM side if that helps matching
-          return iId === identifier || iName === identifier ||
-            (typeof cleanTeX === 'function' && cleanTeX(iId) === cleanId) ||
-            iName === cleanName;
-        });
-      }
-
-      if (item && item.attributes) {
-        const attr = typeof item.attributes === 'string' ? JSON.parse(item.attributes) : item.attributes;
-        if (attr.type) type = attr.type;
-      }
-
-      // Final Fallback: If item not found/type unknown, check if name implies gas
-      // This catches ephemeral items like "red gas" defined only in reaction strings
-      if (type === 'liquid' && typeof identifier === 'string' && identifier.toLowerCase().includes('gas')) {
-        return false;
-      }
-
-      return type !== 'gas';
-    };
-
     let startSet, endSet;
     const existingLabels = Array.from(container.querySelectorAll('.measure-row')).map(row => row.getAttribute('data-label'));
 
     // --- STRICT SYNC MODE (Used by renderVisualStack) ---
     // Check against CURRENT CONTENTS of flask (visualStack)
     const currentFlaskIds = {};
+    const flaskTypes = {};
     // console.log("DEBUG: visualStack for Bars:", JSON.parse(JSON.stringify(visualStack)));
 
     visualStack.forEach(v => {
@@ -3198,8 +3298,11 @@ document.addEventListener('DOMContentLoaded', () => {
       // If product, it only shows itself.
       // If reactant, it shows itself.
       const id = resolveId(v.ids[0]);
-      if (id && isNotGas(id)) { // Apply gas filtering here
+      if (id) {
         currentFlaskIds[id] = (currentFlaskIds[id] || 0) + qty;
+        if (v.type && v.type !== 'liquid') {
+          flaskTypes[id] = v.type;
+        }
       }
     });
 
@@ -3216,20 +3319,99 @@ document.addEventListener('DOMContentLoaded', () => {
     const unionSet = new Set([...startSet, ...endSet]);
 
     // Calculate total quantity for normalization
-    const totalQty = Object.values(currentFlaskIds).reduce((sum, qty) => sum + qty, 0);
+    let totalMass = 0;
+    let totalLiquidVolume_L = 0;
+    const itemDataCache = {};
+
+    // First pass to get total mass and liquid volume
+    Object.keys(currentFlaskIds).forEach(label => {
+      const moles = currentFlaskIds[label];
+
+      let itemDef = window.itemsData.find(i => i.id === label);
+      if (!itemDef) {
+        // Fallback matching
+        const cleanId = typeof cleanTeX === 'function' ? cleanTeX(label) : label;
+        const cleanName = typeof stripHtml === 'function' ? stripHtml(label) : label;
+        itemDef = window.itemsData.find(i => {
+          const iId = i.id;
+          const iName = typeof stripHtml === 'function' ? stripHtml(i.name) : i.name;
+          return iId === label || iName === label ||
+            (typeof cleanTeX === 'function' && cleanTeX(iId) === cleanId) ||
+            iName === cleanName;
+        });
+      }
+      itemDef = itemDef || {};
+
+      const molarMass = itemDef.M ? parseFloat(itemDef.M) : 10.0;
+      let type = flaskTypes[label] || 'liquid';
+
+      if (itemDef.attributes && type === 'liquid') {
+        const attr = typeof itemDef.attributes === 'string' ? JSON.parse(itemDef.attributes) : itemDef.attributes;
+        if (attr.type) type = attr.type;
+      }
+
+      // Fallback: Check labData attributes if label matches a beaker
+      const lData = window.currentLabData || (typeof labData !== 'undefined' ? labData : null);
+      if (lData) {
+        for (let i = 1; i <= 4; i++) {
+          if (lData['beaker' + i] === label) {
+            const attrStr = lData['attributes' + i];
+            if (attrStr) {
+              try {
+                const attrParsed = typeof attrStr === 'string' ? JSON.parse(attrStr) : attrStr;
+                if (attrParsed.type) type = attrParsed.type;
+              } catch (e) { }
+            }
+            break;
+          }
+        }
+      }
+
+      const mass = moles * molarMass;
+      totalMass += mass;
+
+      if (type === 'liquid') {
+        totalLiquidVolume_L += mass / 1000; // mass (g) = volume (mL) for liquid density 1 g/mL, so mL / 1000 = L
+      }
+
+      itemDataCache[label] = { type, mass, moles, molarMass };
+    });
+
+    if (totalLiquidVolume_L === 0) {
+      totalLiquidVolume_L = 1.0; // fallback volume for aqueous concentration
+    }
 
     unionSet.forEach(label => {
-      const currentVal = currentFlaskIds[label] || 0;
+      const currentVal = currentFlaskIds[label] || 0; // moles
+      const cache = itemDataCache[label] || { type: 'liquid', mass: 0, moles: 0, molarMass: 10.0 };
 
-      // Calculate Percentage for Bar Width (Relative to total)
-      const targetPercent = totalQty > 0 ? (currentVal / totalQty) * 100 : 0;
+      // Calculate Percentage for Bar Width (Relative to total mass)
+      const targetPercent = totalMass > 0 ? (cache.mass / totalMass) * 100 : 0;
 
-      // Display Text: raw amount + percentage
-      const rawVal = Math.abs(currentVal - Math.round(currentVal)) < 0.05
-        ? Math.round(currentVal).toString()
-        : currentVal.toFixed(2);
+      // Calculate display value based on type
+      let displayRaw = "";
+      if (cache.type === 'solid') {
+        // g for solids
+        displayRaw = `${cache.mass.toFixed(9)} g`;
+      } else if (cache.type === 'liquid') {
+        // mL for liquids (assuming 1 g/mL)
+        const mL = cache.mass;
+        displayRaw = `${mL.toFixed(9)} mL`;
+      } else if (cache.type === 'aqueous') {
+        // Molarity for aqueous
+        const M = cache.moles / totalLiquidVolume_L;
+        displayRaw = `${M.toFixed(9)} M`;
+      } else if (cache.type === 'gas' || cache.type === 'trapped_gas') {
+        // Partial pressure for gases
+        const T = typeof currentTemperature !== 'undefined' ? currentTemperature : 298;
+        const atm = (cache.moles * 0.08206 * T) / 1.0; // V = 1.0 L default
+        displayRaw = `${atm.toFixed(9)} atm`;
+      } else {
+        // Fallback
+        displayRaw = `${currentVal.toFixed(9)} units`;
+      }
 
-      const displayVal = rawVal + " (" + Math.round(targetPercent) + "%)";
+      const displayVal = displayRaw + " (" + Math.round(targetPercent) + "%)";
 
       const info = createBar({
         label: label,

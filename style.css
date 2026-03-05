@@ -1038,7 +1038,7 @@ input:focus {
 }
 
 .measure-value {
-    width: 45px;
+    width: 180px;
     text-align: left;
     font-size: 0.8rem;
     color: var(--muted);
