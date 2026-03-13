@@ -3520,7 +3520,7 @@
     {
       "id": "Sodium bicarbonate",
       "name": "Sodium bicarbonate",
-      "use": "Cooking, baking, etc",
+      "use": "Cooking, baking, other",
       "attributes": "{\"type\":\"solid\", \"color\":\"#000\"}",
       "script": null
     },
