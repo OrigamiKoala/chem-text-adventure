@@ -3492,7 +3492,7 @@
       "id": "\\(\\ce{NH_3}\\)",
       "name": "Ammonia",
       "use": "Fertilizer, cleaner, used in synthesizing molecules",
-      "info": "Gas at room temperature; dissolved in water as a powder (\\(\\ce{NH4Cl}\\)) and sprayed over plants for fertilizer",
+      "info": "Gas at room temperature; dissolved in water as a powder (\\(\\ce{NH4Cl}\\)) and sprayed over plants for fertilizer\n<h3>Production:</h3>\n\\[\\ce{3 H2 + N2 <=> 2 NH3}\\]",
       "attributes": "{\"type\":\"trapped_gas\",\"M\":\"17.031\"}",
       "script": null,
       "hidden": null
