@@ -3391,7 +3391,7 @@
       "attributes3": null,
       "beaker4": null,
       "attributes4": null,
-      "reaction": "{\n\"1_3*2eqK0.00001\":[{\"id\":\"\\(\\ce{NH3}\\)\"}]\n}"
+      "reaction": "{\n\"1_3*2eqK0.00001\":[{\"id\":\"\\(\\ce{NH3}\\)\",\"count\":\"2\"}]\n}"
     },
     {
       "labid": "ABeq",
@@ -3520,7 +3520,7 @@
     {
       "id": "Sodium bicarbonate",
       "name": "Sodium bicarbonate",
-      "use": "Cooking, baking, other",
+      "use": "Cooking, baking, etc",
       "attributes": "{\"type\":\"solid\", \"color\":\"#000\"}",
       "script": null
     },

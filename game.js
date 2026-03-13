@@ -1961,7 +1961,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 state.productType = first.type;
                 state.productColor = first.color;
                 state.productName = first.name || first.id;
-                state.triggerConditional = first.conditional === "true";
+                
+                state.triggerConditional = false;
+                const outArr = Array.isArray(state.outcome) ? state.outcome : [state.outcome];
+                outArr.forEach(p => {
+                  if (p && (p.conditional === "true" || p.conditional === true || p.conditional === 1)) {
+                    state.triggerConditional = true;
+                  }
+                });
+
                 // Accumulate scripts? Usually just one.
                 state.script = first.script;
               }
@@ -3284,9 +3292,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Check against CURRENT CONTENTS of flask (visualStack)
     const currentFlaskIds = {};
     const flaskTypes = {};
-    // console.log("DEBUG: visualStack for Bars:", JSON.parse(JSON.stringify(visualStack)));
+    // console.log("DEBUG: visualStack for Bars:", JSON.parse(JSON.stringify(window.visualStack)));
 
-    visualStack.forEach(v => {
+    window.visualStack.forEach(v => {
       if (v.toRemove) return; // Skip tokens flagged for removal
       // In strict mode, we can trust visualStack types directly!
       // Filter ephemeral gases that are just visual effects (not 'trapped')
