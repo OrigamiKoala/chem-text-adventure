@@ -992,7 +992,7 @@
     },
     {
       "id": "examine book",
-      "text": "When you get closer to the book, you see it isn't really a bound book, more like a looseleaf collection of papers held in a worn leather sheath.\n--\nYou open it up, and see the first page appears to be lab notes for some sort of experiment creating a chemical called hydorcortisone. The next page appears to also be lab notes, on how to make amoxicillin.\n--\nAfter looking at the next few pages, which are all similar, you can tell this book is the lab notes of some chemist, on how to create all sorts of chemicals.\n--\nWhat do you do next?\n--\n<ol>\n<li>Examine the machine on the table</li>\n<li>Examine the cabinets</li>\n<li>Investigate the lab setup</li>\n</ol>",
+      "text": "When you get closer to the book, you see it isn't really a bound book, more like a looseleaf collection of papers held in a worn leather sheath.\n--\nType 'book' to open up the book at any time. Feel free to check it out!\n--\nWhat do you do next?\n--\n<ol>\n<li>Examine the machine on the table</li>\n<li>Examine the cabinets</li>\n<li>Investigate the lab setup</li>\n</ol>",
       "type": "mcq",
       "next": null,
       "roll": null,
@@ -1118,7 +1118,7 @@
     },
     {
       "id": "examine machine, wait battery",
-      "text": "You approach the machine on the table in the center of the room. It is a huge beast that looks something like a large printer. There is a small screen, which is currently off.\n--\nYou press the red power button next to the screen, and a loading screen pops up. The machine begins whirring loudly. When it finishes booting, the screen displays \"Insert sample\".\n<script>machineon=true</script>\n--\nYou can put anything in your inventory into this machine, while it is on, by right-clicking on the item.\n--\nWhat would you like to do next?\n--\n<ol>\n<li>Examine the cabinets</li>\n<li>Read the book</li>\n<li>Check on the battery</li>\n</ol>",
+      "text": "You approach the machine on the table in the center of the room. It is a huge beast that looks something like a large printer. There is a small screen, which is currently off.\n--\nYou press the red power button next to the screen, and a loading screen pops up. The machine begins whirring loudly. When it finishes booting, the screen displays \"Insert sample\".\n--\nYou can put anything in your inventory into this machine, while it is on, by right-clicking on the item in your inventory.\n--\nWhat would you like to do next?\n--\n<ol>\n<li>Examine the cabinets</li>\n<li>Read the book</li>\n<li>Check on the battery</li>\n</ol>",
       "type": "mcq",
       "next": null,
       "roll": null,
@@ -1154,7 +1154,7 @@
     },
     {
       "id": "examine book, wait battery",
-      "text": "When you get closer to the book, you see it isn't really a bound book, more like a looseleaf collection of papers held in a worn leather sheath.\n--\nYou open it up, and see the first page appears to be lab notes for some sort of experiment creating a chemical called hydorcortisone. The next page appears to also be lab notes, on how to make amoxicillin.\n--\nAfter looking at the next few pages, which are all similar, you can tell this book is the lab notes of some chemist, on how to create all sorts of chemicals.\n--\nWhat do you do next?\n--\n<ol>\n<li>Examine the machine on the table</li>\n<li>Examine the cabinets</li>\n<li>Check on the battery</li>\n</ol>",
+      "text": "When you get closer to the book, you see it isn't really a bound book, more like a looseleaf collection of papers held in a worn leather sheath.\n--\nType 'book' to open up the book at any time. Feel free to check it out!\n--\nWhat do you do next?\n--\n<ol>\n<li>Examine the machine on the table</li>\n<li>Examine the cabinets</li>\n<li>Investigate the lab setup</li>\n</ol>",
       "type": "mcq",
       "next": null,
       "roll": null,
@@ -1498,7 +1498,7 @@
       "id": "chem formulas",
       "text": "Yep!\n--\nHmmm...if only you could figure out which solution (salt or sugar) can conduct electricity...\n--\nSalt and sugar are both examples of <i>molecules</i>, which are groups of atoms stuck together. Molecules have different types, depending on which atoms are stuck together and how. Each type is called a <i>compound</i>.\n--\nCompounds can be written using their chemical formulas - which act as kind of an ingredients list for what the molecule contains. For example, salt is made of sodium and chlorine atoms. Sodium's symbol is Na, and chlorine's symbol is Cl, so the formula for salt is \"NaCl\".\n--\nSo if a molecule is made of one carbon atom and one oxygen atom, what is its chemical formula?",
       "type": "frq",
-      "next": "salt in water",
+      "next": "salt sugar book",
       "roll": null,
       "success": null,
       "fail": null,
@@ -1513,8 +1513,26 @@
       "hint2": null
     },
     {
+      "id": "salt sugar book",
+      "text": "Nice!\n--\nMaybe the book could help you figure out which solution (salt or sugar) conducts electricity...\n--\nFind the salt entry, the sugar entry, and the water entry in the book. What do you notice about these molecules?",
+      "type": "fr",
+      "next": "salt in water",
+      "roll": null,
+      "success": null,
+      "fail": null,
+      "correct": null,
+      "hint": null,
+      "op1": null,
+      "op2": null,
+      "op3": null,
+      "op4": null,
+      "conditional": null,
+      "altcorrect": null,
+      "hint2": null
+    },
+    {
       "id": "salt in water",
-      "text": "Nice!\n--\nWhen you flip through the book of compounds, you discover a picture of a salt molecule. One end of a salt molecule is marked positive, and the other end is marked negative. However, there is no such marking on the picture of a sugar molecule. Maybe this is why one conducts electricity and the other doesn't?\n--\nYou should probably check out to see if water is similar. You know water is made of two hydrogen atoms and one oxygen atom, but you can't find \"HHO\" in the book.\n--\nAfter flipping through the book some more, you find water - which is labeled \"\\(\\ce{H_2O}\\)\".\n--\nOhh....so if there are two hydrogen atoms in the molecule, you write a little \"2\" next to the \"H\".\n--\nThe image of water shows one end of water is positive, and the other is negative.\n--\nIf one end of a salt molecule is positive and the other is negative, what happens when you put salt powder in water?\n--\n<ol>\n<li>The positive ends of the water molecules are attracted to the positive ends of the salt molecules.</li>\n<li>The positive ends of the water molecules are attracted to the negative ends of the salt molecules.</li>\n</ol>",
+      "text": "Good job.\n--\nOne end of a salt molecule is marked positive, and the other end is marked negative. However, there is no such marking on the picture of a sugar molecule. \n--\nThe image of water shows one end of water is positive, and the other is negative.\n--\nIf one end of a salt molecule is positive and the other is negative, what happens when you put salt powder in water?\n--\n<ol>\n<li>The positive ends of the water molecules are attracted to the positive ends of the salt molecules.</li>\n<li>The positive ends of the water molecules are attracted to the negative ends of the salt molecules.</li>\n</ol>",
       "type": "frq",
       "next": "salt pos neg",
       "roll": null,
@@ -2288,7 +2306,7 @@
     },
     {
       "id": "heal bug bites",
-      "text": "You vaguely remember something in the book - a compound called \"sodium bicarbonate\" that could help with the itching.\n--\nYou look throught the book again, and discover the following thing written under \"Production:\"\n--\n\\[\\ce{NaOH + CO2  -> 2 NaHCO3}\\]\n--\nWhat does that mean?\n--\nWell, considering it's written under \"Production\", it must be a recipe of sorts for how to make sodium bicarbonate (\\(\\ce{NaHCO3}\\)). The arrow probably means the stuff on the left forms the stuff on the right, sodium bicarbonate.\n--\nSo you're probably going to need some \\(\\ce{NaOH}\\) and some \\(\\ce{CO2}\\). Luckily, you find some in the cabinets. <script>currentlab=\"baking soda\"</script>Let's open up the lab workspace and try it out!\n--\nType anything once you've made baking soda.",
+      "text": "Check out the book for something that could help with your itching!\n--\nThen, open the lab and see if you can make it.\n--\nType anything once you've made it.",
       "type": "fr",
       "next": "baking soda lab",
       "roll": null,
@@ -2396,7 +2414,7 @@
     },
     {
       "id": "why burn",
-      "text": "You look in the book under 'butane' and find, under a section called \"Warnings\":\n<h3>WARNING: HIGHLY FLAMMABLE</h3>\n--\n\\[\\ce{C4H10 + O2 -> CO2 + H2O}\\]\n--\nIt looks like the book is saying 1 molecule of butane plus 1 molecule of oxygen (\\(\\ce{O2}\\)) form 1 molecule of carbon dioxide (\\(\\ce{CO2}\\)) and 1 molecule of water (\\(\\ce{H2O}\\)). Alternatively, it also says 1 mole of butane plus 1 mole of oxygen makes 1 mole of carbon dioxide and 1 mole of water.\n--\nThat is called a <i>chemical equation</i>, which describes a <i>chemical reaction</i>, where some things react to form new things. A reaction is chemical if something new is formed.\n--\nNot all reactions are chemical - for example, freezing water (\\(\\ce{H2O}\\)) results in ice (\\(\\ce{H2O}\\)), which still has the same molecules - so nothing chemically new gets formed.\n--\nExcited to blow more stuff up, you get some more butane - 10 grams of it, in fact!\n--\nHow many grams of water should be produced after you burn this butane?",
+      "text": "Excited to blow more stuff up, you get some more butane - 10 grams of it, in fact!\n--\nIn the book, you saw a chemical equation, which describes a chemical reaction. In this case, the equation describes the reaction where butane is burned.\n--\nHow many grams of water should be produced after you burn this butane?\n--\nHint: use the reaction in the book under 'butane'",
       "type": "frq",
       "next": "c mismatch",
       "roll": null,
@@ -2414,7 +2432,7 @@
     },
     {
       "id": "stop itching",
-      "text": "The bug bites are less itchy now, but they still don't look good. Plus, you didn't make enough baking soda to cover all your bug bites.\n--\nHowever, when you apply just sodium hydroxide and carbon dioxide to your skin, it only gets more irritated.\n--\nSo something new must have formed when you mixed the two in the beaker.\n--\nA chemical reaction just occurred - between sodium hydroxide (\\(\\ce{NaOH}\\)) and carbon dioxide (\\(\\ce{CO2}\\)), to produce baking soda (\\(\\ce{NaHCO3}\\))\n--\nThe thing you saw in the book:\n\\[\\ce{NaOH + CO2 -> 2 NaHCO3}\\]\nis called a <i>chemical equation</i>, and it basically describes a <i>chemical reaction</i>, where things react to form new things. A reaction is chemical if something new is formed.\n--\nNot all reactions are chemical - for example, freezing water (\\(\\ce{H2O}\\)) results in ice (\\(\\ce{H2O}\\)), which still has the same molecules - so nothing chemically new gets formed.\n--\nThe chemical equation says that one molecule of \\(\\ce{NaOH}\\) reacts with one molecule of \\(\\ce{CO2}\\) to form two molecules of \\(\\ce{NaHCO3}\\). Alternatively, it says 1 mole of \\(\\ce{NaOH}\\) and 1 mole of \\(\\ce{CO2}\\) form 2 moles of \\(\\ce{NaHCO3}\\)\n--\nSo if you have 10 grams of \\(\\ce{NaOH}\\), how many grams of \\(\\ce{NaHCO3}\\) are formed?",
+      "text": "The bug bites are less itchy now, but they still don't look good. Plus, you didn't make enough baking soda to cover all your bug bites.\n--\nIn the book, you saw a chemical equation, which describes a chemical reaction. In this case, the equation describes the reaction that forms baking soda.\n--\nIf you have 10 grams of \\(\\ce{NaOH}\\), how many grams of \\(\\ce{NaHCO3}\\) are formed? Remember, grams are not moles!\n--\nHint: Find the equation in the book, under sodium bicarbonate.",
       "type": "frq",
       "next": "na mismatch",
       "roll": null,
@@ -2810,7 +2828,7 @@
     },
     {
       "id": "equilibrium cover",
-      "text": "When you head outside to touch grass :) you notice that the grass is dying.\n--\nThe grass has plenty of sun, and water from the frequent storms. It must be lacking fertilizer, so you're going to need to make some.\n--\nThe book says a compound called 'ammonia', \\(\\ce{NH3}\\) is a great fertilizer. Under the production section, you find:\n\\[\\ce{3 H2 + N2 <=> 2 NH3}\\]\n--\n<script>currentlab=\"ammonia\"</script>\nLaunch the lab workspace to try out making ammonia!\n--\nType anything once you have made ammonia.",
+      "text": "When you head outside to touch grass :) you notice that the grass is dying.\n--\nThe grass has plenty of sun, and water from the frequent storms. It must be lacking fertilizer, so you're going to need to make some.\n--\n<script>currentlab=\"ammonia\"</script>\nLook through the book for a fertilizer. Once you've found one, open the lab to try making it!\n--\nType anything once you have made ammonia.",
       "type": "fr",
       "next": "unreacted stuff",
       "roll": null,
@@ -3206,7 +3224,7 @@
     },
     {
       "id": "made nh4cl",
-      "text": "Nice job!\n--\nYou've successfully made ammonium chloride, \\(\\ce{NH4Cl}\\), the powder! Add it to your inventory and close the lab.\n--\nType anything to continue.",
+      "text": "Nice job!\n--\nYou've successfully made ammonium chloride, \\(\\ce{NH4Cl}\\), the powder! Add it to your inventory and close the lab.\n--\nNow you need to figure out how much \\(\\ce{NH4Cl}\\) can be dissolved per liter of water.\n--\nYou look through the book",
       "type": "fr",
       "next": "end",
       "roll": null,
@@ -3346,18 +3364,6 @@
       "reaction": "{\n\"1_2\":[{\"id\":\"\\(\\ce{AgCl}\\)\", \"name\":\"silver chloride\",\"type\":\"solid\", \"color\":\"#ffffff\", \"temp\":\"200 K\"}, {\"id\":\"\\(\\ce{NaNO3}\\)\", \"name\":\"sodium nitrate\", \"type\":\"liquid\", \"temp\":\"298 K\"}]\n}"
     },
     {
-      "labid": "amox",
-      "beaker1": "Water",
-      "attributes1": "{\"type\":\"liquid\",\"color\":\"rgba(255, 255, 255, 0)\", \"temp\":\"298 K\", \"ph\":\"7.0\"}",
-      "beaker2": null,
-      "attributes2": null,
-      "beaker3": null,
-      "attributes3": null,
-      "beaker4": null,
-      "attributes4": null,
-      "reaction": "{\n\"1_D-4-hydroxyphenylglycine sodium salt_Ethyl acetoacetate\":[{\"id\": \"32.1.1.19\", \"type\":\"liquid\"}],\n\"32.1.1.19_Ethyl chloroformate_N-methylmorpholine\":[{\"id\": \"32.1.1.20\",\"type\":\"liquid\"}],\n\"32.1.1.20_6-aminopenicillanic acid trimethylsilyl ester_Sodium bicarbonate\":[{\"id\": \"Amoxicillin\",\"type\":\"liquid\"}, \"conditional\":\"true\"]\n}"
-    },
-    {
       "labid": "saltvsugar",
       "beaker1": "Water",
       "attributes1": "{\"type\":\"liquid\", \"temp\":\"298 K\", \"ph\":\"7.0\"}",
@@ -3420,137 +3426,121 @@
   ],
   "items": [
     {
-      "id": "Healing Potion",
-      "name": "Healing Potion",
-      "use": "Healing!",
-      "attributes": "{\"type\":\"liquid\", \"ph\":\"6.0\", \"temp\":\"320 K\", \"color\":\"#ec42f5\"}",
-      "script": "changeHP(100)"
-    },
-    {
       "id": "stun gun",
       "name": "Unknown metallic alloy",
       "use": "Unknown",
+      "info": null,
       "attributes": "{\"type\":\"nonreactant\"}",
-      "script": null
+      "script": null,
+      "hidden": 1
     },
     {
       "id": "ID card",
       "name": "Polyvinyl Chloride: <br>\n<img src = \"images/PVC.png\" alt = \"PVC Chemical Structure\">",
       "use": "Building material, plastic bottles, packaging, bank or membership cards",
+      "info": null,
       "attributes": "{\"type\":\"nonreactant\"}",
-      "script": null
+      "script": null,
+      "hidden": 1
     },
     {
       "id": "ID shards",
       "name": "Polyvinyl Chloride: <br>\n<img src = \"images/PVC.png\" alt = \"PVC Chemical Structure\">",
       "use": "Building material, plastic bottles, packaging, bank or membership cards",
+      "info": null,
       "attributes": "{\"type\":\"nonreactant\"}",
-      "script": null
+      "script": null,
+      "hidden": 1
     },
     {
       "id": "carbon",
       "name": "Mixture:<br>\nCarbon-12 (Mass: 12 amu): 98.9%\nCarbon-13 (Mass: 13 amu): 1.1%",
       "use": null,
+      "info": null,
       "attributes": "{\"type\":\"solid\", \"color\":\"#000\"}",
-      "script": null
+      "script": null,
+      "hidden": 1
     },
     {
       "id": "Powder #1",
       "name": "Unknown powder",
       "use": "Unknown",
+      "info": null,
       "attributes": "{\"type\":\"solid\", \"color\":\"#000\"}",
-      "script": "changeHP(-20)"
+      "script": "changeHP(-20)",
+      "hidden": 1
     },
     {
       "id": "Powder #2",
       "name": "Unknown powder",
       "use": "Unknown",
+      "info": null,
       "attributes": "{\"type\":\"solid\", \"color\":\"#000\"}",
-      "script": "DEX+=5; CON+=5;"
-    },
-    {
-      "id": "D-4-hydroxyphenylglycine sodium salt",
-      "name": "D-4-hydroxyphenylglycine sodium salt",
-      "use": "non-proteogenic amino acid",
-      "attributes": "{\"type\":\"solid\", \"color\":\"#000\"}",
-      "script": null
-    },
-    {
-      "id": "Ethyl acetoacetate",
-      "name": "Ethyl acetoacetate",
-      "use": "reactant in many organic syntheses",
-      "attributes": "{\"type\":\"solid\", \"color\":\"#000\"}",
-      "script": null
-    },
-    {
-      "id": "32.1.1.19",
-      "name": "32.1.1.19 (Intermediate product)",
-      "use": "Unknown",
-      "attributes": "{\"type\":\"solid\", \"color\":\"#000\"}",
-      "script": null
-    },
-    {
-      "id": "Ethyl chloroformate",
-      "name": "Ethyl chloroformate",
-      "use": "reagent in many organic syntheses",
-      "attributes": "{\"type\":\"solid\", \"color\":\"#000\"}",
-      "script": null
-    },
-    {
-      "id": "N-methylmorpholine",
-      "name": "N-methylmorpholine",
-      "use": "catalyst",
-      "attributes": "{\"type\":\"solid\", \"color\":\"#000\"}",
-      "script": null
-    },
-    {
-      "id": "32.1.1.20",
-      "name": "32.1.1.20 (Intermediate mixed anhydride)",
-      "use": "Unknown",
-      "attributes": "{\"type\":\"solid\", \"color\":\"#000\"}",
-      "script": null
-    },
-    {
-      "id": "6-aminopenicillanic acid trimethylsilyl ester",
-      "name": "6-aminopenicillanic acid trimethylsilyl ester",
-      "use": "Intermediate for synthetic antibiotics",
-      "attributes": "{\"type\":\"solid\", \"color\":\"#000\"}",
-      "script": null
-    },
-    {
-      "id": "Sodium bicarbonate",
-      "name": "Sodium bicarbonate",
-      "use": "Cooking, baking, etc",
-      "attributes": "{\"type\":\"solid\", \"color\":\"#000\"}",
-      "script": null
-    },
-    {
-      "id": "Amoxicillin",
-      "name": "Amoxicillin",
-      "use": "antibiotic",
-      "attributes": null,
-      "script": "HPloss=0; changeHP(100)"
+      "script": "DEX+=5; CON+=5;",
+      "hidden": 1
     },
     {
       "id": "Gas",
       "name": "Unknown gas <br> Mass Composition:\n<ul>\n<li>Carbon: 35.29%</li>\n<li>Hydrogen: 8.89%</li>\n<li>Fluorine: 55.82%</li>\n</ul>",
       "use": "Unknown",
+      "info": null,
       "attributes": "{\"type\":\"gas\",\"color\":\"#000\"}",
-      "script": null
-    },
-    {
-      "id": "\\(\\ce{C4H10}\\)",
-      "name": "Butane",
-      "use": "Fuel",
-      "attributes": "{\"type\":\"liquid\"}",
-      "script": "conditional=true;"
+      "script": null,
+      "hidden": 1
     },
     {
       "id": "\\(\\ce{NH_3}\\)",
       "name": "Ammonia",
       "use": "Fertilizer, cleaner, used in synthesizing molecules",
+      "info": "Gas at room temperature; dissolved in water as a powder (\\(\\ce{NH4Cl}\\)) and sprayed over plants for fertilizer",
       "attributes": "{\"type\":\"trapped_gas\",\"M\":\"17.031\"}",
-      "script": null
+      "script": null,
+      "hidden": null
+    },
+    {
+      "id": "\\(\\ce{NaCl}\\)",
+      "name": "Table salt<br><img src = \"images/salt.png\">",
+      "use": "make food taste better",
+      "info": null,
+      "attributes": "{\"type\":\"solid\",\"M\":\"58.44\"}",
+      "script": null,
+      "hidden": null
+    },
+    {
+      "id": "\\(\\ce{C6H12O6}\\)",
+      "name": "Sugar (glucose)<br><img src = \"images/glucose.svg\">",
+      "use": "add a sugary taste, energy source for most living things",
+      "info": null,
+      "attributes": "{\"type\":\"solid\",\"M\":\"180.156\"}",
+      "script": null,
+      "hidden": null
+    },
+    {
+      "id": "\\(\\ce{H2O}\\)",
+      "name": "Water<br><img src = \"images/water.png\">",
+      "use": null,
+      "info": "2 hydrogens (H), 1 oxygen (O) -> \\(\\ce{H2O}\\)",
+      "attributes": "{\"type\":\"liquid\",\"M\":\"18.016\"}",
+      "script": null,
+      "hidden": null
+    },
+    {
+      "id": "\\(\\ce{NaHCO3}\\)",
+      "name": "Sodium bicarbonate",
+      "use": "itching relief",
+      "info": "<h3>Production</h3>\n<br>Chemical equation:<br>\n\\[\\ce{NaOH + CO2 → 2NaHCO3}\\]\n<br>\n1 molecule of \\(\\ce{NaOH}\\) reacts with 1 molecule of \\(\\ce{CO2}\\) to form 2 molecules of \\(\\ce{NaHCO3}\\) (chemical reaction - something new is formed)\n<br>OR<br>\n1 mole of \\(\\ce{NaOH}\\) reacts with 1 mole of \\(\\ce{CO2}\\) to form 2 moles of \\(\\ce{NaHCO3}\\)\n<br>Note: Not all reactions are chemical - for example, freezing water (\\(\\ce{H2O}\\)) results in ice (\\(\\ce{H2O}\\)), which still has the same molecules - so nothing chemically new gets formed.",
+      "attributes": "{\"type\":\"solid\",\"M\":\"84.007\"}",
+      "script": null,
+      "hidden": null
+    },
+    {
+      "id": "\\(\\ce{C4H10}\\)",
+      "name": "butane",
+      "use": "rocket fuel",
+      "info": "<h3>WARNING: HIGHLY FLAMMABLE</h3>\n<br>Chemical equation:<br>\n\\[\\ce{C4H10 + O2 -> CO2 + H2O}\\]\n<br>\n1 molecule of butane plus 1 molecule of oxygen (\\(\\ce{O2}\\)) form 1 molecule of carbon dioxide (\\(\\ce{CO2}\\)) and 1 molecule of water (\\(\\ce{H2O}\\)) (chemical reaction - something new is formed)\n<br>\n1 mole of butane plus 1 mole of oxygen makes 1 mole of carbon dioxide and 1 mole of water\n<br>Note: Not all reactions are chemical - for example, freezing water (\\(\\ce{H2O}\\)) results in ice (\\(\\ce{H2O}\\)), which still has the same molecules - so nothing chemically new gets formed.",
+      "attributes": "{\"type\":\"liquid\",\"M\":\"58.12\"}",
+      "script": "conditional=true;",
+      "hidden": null
     }
   ]
 }

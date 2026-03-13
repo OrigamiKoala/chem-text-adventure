@@ -1056,3 +1056,27 @@ input:focus {
         transform: translateY(0);
     }
 }
+
+/* Reference Book Buttons */
+.book-btn {
+    background: #0a0f18; /* Slightly darker than --bg (#0f1724) */
+    color: var(--accent);
+    border: 1px solid rgba(125, 211, 252, 0.2);
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .15s ease;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1rem;
+}
+
+.book-btn:hover {
+    background: #0f1724;
+    border-color: var(--accent);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.book-btn:active {
+    transform: translateY(1px);
+}

@@ -859,6 +859,28 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } else if (inputstring == "periodic table") {
       output = "<img src = 'images/periodic-table" + periodictableversion + ".png'> Source: <a href='https://ptable.com/'>ptable.com</a>"
+    } else if (inputstring == "book") {
+      window.bookItems = window.itemsData ? window.itemsData.filter(i => i.hidden !== 1) : [];
+      if (!window.bookItems || window.bookItems.length === 0) {
+        return ["No items data available.", currentdivid];
+      }
+      window.currentBookPage = 0;
+      let bookHTML = "<h3>Reference Book</h3>";
+      bookHTML += "<div id='reference-book-content'>";
+      const item = window.bookItems[0];
+      bookHTML += "<strong>" + (item.name || item.id) + "</strong> (ID: " + item.id + ")<br>";
+      for (const [key, value] of Object.entries(item)) {
+        if (key !== 'name' && key !== 'id' && key !== 'attributes' && key !== 'script' && key !== 'hidden' && value !== null && value !== undefined) {
+          bookHTML += "<em>" + key + "</em>: " + value + "<br>";
+        }
+      }
+      bookHTML += "</div><br>";
+      bookHTML += "<div style='display: flex; gap: 10px; align-items: center;'>";
+      bookHTML += "<button class='book-btn' onclick='window.changeBookPage(-1)'>Previous</button>";
+      bookHTML += "<span id='reference-book-page' style='font-family: \"JetBrains Mono\", monospace;'>1 / " + window.bookItems.length + "</span>";
+      bookHTML += "<button class='book-btn' onclick='window.changeBookPage(1)'>Next</button>";
+      bookHTML += "</div>";
+      return [bookHTML, currentdivid];
     } else if (inputstring == "launch lab") {
       launch(currentlab);
       output = "Launching lab '" + currentlab + "'...";
@@ -3147,20 +3169,43 @@ document.addEventListener('DOMContentLoaded', () => {
     MathJax.typesetPromise();
   }
 
-  window.machine = function (itemId) {
-    if (window.machineon) {
-      const item = window.itemsData.find(i => i.id === itemId);
-      if (item) {
-        const responseDiv = document.createElement('div');
-        responseDiv.className = 'question';
-        let response = "Name: " + item.name + "<br>";
-        response += "Usage: " + item.use;
-        responseDiv.innerHTML = response;
-        document.getElementById('previous').appendChild(responseDiv);
-        document.getElementById('previous').appendChild(emptyLine.cloneNode(true));
-        scrollToBottom();
-        MathJax.typesetPromise();
+  window.currentBookPage = 0;
+  window.changeBookPage = function (dir) {
+    if (!window.bookItems || window.bookItems.length === 0) return;
+    window.currentBookPage += dir;
+    if (window.currentBookPage < 0) window.currentBookPage = window.bookItems.length - 1;
+    if (window.currentBookPage >= window.bookItems.length) window.currentBookPage = 0;
+    
+    const container = document.getElementById('reference-book-content');
+    const pageSpan = document.getElementById('reference-book-page');
+    if (!container || !pageSpan) return;
+    
+    const item = window.bookItems[window.currentBookPage];
+    let html = "<strong>" + (item.name || item.id) + "</strong> (ID: " + item.id + ")<br>";
+    for (const [key, value] of Object.entries(item)) {
+      if (key !== 'name' && key !== 'id' && key !== 'attributes' && key !== 'script' && key !== 'hidden' && value !== null && value !== undefined) {
+        html += "<em>" + key + "</em>: " + value + "<br>";
       }
+    }
+    container.innerHTML = html;
+    pageSpan.innerText = (window.currentBookPage + 1) + " / " + window.bookItems.length;
+    if (typeof MathJax !== 'undefined' && MathJax.typesetPromise) {
+      MathJax.typesetPromise();
+    }
+  };
+
+  window.machine = function (itemId) {
+    const item = window.itemsData.find(i => i.id === itemId);
+    if (item) {
+      const responseDiv = document.createElement('div');
+      responseDiv.className = 'question';
+      let response = "Name: " + item.name + "<br>";
+      response += "Usage: " + item.use;
+      responseDiv.innerHTML = response;
+      document.getElementById('previous').appendChild(responseDiv);
+      document.getElementById('previous').appendChild(emptyLine.cloneNode(true));
+      scrollToBottom();
+      MathJax.typesetPromise();
     }
   };
 
