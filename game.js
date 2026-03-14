@@ -3045,6 +3045,12 @@ document.addEventListener('DOMContentLoaded', () => {
           console.log("Typing part " + j + ": " + splitnewText[j]);
           newContainer.appendChild(newTextDiv);
           newContainer.appendChild(emptyLine.cloneNode(true));
+          
+          if (userInput.trim() === 'book' || splitnewText[j].includes("id='reference-book-content'")) {
+            finishQuestionTyping();
+            continue;
+          }
+          
           const p = typeWriter(newTextDiv, splitnewText[j], typespeed, finishQuestionTyping);
           await p;
 

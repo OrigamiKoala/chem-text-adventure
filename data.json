@@ -1473,7 +1473,7 @@
       "op3": null,
       "op4": null,
       "conditional": null,
-      "altcorrect": null,
+      "altcorrect": "Yes",
       "hint2": null
     },
     {
@@ -1491,7 +1491,7 @@
       "op3": null,
       "op4": null,
       "conditional": null,
-      "altcorrect": null,
+      "altcorrect": "No",
       "hint2": null
     },
     {
@@ -1545,7 +1545,7 @@
       "op3": null,
       "op4": null,
       "conditional": null,
-      "altcorrect": null,
+      "altcorrect": "The positive ends of the water molecules are attracted to the negative ends of the salt molecules.",
       "hint2": null
     },
     {
@@ -1563,7 +1563,7 @@
       "op3": null,
       "op4": null,
       "conditional": null,
-      "altcorrect": null,
+      "altcorrect": "Yes",
       "hint2": null
     },
     {
@@ -1581,7 +1581,7 @@
       "op3": null,
       "op4": null,
       "conditional": null,
-      "altcorrect": null,
+      "altcorrect": "No",
       "hint2": null
     },
     {
@@ -1599,7 +1599,7 @@
       "op3": null,
       "op4": null,
       "conditional": null,
-      "altcorrect": null,
+      "altcorrect": "Cl (chlorine)",
       "hint2": null
     },
     {
@@ -1761,7 +1761,7 @@
       "op3": null,
       "op4": null,
       "conditional": null,
-      "altcorrect": null,
+      "altcorrect": "They will be attracted",
       "hint2": null
     },
     {
@@ -3003,7 +3003,7 @@
       "op3": null,
       "op4": null,
       "conditional": null,
-      "altcorrect": null,
+      "altcorrect": "Right",
       "hint2": null
     },
     {
@@ -3021,7 +3021,7 @@
       "op3": null,
       "op4": null,
       "conditional": null,
-      "altcorrect": null,
+      "altcorrect": "Left",
       "hint2": null
     },
     {
@@ -3039,7 +3039,7 @@
       "op3": null,
       "op4": null,
       "conditional": null,
-      "altcorrect": null,
+      "altcorrect": "Decrease the temperature",
       "hint2": null
     },
     {
@@ -3165,7 +3165,7 @@
       "op3": null,
       "op4": null,
       "conditional": null,
-      "altcorrect": null,
+      "altcorrect": "0.036412",
       "hint2": null
     },
     {
