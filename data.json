@@ -3224,7 +3224,7 @@
     },
     {
       "id": "made nh4cl",
-      "text": "Nice job!\n--\nYou've successfully made ammonium chloride, \\(\\ce{NH4Cl}\\), the powder! Add it to your inventory and close the lab.\n--\nNow you need to figure out how much \\(\\ce{NH4Cl}\\) can be dissolved per liter of water.\n--\nYou look through the book",
+      "text": "Nice job!\n--\nYou've successfully made ammonium chloride, \\(\\ce{NH4Cl}\\), the powder! Add it to your inventory and close the lab.\n--\nNow you need to figure out how much \\(\\ce{NH4Cl}\\) can be dissolved per liter of water.\n--\nMaybe the book could contain information on the <i>solubility</i> of \\(\\ce{NH4Cl}\\)?\n--\nCheck it out, and type something you might find useful to help.",
       "type": "fr",
       "next": "end",
       "roll": null,
@@ -3427,8 +3427,8 @@
   "items": [
     {
       "id": "stun gun",
-      "name": "Unknown metallic alloy",
-      "use": "Unknown",
+      "name": "unknown metallic alloy",
+      "use": "unknown",
       "info": null,
       "attributes": "{\"type\":\"nonreactant\"}",
       "script": null,
@@ -3436,8 +3436,8 @@
     },
     {
       "id": "ID card",
-      "name": "Polyvinyl Chloride: <br>\n<img src = \"images/PVC.png\" alt = \"PVC Chemical Structure\">",
-      "use": "Building material, plastic bottles, packaging, bank or membership cards",
+      "name": "polyvinyl Chloride: <br>\n<img src = \"images/PVC.png\" alt = \"PVC Chemical Structure\">",
+      "use": "<ol>\n<li>building material</li>\n<li>plastic bottles</li>\n<li>packaging</li>\n<li>bank or membership cards</li>\n</ol>",
       "info": null,
       "attributes": "{\"type\":\"nonreactant\"}",
       "script": null,
@@ -3445,8 +3445,8 @@
     },
     {
       "id": "ID shards",
-      "name": "Polyvinyl Chloride: <br>\n<img src = \"images/PVC.png\" alt = \"PVC Chemical Structure\">",
-      "use": "Building material, plastic bottles, packaging, bank or membership cards",
+      "name": "polyvinyl Chloride: <br>\n<img src = \"images/PVC.png\" alt = \"PVC Chemical Structure\">",
+      "use": "<ol>\n<li>building material</li>\n<li>plastic bottles</li>\n<li>packaging</li>\n<li>bank or membership cards</li>\n</ol>",
       "info": null,
       "attributes": "{\"type\":\"nonreactant\"}",
       "script": null,
@@ -3454,7 +3454,7 @@
     },
     {
       "id": "carbon",
-      "name": "Mixture:<br>\nCarbon-12 (Mass: 12 amu): 98.9%\nCarbon-13 (Mass: 13 amu): 1.1%",
+      "name": "mixture:<br>\nCarbon-12 (Mass: 12 amu): 98.9%\nCarbon-13 (Mass: 13 amu): 1.1%",
       "use": null,
       "info": null,
       "attributes": "{\"type\":\"solid\", \"color\":\"#000\"}",
@@ -3463,8 +3463,8 @@
     },
     {
       "id": "Powder #1",
-      "name": "Unknown powder",
-      "use": "Unknown",
+      "name": "unknown powder",
+      "use": "unknown",
       "info": null,
       "attributes": "{\"type\":\"solid\", \"color\":\"#000\"}",
       "script": "changeHP(-20)",
@@ -3472,8 +3472,8 @@
     },
     {
       "id": "Powder #2",
-      "name": "Unknown powder",
-      "use": "Unknown",
+      "name": "unknown powder",
+      "use": "unknown",
       "info": null,
       "attributes": "{\"type\":\"solid\", \"color\":\"#000\"}",
       "script": "DEX+=5; CON+=5;",
@@ -3481,8 +3481,8 @@
     },
     {
       "id": "Gas",
-      "name": "Unknown gas <br> Mass Composition:\n<ul>\n<li>Carbon: 35.29%</li>\n<li>Hydrogen: 8.89%</li>\n<li>Fluorine: 55.82%</li>\n</ul>",
-      "use": "Unknown",
+      "name": "unknown gas <br> Mass Composition:\n<ul>\n<li>Carbon: 35.29%</li>\n<li>Hydrogen: 8.89%</li>\n<li>Fluorine: 55.82%</li>\n</ul>",
+      "use": "unknown",
       "info": null,
       "attributes": "{\"type\":\"gas\",\"color\":\"#000\"}",
       "script": null,
@@ -3490,8 +3490,8 @@
     },
     {
       "id": "\\(\\ce{NH_3}\\)",
-      "name": "Ammonia",
-      "use": "Fertilizer, cleaner, used in synthesizing molecules",
+      "name": "ammonia",
+      "use": "<ol>\n<li>fertilizer</li>\n<li>cleaner</li>\n<li>reactant in synthesizing molecules</li>\n</ol>",
       "info": "Gas at room temperature; dissolved in water as a powder (\\(\\ce{NH4Cl}\\)) and sprayed over plants for fertilizer\n<h3>Production:</h3>\n\\[\\ce{3 H2 + N2 <=> 2 NH3}\\]",
       "attributes": "{\"type\":\"trapped_gas\",\"M\":\"17.031\"}",
       "script": null,
@@ -3499,7 +3499,7 @@
     },
     {
       "id": "\\(\\ce{NaCl}\\)",
-      "name": "Table salt<br><img src = \"images/salt.png\">",
+      "name": "table salt<br><img src = \"images/salt.png\">",
       "use": "make food taste better",
       "info": null,
       "attributes": "{\"type\":\"solid\",\"M\":\"58.44\"}",
@@ -3508,8 +3508,8 @@
     },
     {
       "id": "\\(\\ce{C6H12O6}\\)",
-      "name": "Sugar (glucose)<br><img src = \"images/glucose.svg\">",
-      "use": "add a sugary taste, energy source for most living things",
+      "name": "sugar (glucose)<br><img src = \"images/glucose.svg\">",
+      "use": "<ol>\n<li>add a sugary taste</li>\n<li>energy source for most living things</li>\n</ol>",
       "info": null,
       "attributes": "{\"type\":\"solid\",\"M\":\"180.156\"}",
       "script": null,
@@ -3517,7 +3517,7 @@
     },
     {
       "id": "\\(\\ce{H2O}\\)",
-      "name": "Water<br><img src = \"images/water.png\">",
+      "name": "water<br><img src = \"images/water.png\">",
       "use": null,
       "info": "2 hydrogens (H), 1 oxygen (O) -> \\(\\ce{H2O}\\)",
       "attributes": "{\"type\":\"liquid\",\"M\":\"18.016\"}",
@@ -3526,8 +3526,8 @@
     },
     {
       "id": "\\(\\ce{NaHCO3}\\)",
-      "name": "Sodium bicarbonate",
-      "use": "itching relief",
+      "name": "sodium bicarbonate",
+      "use": "<ol>\n<li>itching relief</li>\n</ol>",
       "info": "<h3>Production</h3>\n<br>Chemical equation:<br>\n\\[\\ce{NaOH + CO2 → 2NaHCO3}\\]\n<br>\n1 molecule of \\(\\ce{NaOH}\\) reacts with 1 molecule of \\(\\ce{CO2}\\) to form 2 molecules of \\(\\ce{NaHCO3}\\) (chemical reaction - something new is formed)\n<br>OR<br>\n1 mole of \\(\\ce{NaOH}\\) reacts with 1 mole of \\(\\ce{CO2}\\) to form 2 moles of \\(\\ce{NaHCO3}\\)\n<br>Note: Not all reactions are chemical - for example, freezing water (\\(\\ce{H2O}\\)) results in ice (\\(\\ce{H2O}\\)), which still has the same molecules - so nothing chemically new gets formed.",
       "attributes": "{\"type\":\"solid\",\"M\":\"84.007\"}",
       "script": null,
@@ -3536,10 +3536,19 @@
     {
       "id": "\\(\\ce{C4H10}\\)",
       "name": "butane",
-      "use": "rocket fuel",
+      "use": "<ol>\n<li>rocket fuel</li>\n</ol>",
       "info": "<h3>WARNING: HIGHLY FLAMMABLE</h3>\n<br>Chemical equation:<br>\n\\[\\ce{C4H10 + O2 -> CO2 + H2O}\\]\n<br>\n1 molecule of butane plus 1 molecule of oxygen (\\(\\ce{O2}\\)) form 1 molecule of carbon dioxide (\\(\\ce{CO2}\\)) and 1 molecule of water (\\(\\ce{H2O}\\)) (chemical reaction - something new is formed)\n<br>\n1 mole of butane plus 1 mole of oxygen makes 1 mole of carbon dioxide and 1 mole of water\n<br>Note: Not all reactions are chemical - for example, freezing water (\\(\\ce{H2O}\\)) results in ice (\\(\\ce{H2O}\\)), which still has the same molecules - so nothing chemically new gets formed.",
       "attributes": "{\"type\":\"liquid\",\"M\":\"58.12\"}",
       "script": "conditional=true;",
+      "hidden": null
+    },
+    {
+      "id": "\\(\\ce{NH4Cl}\\)",
+      "name": "ammonium chloride",
+      "use": "<ol>\n<li>fertilizer (contains ammonia)</li>\n<li>metalwork</li>\n<li>cough medicine</li>\n<li>yeast nutrient/acidifier in baking</li>\n<li>produce low temperature cold baths</li>\n<li>helps some marine animals stay afloat</li>\n<li>component in some zinc-carbon batteries</li>\n<li>cleaning agent</li>\n<li>used in making albumen prints</li>\n<li>thickening agent in hair shampoo</li>\n</ol>",
+      "info": null,
+      "attributes": "{\"type\":\"solid\",\"M\":\"53.491\"}",
+      "script": null,
       "hidden": null
     }
   ]
