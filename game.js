@@ -569,7 +569,13 @@ document.addEventListener('DOMContentLoaded', () => {
               console.log("Rendering interrupted text part " + n + ": " + splitnewText[n]);
               const newinterruptTextDiv = document.createElement('div');
               newinterruptTextDiv.className = 'question';
-              newinterruptTextDiv.innerHTML = splitnewText[n];
+              
+              let htmlContent = splitnewText[n];
+              // Protect LaTeX math blocks from browser HTML parser
+              htmlContent = htmlContent.replace(/\\\([\s\S]*?\\\)/g, match => match.replace(/</g, '&lt;').replace(/>/g, '&gt;'));
+              htmlContent = htmlContent.replace(/\\\[[\s\S]*?\\\]/g, match => match.replace(/</g, '&lt;').replace(/>/g, '&gt;'));
+              
+              newinterruptTextDiv.innerHTML = htmlContent;
               runScripts(newinterruptTextDiv);
               newContainer.appendChild(newinterruptTextDiv);
               newContainer.appendChild(emptyLine.cloneNode(true)); // FIX: Add spacer
@@ -579,6 +585,7 @@ document.addEventListener('DOMContentLoaded', () => {
             this.interrupted = true;
             this.finished = true;
             this.resolve();
+            safeTypeset();
           }
         }
       }
@@ -660,6 +667,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 i = tagEnd + 1;
                 delay = 1;
               }
+            } else {
+              // No closing >, treat as text
+              element.innerHTML += '&lt;';
+              i++;
             }
           } else if (char === '\\') {
             if (text.charAt(i + 1) === '(') {
@@ -667,6 +678,7 @@ document.addEventListener('DOMContentLoaded', () => {
               let mathEnd = text.indexOf('\\)', i + 2);
               if (mathEnd !== -1) {
                 let mathContent = text.substring(i, mathEnd + 2);
+                mathContent = mathContent.replace(/</g, '&lt;').replace(/>/g, '&gt;');
                 element.innerHTML += mathContent;
                 i = mathEnd + 2;
                 delay = 1; // Tiny delay before next Qtext character
@@ -681,6 +693,7 @@ document.addEventListener('DOMContentLoaded', () => {
               let mathEnd = text.indexOf('\\]', i + 2);
               if (mathEnd !== -1) {
                 let mathContent = text.substring(i, mathEnd + 2);
+                mathContent = mathContent.replace(/</g, '&lt;').replace(/>/g, '&gt;');
                 element.innerHTML += mathContent;
                 i = mathEnd + 2;
                 delay = 1; // Tiny delay before next Qtext character

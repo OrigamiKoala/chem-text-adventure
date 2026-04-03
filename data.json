@@ -3386,7 +3386,7 @@
     },
     {
       "id": "q ne k",
-      "text": "That's right!\n--\n\\(K\\) is \\(p_B/p_A\\) after the system hits equilibrium. In this case, \\(K\\) doesn't have to be 10, because the system hasn't reached equilibrium yet. \\(Q=K\\) when the system is at equilibrium.\n--\nRemember how \\(K\\) (and \\(Q\\)) are ratios of the amount of product to reactant? When there is more product than there should be at equilibrium, \\(Q>K\\) and the system shifts left, decreasing \\(Q\\) until it reaches \\(K\\). Then, the system hits equilibrium.\n--\nSimilarly, if \\(Q<K\\) then there are fewer products and more reactants than there should be, so the system creates more product (shifts right), increasing \\(Q|) until \\(Q=K\\).\n--\nSo if \\(Q=10\\) and \\(K=5\\), which way does the system shift? Type 'left' or 'right'.",
+      "text": "That's right!\n--\n\\(K\\) is \\(p_B/p_A\\) after the system hits equilibrium. In this case, \\(K\\) doesn't have to be 10, because the system hasn't reached equilibrium yet. \\(Q=K\\) when the system is at equilibrium.\n--\nRemember how \\(K\\) (and \\(Q\\)) are ratios of the amount of product to reactant? When there is more product than there should be at equilibrium, \\(Q>K\\) and the system shifts left, decreasing \\(Q\\) until it reaches \\(K\\). Then, the system hits equilibrium.\n--\nSimilarly, if \\(Q<K\\) then there are fewer products and more reactants than there should be, so the system creates more product (shifts right), increasing \\(Q\\) until \\(Q=K\\).\n--\nSo if \\(Q=10\\) and \\(K=5\\), which way does the system shift? Type 'left' or 'right'.",
       "type": "frq",
       "next": "min conc",
       "roll": null,
