@@ -3226,7 +3226,7 @@
       "id": "made nh4cl",
       "text": "Nice job!\n--\nYou've successfully made ammonium chloride, \\(\\ce{NH4Cl}\\), the powder! Add it to your inventory and close the lab.\n--\nNow you need to figure out how much \\(\\ce{NH4Cl}\\) can be dissolved per liter of water.\n--\nMaybe the book could contain information on the <i>solubility</i> of \\(\\ce{NH4Cl}\\)?\n--\nCheck it out, and type something you might find useful to help.",
       "type": "fr",
-      "next": "end",
+      "next": "ions",
       "roll": null,
       "success": null,
       "fail": null,
@@ -3237,6 +3237,42 @@
       "op3": null,
       "op4": null,
       "conditional": 1,
+      "altcorrect": null,
+      "hint2": null
+    },
+    {
+      "id": "ions",
+      "text": "What forms when \\(\\ce{NH4Cl}\\) dissolves?\n<script>currentlab=\"nh4cl\"</script>\n--\nTry it out! Open up the lab!",
+      "type": "fr",
+      "next": "ksp calc",
+      "roll": null,
+      "success": null,
+      "fail": null,
+      "correct": null,
+      "hint": null,
+      "op1": null,
+      "op2": null,
+      "op3": null,
+      "op4": null,
+      "conditional": null,
+      "altcorrect": null,
+      "hint2": null
+    },
+    {
+      "id": "ksp calc",
+      "text": "Nice!\n--\nWhen you click on \"Show Reaction\", you can see the reaction. Notice that it's an equilibrium reaction.\n--\nIn fact, the \\(K\\) value is denoted \\(K_{sp}\\), for \\(K\\) \"solubility product\"...\n--\nSo we can do the same calculations we did previously for equilibrium! Let's assume \\(x\\) moles of \\(\\ce{NH4Cl}\\) dissolves in 1 L of water. Then, solve for \\(x\\). Remember that\n\\[K_{sp} = a_{\\ce{NH4 +}} a_{\\ce{Cl -}}\\]\n--\nWe can approximate the activities of these ions with their concentrations. What is \\(x\\)?",
+      "type": "frq",
+      "next": "end",
+      "roll": null,
+      "success": null,
+      "fail": null,
+      "correct": "5.56",
+      "hint": null,
+      "op1": null,
+      "op2": null,
+      "op3": null,
+      "op4": null,
+      "conditional": null,
       "altcorrect": null,
       "hint2": null
     }
@@ -3422,6 +3458,18 @@
       "beaker4": "\\(\\ce{H2O}\\)",
       "attributes4": "{\"type\":\"liquid\"}",
       "reaction": "{\n\"8*1_3*2\":[{\"id\":\"\\(\\ce{NH4Cl}\\)\",\"count\":\"6\",\"M\":\"53.491\",\"type\":\"solid\",\"conditional\":\"true\"},{\"id\":\"\\(\\ce{N2}\\)\",\"M\":\"28.02\",\"type\":\"gas\"}],\n\"2_3\":[{\"id\":\"\\(\\ce{HCl}\\)\",\"M\":\"36.458\",\"count\":\"2\",\"type\":\"trapped_gas\",\"script\":\"changeHP(-50)\"}]\n}"
+    },
+    {
+      "labid": "nh4cl",
+      "beaker1": "\\(\\ce{NH4Cl}\\)",
+      "attributes1": "{\"type\":\"solid\",\"M\":\"53.491\"}",
+      "beaker2": "\\(\\ce{H2O}\\)",
+      "attributes2": "{\"type\":\"liquid\",\"M\":\"18.016\"}",
+      "beaker3": "\\(\\ce{NH4+}\\)",
+      "attributes3": "{\"type\":\"aq\",\"M\":\"18.04\",\"concentration\":\"0.1 M\"}",
+      "beaker4": "\\(\\ce{Cl-}\\)",
+      "attributes4": "{\"type\":\"aq\",\"M\":\"35.45\",\"concentration\":\"0.1 M\"}",
+      "reaction": "{\n\"1_2eqK30.9\":[{\"id\":\"\\(\\ce{NH4+}\\)\",\"type\":\"aq\",\"M\":\"18.05\"},{\"id\":\"\\(\\ce{Cl-}\\)\",\"type\":\"aq\",\"M\":\"35.45\"},{\"id\":\"\\(\\ce{H2O}\\)\",\"type\":\"liquid\",\"M\":\"18.016\"}]\n}"
     }
   ],
   "items": [
@@ -3489,7 +3537,7 @@
       "hidden": 1
     },
     {
-      "id": "\\(\\ce{NH_3}\\)",
+      "id": "\\(\\ce{NH3}\\)",
       "name": "ammonia",
       "use": "<ol>\n<li>fertilizer</li>\n<li>cleaner</li>\n<li>reactant in synthesizing molecules</li>\n</ol>",
       "info": "Gas at room temperature; dissolved in water as a powder (\\(\\ce{NH4Cl}\\)) and sprayed over plants for fertilizer\n<h3>Production:</h3>\n\\[\\ce{3 H2 + N2 <=> 2 NH3}\\]",
@@ -3546,7 +3594,7 @@
       "id": "\\(\\ce{NH4Cl}\\)",
       "name": "ammonium chloride",
       "use": "<ol>\n<li>fertilizer (contains ammonia)</li>\n<li>metalwork</li>\n<li>cough medicine</li>\n<li>yeast nutrient/acidifier in baking</li>\n<li>produce low temperature cold baths</li>\n<li>helps some marine animals stay afloat</li>\n<li>component in some zinc-carbon batteries</li>\n<li>cleaning agent</li>\n<li>used in making albumen prints</li>\n<li>thickening agent in hair shampoo</li>\n</ol>",
-      "info": null,
+      "info": "<h3>Solubility:</h3>\n\\[K_{sp} = 30.9\\]",
       "attributes": "{\"type\":\"solid\",\"M\":\"53.491\"}",
       "script": null,
       "hidden": null
