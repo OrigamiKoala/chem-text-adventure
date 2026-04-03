@@ -1730,6 +1730,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
               }
 
+              const lData = window.currentLabData || (typeof labData !== 'undefined' ? labData : null);
+              if (lData && lData['beaker' + id]) {
+                id = lData['beaker' + id];
+              }
+
               // Check if flask has enough
               const available = flaskCounts[id] || 0;
 
@@ -1776,35 +1781,57 @@ document.addEventListener('DOMContentLoaded', () => {
                 const reactants = [];
                 for (const part of reactantParts) {
                   let count = 1;
-                  let id = part;
+                  let rawId = part;
                   if (part.includes('*')) {
                     const pieces = part.split('*');
                     if (pieces.length === 2 && !isNaN(pieces[0])) {
                       count = parseInt(pieces[0]);
-                      id = pieces[1];
+                      rawId = pieces[1];
                     }
                   }
+
+                  let resolvedId = rawId;
+                  const lData = window.currentLabData || (typeof labData !== 'undefined' ? labData : null);
+                  if (lData && lData['beaker' + rawId]) {
+                    resolvedId = lData['beaker' + rawId];
+                  }
+
                   let type = 'liquid';
                   if (window.itemsData) {
-                    const item = window.itemsData.find(i => i.id === id || i.name === id);
+                    const item = window.itemsData.find(i => i.id === resolvedId || i.name === resolvedId);
                     if (item && item.attributes) {
                       const attr = typeof item.attributes === 'string' ? JSON.parse(item.attributes) : item.attributes;
                       if (attr.type) type = attr.type;
                     }
                   }
 
-                  const lData = window.currentLabData || (typeof labData !== 'undefined' ? labData : null);
-                  if (lData && lData['attributes' + id]) {
-                    try {
-                      const attrStr = lData['attributes' + id];
-                      const attrParsed = typeof attrStr === 'string' ? JSON.parse(attrStr) : attrStr;
-                      if (attrParsed.type) type = attrParsed.type;
-                    } catch (e) { }
+                  if (lData) {
+                    // Try to map rawId directly first
+                    if (lData['attributes' + rawId]) {
+                      try {
+                        const attrParsed = typeof lData['attributes' + rawId] === 'string' ? JSON.parse(lData['attributes' + rawId]) : lData['attributes' + rawId];
+                        if (attrParsed.type) type = attrParsed.type;
+                      } catch (e) { }
+                    } else {
+                      // Fallback scan
+                      for (let i = 1; i <= 4; i++) {
+                        if (lData['beaker' + i] === resolvedId) {
+                          const attrStr = lData['attributes' + i];
+                          if (attrStr) {
+                            try {
+                              const attrParsed = typeof attrStr === 'string' ? JSON.parse(attrStr) : attrStr;
+                              if (attrParsed.type) type = attrParsed.type;
+                            } catch (e) { }
+                          }
+                          break;
+                        }
+                      }
+                    }
                   }
 
                   reactants.push({
                     count: count,
-                    available: flaskCounts[id] || 0,
+                    available: flaskCounts[resolvedId] || 0,
                     type: type
                   });
                 }
@@ -1869,7 +1896,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const R = 0.08206;
                     const T = typeof currentTemperature !== 'undefined' ? currentTemperature : 298;
                     return (moles * R * T) / 1.0;
-                  } else if (type === 'aqueous') {
+                  } else if (type === 'aqueous' || type === 'aq') {
                     return moles / totalLiquidVolume_L;
                   } else if (type === 'solid' || type === 'liquid') {
                     return 1.0;
@@ -1889,15 +1916,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 let Q0 = num0 / den0;
                 let maxReverseYield = Infinity;
                 products.forEach(p => {
-                  const theoreticalRev = p.available / p.count;
-                  if (theoreticalRev < maxReverseYield) maxReverseYield = theoreticalRev;
+                  if (p.type !== 'liquid') {
+                    const theoreticalRev = p.available / p.count;
+                    if (theoreticalRev < maxReverseYield) maxReverseYield = theoreticalRev;
+                  }
                 });
-                if (products.length === 0) maxReverseYield = 0;
+                if (products.length === 0 || products.every(p => p.type === 'liquid')) maxReverseYield = 0;
 
                 let low = -maxReverseYield;
                 let high = minYield;
 
-                for (let i = 0; i < 30; i++) {
+                for (let i = 0; i < 100; i++) {
                   const mid = (low + high) / 2;
 
                   if (mid >= minYield * 0.999999) {
@@ -1927,7 +1956,7 @@ document.addEventListener('DOMContentLoaded', () => {
               }
 
               // Apply Yield Lower Bound filter to prevent micro-reactions
-              if (Math.abs(finalYield) < 0.001) {
+              if (Math.abs(finalYield) < 0.0000001) {
                 // Treat as no reaction
                 continue;
               }
@@ -1953,7 +1982,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Resolve ID to Name/Formula
                 const resolved = resolveId(id);
                 if (idx > 0) leftSide += " + ";
-                leftSide += (count > 1 ? count + " " : "") + cleanFormula(resolved);
+                leftSide += (count > 1 ? count + " " : "") + cleanFormula(resolved) + getPhysicalStateSymbol(id);
               });
 
               let rightSide = "";
@@ -1961,15 +1990,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 const outArr = Array.isArray(state.outcome) ? state.outcome : [state.outcome];
                 // Group by ID
                 const counts = {};
+                const outTypes = {};
                 outArr.forEach(o => {
                   const oCount = o.count ? parseInt(o.count) : 1;
                   counts[o.id] = (counts[o.id] || 0) + oCount;
+                  if (o.type) outTypes[o.id] = o.type;
                 });
 
                 Object.keys(counts).forEach((oid, idx) => {
                   if (idx > 0) rightSide += " + ";
                   const c = counts[oid];
-                  rightSide += (c > 1 ? c + " " : "") + cleanFormula(resolveId(oid) || oid);
+                  let sym = "";
+                  if (outTypes[oid]) {
+                    const type = outTypes[oid];
+                    if (type === 'solid') sym = '_{(s)}';
+                    else if (type === 'liquid') sym = '_{(l)}';
+                    else if (type === 'gas' || type === 'trapped_gas') sym = '_{(g)}';
+                    else if (type === 'aqueous' || type === 'aq') sym = '_{(aq)}';
+                  } else {
+                    sym = getPhysicalStateSymbol(oid);
+                  }
+                  rightSide += (c > 1 ? c + " " : "") + cleanFormula(resolveId(oid) || oid) + sym;
                 });
               }
 
@@ -1983,7 +2024,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 state.productType = first.type;
                 state.productColor = first.color;
                 state.productName = first.name || first.id;
-                
+
                 state.triggerConditional = false;
                 const outArr = Array.isArray(state.outcome) ? state.outcome : [state.outcome];
                 outArr.forEach(p => {
@@ -2067,9 +2108,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 primaryColor = prod.color;
               }
 
-              // If it's a liquid, add to the visualColors list so it mingles with other liquids
-              if (prod.type === 'liquid' && prod.color) {
+              // If it's a liquid or aq, add to the visualColors list so it mingles with other liquids
+              if ((prod.type === 'liquid' || prod.type === 'aqueous' || prod.type === 'aq') && prod.color) {
                 visualColors.push(prod.color);
+              } else if (prod.type === 'aq' || prod.type === 'aqueous') {
+                visualColors.push("#A0D0FF");
               }
             }
           });
@@ -2134,18 +2177,30 @@ document.addEventListener('DOMContentLoaded', () => {
           reactantIds.forEach(id => rCounts[id] = (rCounts[id] || 0) + 1);
           const reactantsStr = Object.keys(rCounts).map(id => {
             const count = rCounts[id];
-            return (count > 1 ? count + " " : "") + cleanForReaction(id);
+            return (count > 1 ? count + " " : "") + cleanForReaction(id) + getPhysicalStateSymbol(id);
           }).join(" + ");
 
           const pCounts = {};
+          const pTypes = {};
           outcomes.forEach(prod => {
             const id = (typeof prod === 'string') ? "Unknown Product" : (prod.id || "Unknown Product");
             const count = (typeof prod === 'string') ? 1 : (prod.count ? parseInt(prod.count) : 1);
             pCounts[id] = (pCounts[id] || 0) + count;
+            if (typeof prod !== 'string' && prod.type) pTypes[id] = prod.type;
           });
           const productsStr = Object.keys(pCounts).map(id => {
             const count = pCounts[id];
-            return (count > 1 ? count + " " : "") + cleanForReaction(id);
+            let sym = "";
+            if (pTypes[id]) {
+              const type = pTypes[id];
+              if (type === 'solid') sym = '_{(s)}';
+              else if (type === 'liquid') sym = '_{(l)}';
+              else if (type === 'gas' || type === 'trapped_gas') sym = '_{(g)}';
+              else if (type === 'aqueous' || type === 'aq') sym = '_{(aq)}';
+            } else {
+              sym = getPhysicalStateSymbol(id);
+            }
+            return (count > 1 ? count + " " : "") + cleanForReaction(id) + sym;
           }).join(" + ");
 
           // Save raw lists for measurement bar
@@ -2204,7 +2259,15 @@ document.addEventListener('DOMContentLoaded', () => {
     currentProducts = []; // Global array for multiple products
     const renderVisualStack = (opts = {}) => {
       // Map visualStack items to colors for the renderer
-      const liquidColors = visualStack.filter(v => v.type === 'liquid' || !v.type).map(v => v.color);
+      const trueLiquids = visualStack.filter(v => v.type === 'liquid' || !v.type);
+      const inheritedColor = trueLiquids.length > 0 ? trueLiquids[0].color : "#A0D0FF";
+
+      const liquidColors = visualStack.filter(v => v.type === 'liquid' || !v.type || v.type === 'aq' || v.type === 'aqueous').map(v => {
+        if (v.type === 'aq' || v.type === 'aqueous') {
+          return inheritedColor;
+        }
+        return v.color;
+      });
 
       // 1. Solid Logic
       let solidType = null;
@@ -2360,6 +2423,12 @@ document.addEventListener('DOMContentLoaded', () => {
               count = parseFloat(pieces[0]);
               id = pieces[1];
             }
+
+            const lData = window.currentLabData || (typeof labData !== 'undefined' ? labData : null);
+            if (lData && lData['beaker' + id]) {
+              id = lData['beaker' + id];
+            }
+
             reactantCoeffs[id] = count;
             consumptionNeeds[id] = count * yieldFraction;
           });
@@ -2451,7 +2520,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (products.length > 0) {
           products.forEach(prod => {
             let finalType = prod.type || 'liquid';
-            let finalColor = prod.color || '#fff';
+            let finalColor = prod.color;
+            if (!finalColor) {
+              if (finalType === 'aq' || finalType === 'aqueous') {
+                finalColor = "#A0D0FF";
+              } else {
+                finalColor = "#fff";
+              }
+            }
 
             // Use Product count if defined (default 1) * Yield
             const pCount = prod.count || 1;
@@ -2465,7 +2541,16 @@ document.addEventListener('DOMContentLoaded', () => {
               // Distribute across existing tokens
               for (let i = 0; i < newStack.length; i++) {
                 const v = newStack[i];
-                if (v.ids.includes(prod.id)) {
+                let isMatch = false;
+                if (v.ids) {
+                  isMatch = v.ids.some(vid => {
+                    let resolved = String(vid);
+                    const lData = window.currentLabData || (typeof labData !== 'undefined' ? labData : null);
+                    if (lData && lData['beaker' + vid]) resolved = lData['beaker' + vid];
+                    return resolved === prod.id || String(vid) === String(prod.id);
+                  });
+                }
+                if (isMatch) {
                   if (remainingToAdd < 0) {
                     const take = Math.min(v.quantity || 1.0, -remainingToAdd);
                     v.quantity = (v.quantity || 1.0) - take;
@@ -2491,21 +2576,38 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (productQty > 0.01) {
-              const token = {
-                ids: finalIds,
-                type: finalType,
-                color: finalColor,
-                isProduct: true,
-                quantity: productQty
-              };
+              let existingToken = null;
+              if (!state.isEquilibrium && prod.id) {
+                existingToken = newStack.find(t => {
+                  if (!t.ids) return false;
+                  return t.ids.some(vid => {
+                    let resolved = String(vid);
+                    const lData = window.currentLabData || (typeof labData !== 'undefined' ? labData : null);
+                    if (lData && lData['beaker' + vid]) resolved = lData['beaker' + vid];
+                    return resolved === prod.id || String(vid) === String(prod.id);
+                  });
+                });
+              }
 
-              newStack.push(token);
+              if (existingToken) {
+                existingToken.quantity = (existingToken.quantity || 1.0) + productQty;
+              } else {
+                const token = {
+                  ids: finalIds,
+                  type: finalType,
+                  color: finalColor,
+                  isProduct: true,
+                  quantity: productQty
+                };
 
-              if (prod.type === 'gas' && !state.isEquilibrium) {
-                setTimeout(() => {
-                  visualStack = visualStack.filter(v => v !== token);
-                  renderVisualStack();
-                }, 4000);
+                newStack.push(token);
+
+                if (prod.type === 'gas' && !state.isEquilibrium) {
+                  setTimeout(() => {
+                    visualStack = visualStack.filter(v => v !== token);
+                    renderVisualStack();
+                  }, 4000);
+                }
               }
             }
           });
@@ -2542,7 +2644,7 @@ document.addEventListener('DOMContentLoaded', () => {
           window.conditional = true;
         }
 
-        // Trigger Chained Reactions
+        // Trigger Chained Reactions unconditionally
         setTimeout(() => {
           checkFlaskReactions();
         }, 500);
@@ -2612,6 +2714,13 @@ document.addEventListener('DOMContentLoaded', () => {
         quantity = amount / molarMass;
       } else if (itemType === 'liquid') {
         quantity = amount / molarMass; // assume 1 g/mL
+      } else if (itemType === 'aq' || itemType === 'aqueous') {
+        let concentration = 1.0; // default 1.0 M
+        if (attr && attr.concentration) {
+          concentration = parseFloat(attr.concentration) || 1.0;
+        }
+        // quantity (moles) = volume (L) * concentration (mol/L)
+        quantity = (amount / 1000.0) * concentration;
       }
 
       let pushedId = id;
@@ -2630,12 +2739,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Immediate Visual Add
       if (colors.length > 0) {
-        visualStack.push({
-          ids: [pushedId],
-          color: colors[0],
-          type: itemType,
-          quantity: quantity
-        });
+        let existingToken = visualStack.find(t => t.ids && t.ids.includes(trueId));
+        if (existingToken) {
+          existingToken.quantity = (existingToken.quantity || 1.0) + quantity;
+        } else {
+          visualStack.push({
+            ids: [trueId],
+            color: colors[0],
+            type: itemType,
+            quantity: quantity
+          });
+        }
       }
 
       // Immediate Render
@@ -2753,6 +2867,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       selectedBeakers = [];
       visualStack = [];
+      window.visualStack = visualStack;
       processedBeakersCount = 0;
       reactionQueue = Promise.resolve(); // Clear queue reference (old chains continue independently).
       // Reset queue logic (active jobs check selectedBeakers state).
@@ -2761,6 +2876,9 @@ document.addEventListener('DOMContentLoaded', () => {
       currentTemperature = 298;
       currentReactionName = "";
       renderVisualStack();
+
+      const measContainer = document.getElementById('measurement-container');
+      if (measContainer) measContainer.innerHTML = '';
     };
 
     // Add To Inventory
@@ -2813,6 +2931,9 @@ document.addEventListener('DOMContentLoaded', () => {
       currentProducts = []; // Clear
       renderVisualStack();
       renderInventory();
+
+      const measContainer = document.getElementById('measurement-container');
+      if (measContainer) measContainer.innerHTML = '';
     };
     toolbox.appendChild(addToInvBtn);
     // ... (Keep other tools) ...
@@ -3045,12 +3166,12 @@ document.addEventListener('DOMContentLoaded', () => {
           console.log("Typing part " + j + ": " + splitnewText[j]);
           newContainer.appendChild(newTextDiv);
           newContainer.appendChild(emptyLine.cloneNode(true));
-          
+
           if (userInput.trim() === 'book' || splitnewText[j].includes("id='reference-book-content'")) {
             finishQuestionTyping();
             continue;
           }
-          
+
           const p = typeWriter(newTextDiv, splitnewText[j], typespeed, finishQuestionTyping);
           await p;
 
@@ -3181,11 +3302,11 @@ document.addEventListener('DOMContentLoaded', () => {
     window.currentBookPage += dir;
     if (window.currentBookPage < 0) window.currentBookPage = window.bookItems.length - 1;
     if (window.currentBookPage >= window.bookItems.length) window.currentBookPage = 0;
-    
+
     const container = document.getElementById('reference-book-content');
     const pageSpan = document.getElementById('reference-book-page');
     if (!container || !pageSpan) return;
-    
+
     const item = window.bookItems[window.currentBookPage];
     let html = "<strong>" + (item.name || item.id) + "</strong> (ID: " + item.id + ")<br>";
     for (const [key, value] of Object.entries(item)) {
@@ -3249,6 +3370,35 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+
+  // Helper to get physical state symbol (e.g. _{(s)}, _{(l)}, _{(g)}, _{(aq)})
+  const getPhysicalStateSymbol = (id) => {
+    let type = null;
+    if (window.itemsData) {
+      const item = window.itemsData.find(i => i.id === id);
+      if (item && item.attributes) {
+        try {
+          const attr = typeof item.attributes === 'string' ? JSON.parse(item.attributes) : item.attributes;
+          if (attr.type) type = attr.type;
+        } catch (e) { }
+      }
+    }
+    const lData = window.currentLabData || (typeof labData !== 'undefined' ? labData : {});
+    if (lData && (typeof id === 'number' || (typeof id === 'string' && /^[1-4]$/.test(id)))) {
+      const attrKey = 'attributes' + id;
+      if (lData[attrKey]) {
+        try {
+          const attr = typeof lData[attrKey] === 'string' ? JSON.parse(lData[attrKey]) : lData[attrKey];
+          if (attr.type) type = attr.type;
+        } catch (e) { }
+      }
+    }
+    if (type === 'solid') return '_{(s)}';
+    if (type === 'liquid') return '_{(l)}';
+    if (type === 'gas' || type === 'trapped_gas') return '_{(g)}';
+    if (type === 'aqueous' || type === 'aq') return '_{(aq)}';
+    return '';
+  };
 
   // Helper to resolve ID to display name matching addLiquid logic
   const resolveId = (id) => {
@@ -3377,12 +3527,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Union logic: update existing, add new, remove old
     const unionSet = new Set([...startSet, ...endSet]);
 
-    // Calculate total quantity for normalization
-    let totalMass = 0;
+    // Calculate totals for normalization
     let totalLiquidVolume_L = 0;
     const itemDataCache = {};
+    const totalMolesByType = {};
 
-    // First pass to get total mass and liquid volume
+    // First pass to get total moles by type and liquid volume
     Object.keys(currentFlaskIds).forEach(label => {
       const moles = currentFlaskIds[label];
 
@@ -3427,7 +3577,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       const mass = moles * molarMass;
-      totalMass += mass;
+      totalMolesByType[type] = (totalMolesByType[type] || 0) + moles;
 
       if (type === 'liquid') {
         totalLiquidVolume_L += mass / 1000; // mass (g) = volume (mL) for liquid density 1 g/mL, so mL / 1000 = L
@@ -3444,8 +3594,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const currentVal = currentFlaskIds[label] || 0; // moles
       const cache = itemDataCache[label] || { type: 'liquid', mass: 0, moles: 0, molarMass: 10.0 };
 
-      // Calculate Percentage for Bar Width (Relative to total mass)
-      const targetPercent = totalMass > 0 ? (cache.mass / totalMass) * 100 : 0;
+      // Calculate Percentage for Bar Width (Relative to total moles of the same type)
+      const typeTotalMoles = totalMolesByType[cache.type] || 0;
+      const targetPercent = typeTotalMoles > 0 ? (cache.moles / typeTotalMoles) * 100 : 0;
 
       // Calculate display value based on type
       let displayRaw = "";
@@ -3456,7 +3607,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // mL for liquids (assuming 1 g/mL)
         const mL = cache.mass;
         displayRaw = `${mL.toFixed(9)} mL`;
-      } else if (cache.type === 'aqueous') {
+      } else if (cache.type === 'aqueous' || cache.type === 'aq') {
         // Molarity for aqueous
         const M = cache.moles / totalLiquidVolume_L;
         displayRaw = `${M.toFixed(9)} M`;
@@ -3480,9 +3631,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Update the bar and text immediately
       if (info) {
+        let row = null;
+        if (info.barFill.parentNode && info.barFill.parentNode.parentNode) {
+          row = info.barFill.parentNode.parentNode;
+        } else {
+          row = Array.from(container.querySelectorAll('.measure-row')).find(r => r.getAttribute('data-label') === label);
+        }
+
+        const now = Date.now();
+        if (row) row.dataset.lastUpdate = now;
+
         info.barFill.style.transition = 'width 1s ease-in-out';
         info.barFill.style.width = targetPercent + '%';
         info.valDiv.innerText = displayVal;
+
+        if (!endSet.has(label)) {
+          setTimeout(() => {
+            const r = Array.from(container.querySelectorAll('.measure-row')).find(rw => rw.getAttribute('data-label') === label);
+            if (r && parseInt(r.dataset.lastUpdate) === now) {
+              r.remove();
+            }
+          }, 1000);
+        }
       }
     });
 
