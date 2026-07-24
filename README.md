@@ -31,6 +31,8 @@ And all the design choices were my own.
 
 So the text is under the [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/deed.en) license, but the code is not.
 
+If you like my stuff, consider supporting me on [Patreon](https://www.patreon.com/cw/origamikoala). Thanks!
+
 Log:
 
 2026 April 2: Added 4.2, fixed bugs
