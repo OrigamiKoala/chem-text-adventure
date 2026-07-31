@@ -2,7 +2,7 @@
   "narrative_nodes": [
     {
       "id": "initial",
-      "text": "Welcome to a choose-your-own-adventure game made by Carl, where you get to have fun (hopefully) and also learn some chemistry along the way (also hopefully)!\n--\nFor a tutorial or information on formatting your answers, type 'help'. If this is your first time, check out the tutorial before moving on.\n--\nYou can find the GitHub repository for this app at <a href=\"https://github.com/OrigamiKoala/chem-text-adventure\">https://github.com/OrigamiKoala/chem-text-adventure</a>\n--\nIt would be greatly appreciated if you could take a minute to fill out a super short <a href=\"http://bit.ly/chemcyoafeedback\">feedback form</a>. Thank you so much!\n--\nType anything to begin.",
+      "text": "Welcome to a choose-your-own-adventure game made by Carl, where you get to have fun (hopefully) and also learn some chemistry along the way (also hopefully)!\n--\nFor a tutorial or information on formatting your answers, type 'help'. If this is your first time, check out the tutorial before moving on.\n--\nYou can find the GitHub repository for this app at <a href=\"https://github.com/OrigamiKoala/chem-text-adventure\">https://github.com/OrigamiKoala/chem-text-adventure</a>\n--\nIt would be greatly appreciated if you could take a minute to fill out a super short <a href=\"http://bit.ly/chemcyoafeedback\">feedback form</a>. If you like my work, consider supporting me on Patreon <a href=\"https://www.patreon.com/cw/origamikoala\">here</a>. Thank you so much!\n--\nType anything to begin.",
       "type": "fr",
       "next": "atomscover",
       "roll": null,
