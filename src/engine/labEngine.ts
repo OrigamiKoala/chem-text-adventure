@@ -9,7 +9,7 @@ import { getFlaskState, getAttributes } from './reactionEngine';
  * setTimeout chains against a mutable module-level `visualStack`.
  */
 
-const cloneToken = (t: FlaskToken): FlaskToken => ({ ...t, ids: [...t.ids] });
+const cloneToken = (t: FlaskToken): FlaskToken => ({ ...t });
 
 let uidCounter = 0;
 const uid = (): string => `tok-${Date.now()}-${uidCounter++}`;
@@ -25,18 +25,24 @@ export const determineNextReaction = (
 ): FlaskReactionState | null => {
   const allIds = visualStack
     .filter(v => !(v.isProduct && v.type === 'gas'))
-    .filter(v => v.ids && v.ids.length > 0)
-    .map(v => ({ id: v.ids[0], qty: v.quantity !== undefined ? v.quantity : 1.0 }));
+    .map(v => ({ id: v.id, qty: v.quantity !== undefined ? v.quantity : 1.0 }));
 
   if (allIds.length < 1) return null;
 
   const state = getFlaskState(allIds, labData, itemsData);
   if (!state.reactionKey) return null;
 
-  const loopCandidates = visualStack.filter(
-    v => v.isProduct && state.reactingIndices.every(reqId => v.ids && v.ids.includes(reqId))
-  );
-  const internalReaction = loopCandidates.length > 0 && !state.isEquilibrium;
+  // A reaction only counts as an "internal loop" (re-triggering off its own just-produced
+  // output) when every required reactant id is satisfied by a token that is itself that
+  // *exact same* reaction key's own unmodified output — not merely a token whose ancestry
+  // once contained that id.
+  const requiredIds = [...new Set(state.reactingIndices)];
+  const internalReaction =
+    !state.isEquilibrium &&
+    requiredIds.length > 0 &&
+    requiredIds.every(reqId =>
+      visualStack.some(v => v.isProduct && v.sourceReactionKey === state.reactionKey && String(v.id) === String(reqId))
+    );
 
   if (!internalReaction) {
     return state;
@@ -112,14 +118,11 @@ export const applyReaction = (
   }
 
   let consumed = false;
-  const consumedIds: (string | number)[] = [];
 
   const working = visualStack.map(cloneToken);
 
   working.forEach(token => {
-    const primaryId = token.ids.length > 0 ? token.ids[0] : null;
-    const matchId =
-      primaryId !== null && Math.abs(consumptionNeeds[String(primaryId)] || 0) > 0.0001 ? primaryId : null;
+    const matchId = Math.abs(consumptionNeeds[String(token.id)] || 0) > 0.0001 ? token.id : null;
 
     if (matchId !== null) {
       const needed = consumptionNeeds[String(matchId)];
@@ -140,7 +143,6 @@ export const applyReaction = (
       }
 
       consumed = true;
-      consumedIds.push(...token.ids);
     }
   });
 
@@ -158,7 +160,7 @@ export const applyReaction = (
         if (attr.type) type = attr.type;
       }
 
-      newStack.push({ ids: [id], type, color, quantity: addedQty, _uid: uid() });
+      newStack.push({ id, type, color, quantity: addedQty, _uid: uid() });
       consumed = true;
     }
   });
@@ -167,7 +169,6 @@ export const applyReaction = (
     return null;
   }
 
-  const uniqueConsumedIds = [...new Set(consumedIds)];
   const products: any[] = state.outcome || state.products || [];
   const productsToAdd = [...products];
 
@@ -192,21 +193,15 @@ export const applyReaction = (
       const pCount = prod.count || 1;
       const productQty = yieldFraction * pCount;
 
-      const compoundIds = prod.id ? [prod.id, ...uniqueConsumedIds] : [...uniqueConsumedIds];
-      const finalIds = [...new Set(compoundIds)];
+      const tokenId: string | number = prod.id ?? state.productName ?? 'Unknown Product';
 
       if (state.isEquilibrium) {
         let remainingToAdd = productQty;
         for (let i = 0; i < newStack.length; i++) {
           const v = newStack[i];
-          let isMatch = false;
-          if (v.ids) {
-            isMatch = v.ids.some(vid => {
-              let resolved: string | number = vid;
-              if (labData && labData['beaker' + vid]) resolved = labData['beaker' + vid];
-              return resolved === prod.id || String(vid) === String(prod.id);
-            });
-          }
+          let resolved: string | number = v.id;
+          if (labData && labData['beaker' + v.id]) resolved = labData['beaker' + v.id];
+          const isMatch = resolved === prod.id || String(v.id) === String(prod.id);
           if (isMatch) {
             if (remainingToAdd < 0) {
               const take = Math.min(v.quantity || 1.0, -remainingToAdd);
@@ -228,12 +223,9 @@ export const applyReaction = (
         let existingToken: FlaskToken | undefined;
         if (!state.isEquilibrium && prod.id) {
           existingToken = newStack.find(t => {
-            if (!t.ids) return false;
-            return t.ids.some(vid => {
-              let resolved: string | number = vid;
-              if (labData && labData['beaker' + vid]) resolved = labData['beaker' + vid];
-              return resolved === prod.id || String(vid) === String(prod.id);
-            });
+            let resolved: string | number = t.id;
+            if (labData && labData['beaker' + t.id]) resolved = labData['beaker' + t.id];
+            return resolved === prod.id || String(t.id) === String(prod.id);
           });
         }
 
@@ -241,12 +233,13 @@ export const applyReaction = (
           existingToken.quantity = (existingToken.quantity || 1.0) + productQty;
         } else {
           const token: FlaskToken = {
-            ids: finalIds,
+            id: tokenId,
             type: finalType,
             color: finalColor,
             isProduct: true,
             quantity: productQty,
             _uid: uid(),
+            sourceReactionKey: state.reactionKey,
           };
           newStack.push(token);
 

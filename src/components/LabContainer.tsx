@@ -161,7 +161,7 @@ export const LabContainer: React.FC<LabContainerProps> = ({
       if (v.toRemove) return;
       if (v.type === 'gas' && !v.type.includes('trapped') && !v.isProduct) return;
       const qty = v.quantity !== undefined ? v.quantity : 1.0;
-      const id = String(resolveId(v.ids[0], labData, itemsData));
+      const id = String(resolveId(v.id, labData, itemsData));
       if (id) {
         currentFlaskIds[id] = (currentFlaskIds[id] || 0) + qty;
         if (v.type && v.type !== 'liquid') flaskTypes[id] = v.type;

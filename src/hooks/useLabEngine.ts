@@ -50,6 +50,7 @@ export const useLabEngine = ({
   const currentPHRef = useRef(currentPH);
   const currentTemperatureRef = useRef(currentTemperature);
   const chainTokenRef = useRef(0); // bumped on reset so an in-flight chain can bail out
+  const isChainRunningRef = useRef(false); // guards against overlapping runReactionChain recursions
 
   useEffect(() => { visualStackRef.current = visualStack; }, [visualStack]);
   useEffect(() => { labDataRef.current = labData; }, [labData]);
@@ -103,13 +104,29 @@ export const useLabEngine = ({
     await runReactionChain(myToken);
   }, [onConditionalTrigger]);
 
+  // Guards against overlapping chains: if a chain is already in flight, a newly-added
+  // reagent doesn't need its own chain — the running chain re-reads visualStackRef fresh
+  // on each iteration and will naturally pick up the new state on its next ~1s poll.
+  const startReactionChain = useCallback(
+    async (myToken: number) => {
+      if (isChainRunningRef.current) return;
+      isChainRunningRef.current = true;
+      try {
+        await runReactionChain(myToken);
+      } finally {
+        isChainRunningRef.current = false;
+      }
+    },
+    [runReactionChain]
+  );
+
   // Debounce the reaction check to allow multiple additions in quick succession.
   const scheduleReactionCheck = useCallback(() => {
     if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
     debounceTimerRef.current = setTimeout(() => {
-      runReactionChain(chainTokenRef.current);
+      startReactionChain(chainTokenRef.current);
     }, 500);
-  }, [runReactionChain]);
+  }, [startReactionChain]);
 
   /**
    * Add a reagent to the flask, either from a lab beaker (numeric index 1-4) or
@@ -189,11 +206,15 @@ export const useLabEngine = ({
 
     let newStack = stack;
     if (colors.length > 0) {
-      const idx = stack.findIndex(t => t.ids && t.ids.includes(trueId));
+      // Merge only into a token whose OWN current identity matches — never one that
+      // merely had this id consumed into it at some earlier point in a reaction chain.
+      const idx = stack.findIndex(t => t.id === trueId);
       if (idx > -1) {
-        newStack = stack.map((t, i) => (i === idx ? { ...t, quantity: (t.quantity || 1.0) + quantity } : t));
+        newStack = stack.map((t, i) =>
+          i === idx ? { ...t, quantity: (t.quantity || 1.0) + quantity, sourceReactionKey: undefined } : t
+        );
       } else {
-        newStack = [...stack, { ids: [trueId], color: colors[0], type: itemType, quantity, _uid: `add-${Date.now()}-${Math.random()}` }];
+        newStack = [...stack, { id: trueId, color: colors[0], type: itemType, quantity, _uid: `add-${Date.now()}-${Math.random()}` }];
       }
     }
 
@@ -218,6 +239,7 @@ export const useLabEngine = ({
 
   const clearChain = useCallback(() => {
     chainTokenRef.current += 1;
+    isChainRunningRef.current = false;
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
       debounceTimerRef.current = null;
@@ -248,7 +270,7 @@ export const useLabEngine = ({
     const items = itemsDataRef.current;
 
     stack.forEach(token => {
-      const primaryId = token.ids[0];
+      const primaryId = token.id;
       if (primaryId === undefined || primaryId === null) return;
 
       const beakerKey = !isNaN(Number(primaryId)) ? 'beaker' + primaryId : null;

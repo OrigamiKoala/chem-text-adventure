@@ -103,9 +103,9 @@ export interface InventoryMap {
   [itemId: string]: number;
 }
 
-/** A single "slot" in the flask's visual stack — a group of stacked ids sharing quantity/color/type. */
+/** A single "slot" in the flask's visual stack, identified by its own current chemical id. */
 export interface FlaskToken {
-  ids: (string | number)[];
+  id: string | number;
   type: string;
   color: string;
   quantity: number;
@@ -114,6 +114,10 @@ export interface FlaskToken {
   /** Internal stable identity (not present in the original) used to track a token
    * instance across immutable state updates, e.g. for the 4s ephemeral-gas fade. */
   _uid?: string;
+  /** isProduct tokens only: the reactionEngine reactionKey that produced this token.
+   * Used only by determineNextReaction's loop-prevention check, never for identity
+   * matching. Cleared when fresh reagent is merged into the token (see addLiquid). */
+  sourceReactionKey?: string | null;
 }
 
 export type FlaskInput = string | number | { id: string | number; qty?: number };

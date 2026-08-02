@@ -25,6 +25,69 @@ const parseAttrString = (raw: any): any => {
   }
 };
 
+interface CachedReactionData {
+  labid: string;
+  reactionStr: string;
+  itemsDataRef: ItemData[];
+  reactionData: any;
+  reactionKeys: string[];
+}
+let reactionDataCache: CachedReactionData | null = null;
+
+/**
+ * Parses `labData.reaction` and merges missing product attributes from `itemsData`,
+ * memoized since this work is independent of the current flask contents but
+ * getFlaskState is called repeatedly (up to 3x per chain tick) with the same labData.
+ */
+const getParsedReactionData = (labData: LabData, itemsData: ItemData[]): CachedReactionData | null => {
+  if (
+    reactionDataCache &&
+    reactionDataCache.labid === labData.labid &&
+    reactionDataCache.reactionStr === labData.reaction &&
+    reactionDataCache.itemsDataRef === itemsData
+  ) {
+    return reactionDataCache;
+  }
+
+  const reactionData = parseAttrString(labData.reaction);
+  if (!reactionData) return null;
+
+  // Merge missing attributes from itemsData into every product definition
+  Object.values(reactionData).forEach((out: any) => {
+    const outArr = Array.isArray(out) ? out : [out];
+    outArr.forEach((prod: any) => {
+      if (prod && prod.id) {
+        const cleanId = cleanTeX(prod.id);
+        const cleanName = stripHtml(prod.id);
+        const itemDef = itemsData.find(i => {
+          const iId = i.id;
+          const iName = i.name ? stripHtml(i.name) : '';
+          return (
+            iId === prod.id ||
+            iName === prod.id ||
+            cleanTeX(iId) === cleanId ||
+            iName === cleanName
+          );
+        });
+        if (itemDef && itemDef.attributes) {
+          const attr = parseAttrString(itemDef.attributes);
+          if (attr) {
+            Object.keys(attr).forEach(k => {
+              if (prod[k] === undefined) prod[k] = attr[k];
+            });
+          }
+        }
+      }
+    });
+  });
+
+  // Iterate all defined reactions, prioritizing more "complex" keys first
+  const reactionKeys = Object.keys(reactionData).sort((a, b) => b.length - a.length);
+
+  reactionDataCache = { labid: labData.labid, reactionStr: labData.reaction!, itemsDataRef: itemsData, reactionData, reactionKeys };
+  return reactionDataCache;
+};
+
 /**
  * Resolve attributes for either a beaker index (number, or numeric-string "1".."4")
  * or an item/product id, checking Inventory items first, then the active lab's beakers.
@@ -201,40 +264,11 @@ export const getFlaskState = (
   let reactingIndices: (string | number)[] = [];
 
   if (labData && labData.reaction && indices.length >= 1) {
-    reactionData = parseAttrString(labData.reaction);
+    const cached = getParsedReactionData(labData, itemsData);
+    reactionData = cached ? cached.reactionData : null;
 
     if (reactionData) {
-      // Merge missing attributes from itemsData into every product definition
-      Object.values(reactionData).forEach((out: any) => {
-        const outArr = Array.isArray(out) ? out : [out];
-        outArr.forEach((prod: any) => {
-          if (prod && prod.id) {
-            const cleanId = cleanTeX(prod.id);
-            const cleanName = stripHtml(prod.id);
-            const itemDef = itemsData.find(i => {
-              const iId = i.id;
-              const iName = i.name ? stripHtml(i.name) : '';
-              return (
-                iId === prod.id ||
-                iName === prod.id ||
-                cleanTeX(iId) === cleanId ||
-                iName === cleanName
-              );
-            });
-            if (itemDef && itemDef.attributes) {
-              const attr = parseAttrString(itemDef.attributes);
-              if (attr) {
-                Object.keys(attr).forEach(k => {
-                  if (prod[k] === undefined) prod[k] = attr[k];
-                });
-              }
-            }
-          }
-        });
-      });
-
-      // Iterate all defined reactions, prioritizing more "complex" keys first
-      const reactionKeys = Object.keys(reactionData).sort((a, b) => b.length - a.length);
+      const reactionKeys = cached!.reactionKeys;
 
       for (const key of reactionKeys) {
         if (excludeKey && key === excludeKey) continue;
