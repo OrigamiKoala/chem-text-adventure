@@ -41,12 +41,7 @@ export const Header: React.FC<HeaderProps> = ({
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           title="Chemistry Text Adventure"
         >
-          <div
-            className="w-10 h-10 rounded-full bg-[#E4F5DA] text-[#2E7D46] flex items-center justify-center text-xl shrink-0 font-display"
-            style={{ width: '40px', height: '40px' }}
-          >
-            🧪
-          </div>
+          <div className="header-badge">🧪</div>
           <div className="brand-text-group">
             <h1>Chem CYOA</h1>
             <p>Interactive Text Adventure</p>

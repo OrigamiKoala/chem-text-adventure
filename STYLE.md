@@ -36,22 +36,15 @@ by any component.
 
 In place of the parent mark, the app has its own small lockup in
 `Header.tsx` (`.header-brand`, `style.css` ~L223): a 🧪 emoji on a
-`--tr-mint` circle, next to the wordmark **"Chem CYOA"** (`h1`, Baloo 2
-bold) with the subtitle **"Interactive Text Adventure"** (`p`, Baloo 2
-bold, `--tr-leaf` / `--tr-forest` in dark mode). Treat this as the sub-brand for
-this specific product — keep it if you touch the header; don't try to
-retrofit the turtle logo in without checking with whoever owns the parent
-site's brand guide first, since `TurtleRockLogo.tsx` doesn't exist in this
-codebase at all.
-
-**Known gap:** `Header.tsx` L45 has a stray Tailwind-style class string
-(`"w-10 h-10 rounded-full bg-[#E4F5DA] text-[#2E7D46] ..."`) left over from
-copying a pattern out of the Tailwind-based main site. **This repo has no
-Tailwind** — that class does nothing; the emoji badge's actual sizing comes
-from the inline `style={{ width: '40px', height: '40px' }}` next to it. Not
-a visible bug today (the inline style covers it), but don't copy that class
-string as a pattern — if you touch that element, replace it with a real
-class in `style.css` instead.
+`.header-badge` circle (`--bg-subtle` fill, `--tr-forest` glyph color — the
+same theme-aware Mint/Forest pairing as `.item-count-badge`), next to the
+wordmark **"Chem CYOA"** (`h1`, Baloo 2 bold) with the subtitle
+**"Interactive Text Adventure"** (`p`, Baloo 2 bold, `--tr-leaf` /
+`--tr-forest` in dark mode). Treat this as the sub-brand for this specific
+product — keep it if you touch the header; don't try to retrofit the
+turtle logo in without checking with whoever owns the parent site's brand
+guide first, since `TurtleRockLogo.tsx` doesn't exist in this codebase at
+all.
 
 ---
 
@@ -74,9 +67,8 @@ the main site's, see §2.2.
 | `--tr-leaf` | `#4C9A3A` | Green button "shelf" shadow, header subtitle (light mode), dot-pattern tint |
 | `--tr-forest` | `#2E7D46` | Link color, narrator/game chat bubble text, item-count badge text |
 | `--tr-deep-leaf` | `#14351F` | Label color on green fills (buttons, chat bubble, choice badge) |
-| `--tr-mint` | `#E4F5DA` | Header brand-badge fill, outline drawer, item-count badge fill, HP track |
+| `--tr-mint` | `#E4F5DA` | `--bg-subtle` value (header badge, outline drawer, item-count badge, HP track) |
 | `--tr-cream` | `#FBF7EC` | Page background (`--bg-page`) |
-| `--tr-deep-cream` | `#F3F0E4` | *Defined, currently unused in this repo's CSS* |
 | `--tr-white` | `#ffffff` | Cards (`--bg-card`), modal headers |
 | `--tr-gold` | `#F2C94C` | Stat-value pill fill, item-qty badge, HP bar (low-mid) |
 | `--tr-gold-ink` | `#4A3900` | Item-qty badge text |
@@ -458,7 +450,7 @@ bench stays dark-only; anything in the card chrome around it should read
 4. Copy is sentence case (Title Case for buttons/headings), second person,
    short, and matches the plain, honest tone in §9.
 5. No Tailwind classes — this repo doesn't have the dependency; write a
-   real class in `style.css` instead (see the known gap in §1).
+   real class in `style.css` instead.
 6. Checked in both themes (the lab bench stays dark in both, on purpose —
    §10).
 7. `npm run build` (`tsc && vite build`) passes — there's no separate lint

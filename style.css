@@ -20,7 +20,6 @@
   --tr-deep-leaf: #14351F;
   --tr-mint: #E4F5DA;
   --tr-cream: #FBF7EC;
-  --tr-deep-cream: #F3F0E4;
   --tr-white: #ffffff;
   --tr-gold: #F2C94C;
   --tr-gold-ink: #4A3900;
@@ -229,6 +228,20 @@ input:focus, select:focus, textarea:focus, button:focus-visible {
   border: none;
   padding: 0;
   text-align: left;
+}
+
+.header-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 9999px;
+  background-color: var(--bg-subtle);
+  color: var(--tr-forest);
+  font-family: var(--font-display);
+  font-size: 1.25rem;
 }
 
 .brand-text-group h1 {
