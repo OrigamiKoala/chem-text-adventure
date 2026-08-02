@@ -299,7 +299,7 @@ export const LabContainer: React.FC<LabContainerProps> = ({
                   {(b.type === 'gas' || b.type === 'trapped_gas') && (
                     <CloudSvg
                       color={b.color}
-                      style={{ position: 'absolute', bottom: '50%', left: '-10%', width: '120%', height: 140, zIndex: 3, opacity: 0.9, pointerEvents: 'none' }}
+                      style={{ position: 'absolute', bottom: '25%', left: '-5%', width: '110%', height: 100, zIndex: 3, opacity: 0.9, pointerEvents: 'none' }}
                     />
                   )}
                   {b.type !== 'solid' && b.type !== 'gas' && b.type !== 'trapped_gas' && (
