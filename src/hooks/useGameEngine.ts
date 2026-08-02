@@ -290,37 +290,33 @@ export const useGameEngine = () => {
       },
     });
 
-    if (lastProcessedIdRef.current !== currentId) {
-      lastProcessedIdRef.current = currentId;
+    const chunks = parseDivChunks(cleanText);
+    const newMessages: ChatMessage[] = chunks.map((chunk, idx) => ({
+      id: `narration-${currentId}-${idx}-${Date.now()}`,
+      sender: 'game',
+      text: chunk,
+      timestamp: Date.now() + idx,
+      nodeId: currentId,
+    }));
 
-      const chunks = parseDivChunks(cleanText);
-      const newMessages: ChatMessage[] = chunks.map((chunk, idx) => ({
-        id: `narration-${currentId}-${idx}-${Date.now()}`,
-        sender: 'game',
-        text: chunk,
-        timestamp: Date.now() + idx,
-        nodeId: currentId,
-      }));
+    setChatLog(prev => [...prev, ...newMessages]);
 
-      setChatLog(prev => [...prev, ...newMessages]);
+    // If this is a roll node, execute roll automatically
+    if (currentNode.roll || currentNode.type === 'roll') {
+      const rollStr = currentNode.roll || 'roll("1d20")';
+      const res = parseAndExecuteRoll(rollStr, (diceType, statName, dc, advantage) =>
+        rollDice(diceType, statName as keyof PlayerStats, dc, advantage)
+      );
 
-      // If this is a roll node, execute roll automatically
-      if (currentNode.roll || currentNode.type === 'roll') {
-        const rollStr = currentNode.roll || 'roll("1d20")';
-        const res = parseAndExecuteRoll(rollStr, (diceType, statName, dc, advantage) =>
-          rollDice(diceType, statName as keyof PlayerStats, dc, advantage)
-        );
+      if (res) {
+        const targetNext = (res.passed !== false)
+          ? currentNode.success || currentNode.next
+          : currentNode.fail || currentNode.next;
 
-        if (res) {
-          const targetNext = (res.passed !== false)
-            ? currentNode.success || currentNode.next
-            : currentNode.fail || currentNode.next;
-
-          if (targetNext) {
-            setTimeout(() => {
-              jumpTo(targetNext);
-            }, 1200);
-          }
+        if (targetNext) {
+          setTimeout(() => {
+            jumpTo(targetNext);
+          }, 1200);
         }
       }
     }
