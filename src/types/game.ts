@@ -51,10 +51,19 @@ export interface ItemData {
   [key: string]: any;
 }
 
+export interface LabData {
+  labid: string;
+  reaction?: string;
+  solidcolor?: string;
+  temp?: string | number;
+  [key: string]: any; // beaker1..N, attributes1..N
+}
+
 export interface FullGameData {
   narrative_nodes: NarrativeNode[];
   active_narrative_outline?: OutlineItem[];
   items?: ItemData[];
+  labs?: LabData[];
   [key: string]: any;
 }
 
@@ -90,45 +99,44 @@ export interface RollResult {
   rollType: 'Normal' | 'Advantage' | 'Disadvantage';
 }
 
-export interface BeakerItem {
-  id: string;
-  name: string;
-  color: string;
-  type: string; // 'liquid' | 'solid' | 'gas'
-  qty: number; // in moles or L
-  ph?: number;
-  M?: number;
-}
-
-export interface FlaskLiquidLayer {
-  id: string;
-  name: string;
-  color: string;
-  volumePercent: number;
-  moles: number;
-  ph?: number;
-}
-
-export interface LabFlaskState {
-  liquids: FlaskLiquidLayer[];
-  solid?: {
-    type: string;
-    color: string;
-    name?: string;
-  } | null;
-  gas?: {
-    type: string;
-    color: string;
-    isProductGas?: boolean;
-    bubbleColor?: string;
-  } | null;
-  temperature: number; // Kelvin or Celsius (default ~298.15K)
-  pressure: number; // atm
-  totalVolume: number; // Liters
-  pH: number;
-  moles: number;
-}
-
 export interface InventoryMap {
   [itemId: string]: number;
+}
+
+/** A single "slot" in the flask's visual stack — a group of stacked ids sharing quantity/color/type. */
+export interface FlaskToken {
+  ids: (string | number)[];
+  type: string;
+  color: string;
+  quantity: number;
+  isProduct?: boolean;
+  toRemove?: boolean;
+  /** Internal stable identity (not present in the original) used to track a token
+   * instance across immutable state updates, e.g. for the 4s ephemeral-gas fade. */
+  _uid?: string;
+}
+
+export type FlaskInput = string | number | { id: string | number; qty?: number };
+
+/** Result of matching flask contents against a lab's `reaction` rules (mirrors original getFlaskState). */
+export interface FlaskReactionState {
+  ph: number;
+  temp: number;
+  reactionName: string;
+  visualColors: string[];
+  productType: string | null;
+  productColor?: string;
+  productName?: string;
+  reactionKey: string | null;
+  reactingIndices: (string | number)[];
+  limitingYield: number;
+  isEquilibrium: boolean;
+  direction: string;
+  K: number | null;
+  outcome: any;
+  products?: any[];
+  script?: string;
+  triggerConditional?: boolean;
+  reactantList?: string[];
+  productList?: string[];
 }

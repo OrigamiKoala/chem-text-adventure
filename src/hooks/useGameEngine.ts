@@ -7,7 +7,6 @@ import {
   ChatMessage,
   InventoryMap,
   RollResult,
-  LabFlaskState,
 } from '../types/game';
 import { generateStatsTo72, executeRoll } from '../engine/diceEngine';
 import {
@@ -17,10 +16,11 @@ import {
   safeTypeset,
   parseDivChunks,
   processTextScripts,
+  executeItemScript,
   extractOptionsAndCleanText,
   parseAndExecuteRoll,
 } from '../engine/textParser';
-import { computeFlaskState } from '../engine/reactionEngine';
+import { useLabEngine } from './useLabEngine';
 import rawData from '../../data.json';
 
 const SAVE_KEY = 'chem_adventure_save_v2';
@@ -32,7 +32,6 @@ interface SavedGameState {
   playerStats: PlayerStats;
   inventory: InventoryMap;
   chatLog: ChatMessage[];
-  flaskContents: string[];
   currentLab?: string;
 }
 
@@ -73,7 +72,7 @@ export const useGameEngine = () => {
   const [inventory, setInventory] = useState<InventoryMap>(
     () => savedState.current?.inventory || {}
   );
-  const [itemsData] = useState<ItemData[]>(gameData.items || []);
+  const [itemsData, setItemsData] = useState<ItemData[]>(gameData.items || []);
   const [helpText, setHelpText] = useState<string>('');
 
   const [chatLog, setChatLog] = useState<ChatMessage[]>(
@@ -82,15 +81,9 @@ export const useGameEngine = () => {
   const [activeRoll, setActiveRoll] = useState<RollResult | null>(null);
 
   const [currentLab, setCurrentLab] = useState<string>(
-    () => savedState.current?.currentLab || 'default'
+    () => savedState.current?.currentLab || 'reactions'
   );
-
-  const [flaskContents, setFlaskContents] = useState<string[]>(
-    () => savedState.current?.flaskContents || []
-  );
-  const [labFlaskState, setLabFlaskState] = useState<LabFlaskState>(
-    computeFlaskState(savedState.current?.flaskContents || [], gameData.items || [])
-  );
+  const [conditionalMet, setConditionalMet] = useState<boolean>(false);
 
   const [isInventoryModalOpen, setIsInventoryModalOpen] = useState<boolean>(false);
   const [isPeriodicTableOpen, setIsPeriodicTableOpen] = useState<boolean>(false);
@@ -108,14 +101,13 @@ export const useGameEngine = () => {
         playerStats,
         inventory,
         chatLog,
-        flaskContents,
         currentLab,
       };
       localStorage.setItem(SAVE_KEY, JSON.stringify(stateToSave));
     } catch (err) {
       console.warn('Failed to save game state:', err);
     }
-  }, [currentId, historyStack, playerHP, playerStats, inventory, chatLog, flaskContents, currentLab]);
+  }, [currentId, historyStack, playerHP, playerStats, inventory, chatLog, currentLab]);
 
   // Preload help text
   useEffect(() => {
@@ -183,6 +175,54 @@ export const useGameEngine = () => {
       };
     });
   }, []);
+
+  // Registers a newly-formed reaction product as an item, if not already known
+  // (mirrors the original pushing auto-generated item defs into window.itemsData).
+  const registerItem = useCallback((item: ItemData) => {
+    setItemsData(prev => (prev.some(i => i.id === item.id) ? prev : [...prev, item]));
+  }, []);
+
+  const currentLabData = gameData.labs?.find(l => l.labid === currentLab);
+
+  const lab = useLabEngine({
+    labData: currentLabData,
+    itemsData,
+    registerItem,
+    inventory,
+    addItemToInventory,
+    removeItemFromInventory,
+    isLabVisible,
+    onConditionalTrigger: () => setConditionalMet(true),
+  });
+
+  // Mirrors window.useItem: if the lab is open, using an item adds it to the flask;
+  // otherwise it runs the item's own script (e.g. changeHP(-20)) and is consumed.
+  const useItem = useCallback(
+    (itemId: string) => {
+      if (isLabVisible) {
+        lab.useItemInLab(itemId);
+        return;
+      }
+      const item = itemsData.find(i => i.id === itemId);
+      if (item && inventory[itemId] > 0) {
+        if (item.script) {
+          executeItemScript(item.script, {
+            changeHP,
+            setHP: (hp: number) => setPlayerHP(Math.min(maxHP, Math.max(0, hp))),
+            setHPLossRate: (rate: number) => setHpLossRate(rate),
+            modifyStat: (statName: string, val: number, isRelative: boolean) => {
+              modifyStat(statName.toUpperCase() as keyof PlayerStats, val, isRelative);
+            },
+            pickup: (name: string) => addItemToInventory(name, 1),
+            removeInventory: (name: string, qty?: string | number) =>
+              removeItemFromInventory(name, qty === 'all' ? 999 : Number(qty) || 1),
+          });
+        }
+        removeItemFromInventory(itemId, 1);
+      }
+    },
+    [isLabVisible, lab, itemsData, inventory, changeHP, maxHP, modifyStat, addItemToInventory, removeItemFromInventory]
+  );
 
   // Jump to Node
   const jumpTo = useCallback((nodeId: string) => {
@@ -283,44 +323,6 @@ export const useGameEngine = () => {
       }
     }
   }, [currentId, currentNode, changeHP, addItemToInventory, removeItemFromInventory, modifyStat, maxHP, rollDice, jumpTo]);
-
-  // Flask / Lab simulation operations
-  const addLiquidToFlask = useCallback(
-    (itemId: string) => {
-      setFlaskContents(prev => {
-        const updated = [...prev, itemId];
-        setLabFlaskState(computeFlaskState(updated, itemsData));
-        return updated;
-      });
-    },
-    [itemsData]
-  );
-
-  const resetFlask = useCallback(() => {
-    setFlaskContents([]);
-    setLabFlaskState(computeFlaskState([], itemsData));
-  }, [itemsData]);
-
-  const mixFlask = useCallback(() => {
-    setLabFlaskState(prev => ({
-      ...prev,
-      pH: Math.max(0, Math.min(14, prev.pH + (Math.random() * 0.2 - 0.1))),
-    }));
-  }, []);
-
-  const heatFlask = useCallback(() => {
-    setLabFlaskState(prev => ({
-      ...prev,
-      temperature: prev.temperature + 10,
-    }));
-  }, []);
-
-  const coolFlask = useCallback(() => {
-    setLabFlaskState(prev => ({
-      ...prev,
-      temperature: Math.max(273.15, prev.temperature - 10),
-    }));
-  }, []);
 
   // Submit Answer / Player Input Logic
   const handleInput = useCallback(
@@ -458,7 +460,6 @@ export const useGameEngine = () => {
     setPlayerStats(generateStatsTo72());
     setInventory({});
     setChatLog([]);
-    setFlaskContents([]);
   }, []);
 
   return {
@@ -473,25 +474,31 @@ export const useGameEngine = () => {
     itemsData,
     chatLog,
     activeRoll,
-    flaskContents,
-    labFlaskState,
     isInventoryModalOpen,
     isPeriodicTableOpen,
     periodicTableVersion,
     isOutlineOpen,
     isLabVisible,
     currentLab,
+    currentLabData,
+    conditionalMet,
     setCurrentLab,
     changeHP,
     addItemToInventory,
     removeItemFromInventory,
     jumpTo,
     rollDice,
-    addLiquidToFlask,
-    resetFlask,
-    mixFlask,
-    heatFlask,
-    coolFlask,
+    useItem,
+    // Lab flask engine (visualStack-based; see useLabEngine)
+    visualStack: lab.visualStack,
+    currentPH: lab.currentPH,
+    currentTemperature: lab.currentTemperature,
+    currentReactionName: lab.currentReactionName,
+    currentProductName: lab.currentProductName,
+    flaskActive: lab.flaskActive,
+    addLiquid: lab.addLiquid,
+    resetFlask: lab.resetFlask,
+    addFlaskToInventory: lab.addFlaskToInventory,
     handleInput,
     restartGame,
     setIsInventoryModalOpen,
