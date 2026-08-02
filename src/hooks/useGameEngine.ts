@@ -260,11 +260,13 @@ export const useGameEngine = () => {
     [playerStats]
   );
 
-  const lastProcessedIdRef = useRef<string | null>(null);
+  const lastProcessedIdRef = useRef<string | null>(savedState.current?.currentId ?? null);
 
   // Process embedded <script> tags and append narration messages to chat log when currentNode changes
   useEffect(() => {
     if (!currentNode?.text) return;
+    if (lastProcessedIdRef.current === currentId) return;
+    lastProcessedIdRef.current = currentId;
 
     const { cleanText: textNoOptions } = extractOptionsAndCleanText(currentNode);
     const { cleanText } = processTextScripts(textNoOptions, {
