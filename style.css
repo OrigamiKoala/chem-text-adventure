@@ -84,6 +84,22 @@ body {
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
+/* Links */
+a {
+  color: var(--tr-forest);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.15s ease;
+}
+
+a:hover {
+  color: var(--tr-club-green);
+}
+
+a:visited {
+  color: var(--tr-forest);
+}
+
 /* Background Patterns */
 .bg-dot-pattern {
   background-size: 20px 20px;
