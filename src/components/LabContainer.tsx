@@ -273,16 +273,6 @@ export const LabContainer: React.FC<LabContainerProps> = ({
 
   return (
     <section className="lab-host-card" ref={rootRef}>
-      <div className="lab-header-strip">
-        <div>
-          <h3 className="lab-title">
-            <span>🧪</span> Lab
-          </h3>
-        </div>
-        <div className="lab-close-btn" onClick={onClose} title="Close Lab">
-          &#10006;
-        </div>
-      </div>
 
       <div className="lab-table">
         <div className={`lab-item flask ${flaskActive ? 'flask-active' : ''}`}>
