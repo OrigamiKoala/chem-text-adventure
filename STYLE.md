@@ -1,697 +1,465 @@
-# Turtle Rock Science Club — Brand & Style Guide
+# Chem CYOA — Style Guide
 
-The visual and verbal rules for **trscienceclub.org**. This is a description of
-what the site *already does*, written down so it stays consistent. Everything
-here was read off the live source (`src/`, `newsletter/`); where a rule has a
-known exception or a known gap, it says so rather than pretending.
+Visual and verbal rules for this repo (`chem-text-adventure`, deployed at
+chem.trscienceclub.org). This file was ported from the main site's
+`STYLE.md` to keep the **Turtle Rock Science Club brand constant** across
+properties — but this app is a separate, much smaller codebase (plain CSS,
+no Tailwind, no component library, no router), so the *implementation*
+half of that guide didn't apply here. This version was rewritten by reading
+this repo's actual source (`style.css`, `index.html`, `src/`); where a rule
+carries over from the brand, it says so, and where this app deliberately
+does its own thing, it says that instead.
 
-**Who we're talking to.** Elementary school students and their guardians, plus
-the middle/high-school coaches who run sessions. Two audiences at once: the
-site has to look inviting to a nine-year-old and credible to their parent. That
-tension explains almost every choice below — rounded shapes and a cartoon
-turtle, but real science, honest numbers, and no baby talk.
+**Who we're talking to.** Students working through a choose-your-own-adventure
+chemistry course — same "curiosity is welcome here" audience as the main
+site, but here it's the player directly, not a parent scanning a landing
+page. Copy can be a little more playful and game-y as a result (see §7,
+§9).
 
-**The one-line brand.** *Curiosity is welcome here.* Friendly, warm, hands-on,
-and quietly serious about the science.
+**The one-line brand.** *Curiosity is welcome here.* Friendly, warm,
+hands-on, and quietly serious about the science. Unchanged from the parent
+brand.
 
 ---
 
-## 1. The mark
+## 1. The mark & name
 
-`public/Logo.png` — a cartoon sea turtle whose shell is a domed beaker of
-bubbling green liquid, set inside the ellipses of an atom, with **TURTLE ROCK**
-arced above in chunky teal caps and *science club* curved below. Yellow-green
-electrons sit on the orbit paths. Sticker-style: thick dark outlines, a white
-keyline, flat fills.
+This app does **not** render the Turtle Rock turtle logo anywhere in the
+UI, and the "Turtle Rock Science Club" name doesn't appear in any narrative
+content or UI chrome either — confirmed by grep, it's zero hits outside the
+CNAME/README hosting references. The org's assets are present but idle:
+`Logo.png` and `favicon.ico` sit in `public/` (copied verbatim to the site
+root by Vite's `publicDir`), and `favicon.ico` is the only one actually
+live — picked up by the browser's default `/favicon.ico` request since
+`index.html` has no explicit `<link rel="icon">`. `Logo.png` is unreferenced
+by any component.
 
-It is the only logo. There is no wordmark-only lockup, no monochrome variant,
-no alternate mascot.
+In place of the parent mark, the app has its own small lockup in
+`Header.tsx` (`.header-brand`, `style.css` ~L223): a 🧪 emoji on a
+`--tr-mint` circle, next to the wordmark **"Chem CYOA"** (`h1`, Baloo 2
+bold) with the subtitle **"Interactive Text Adventure"** (`p`, Baloo 2
+bold, `--tr-leaf` / `--tr-forest` in dark mode). Treat this as the sub-brand for
+this specific product — keep it if you touch the header; don't try to
+retrofit the turtle logo in without checking with whoever owns the parent
+site's brand guide first, since `TurtleRockLogo.tsx` doesn't exist in this
+codebase at all.
 
-**Rendering it.** Always through `TurtleRockLogo.tsx`, never a raw `<img>`.
-
-| Prop | Use |
-|---|---|
-| `hideText` | Circular crop that zooms past the ring of text to the turtle + beaker. For small sizes where the arced type would be unreadable. |
-| default | The full badge with its lettering. |
-
-Sizes in use: **44px** (header, cropped), **36px** (footer, cropped), **150px**
-(hero, full). Keep to that pattern — cropped below ~64px, full above.
-
-**Rules.**
-
-- The asset lives in `public/` and *must* be addressed as
-  `` `${import.meta.env.BASE_URL}Logo.png` ``. A hardcoded `/Logo.png` resolves
-  against the domain root and breaks under any non-root `base`.
-- Don't recolor, add drop shadows, place it on a busy photo, or set it on a
-  mid-green background — the logo's own greens stop separating. Cream, white,
-  and deep teal are the safe backdrops.
-- Don't stretch: width and height are always equal.
-- It's decorative in the header (paired with the visible wordmark) and carries
-  the alt text `Turtle Rock Science Club Logo` / `… Icon` elsewhere.
-
-**Written name.** "Turtle Rock Science Club" on first use, **TRSC** acceptable
-after. Never "TRSC Club", never "the Turtle Rock club", never lowercase
-"turtle rock".
+**Known gap:** `Header.tsx` L45 has a stray Tailwind-style class string
+(`"w-10 h-10 rounded-full bg-[#E4F5DA] text-[#2E7D46] ..."`) left over from
+copying a pattern out of the Tailwind-based main site. **This repo has no
+Tailwind** — that class does nothing; the emoji badge's actual sizing comes
+from the inline `style={{ width: '40px', height: '40px' }}` next to it. Not
+a visible bug today (the inline style covers it), but don't copy that class
+string as a pattern — if you touch that element, replace it with a real
+class in `style.css` instead.
 
 ---
 
 ## 2. Color
 
-The palette is deliberately small: a deep teal ink, a leafy green, a warm cream
-page, and gold for reward moments. Everything else is a tint of those.
+The palette is **the same brand palette**, unchanged — this is the one
+thing that must not drift between properties. It's implemented here as CSS
+custom properties in `style.css` `:root` (not Tailwind arbitrary-value
+classes), which is a meaningfully different — and simpler — mechanism than
+the main site's, see §2.2.
 
-### 2.1 Core palette
+### 2.1 Core palette (as CSS custom properties, `style.css` L14–29)
 
-| Hex | Name | Role | Dark-mode value |
-|---|---|---|---|
-| `#1F3A42` | **Deep Teal** (ink) | Primary text, borders (at low alpha), modal scrims, dark solid buttons/chips, avatar tile | `#E7EDE9` as *text*; stays `#1F3A42` as a *background* |
-| `#4B6169` | **Slate** | Secondary/body text, metadata rows, icon strokes in meta | `#93A6A0` |
-| `#9AA6A6` | **Faint** | Timestamps, placeholders, empty-state icons, fine print | `#67807A` |
-| `#6CC24A` | **Club Green** | Primary button fill, progress fill, avatar circle, focus ring, success accents | unchanged |
-| `#4C9A3A` | **Leaf** | The 3–4px hard "shelf" shadow under green buttons; small eyebrow labels; inline link cues | unchanged (no override — see §2.5) |
-| `#2E7D46` | **Forest** | Green *text* — success copy, active nav label, "Read Entry →" | `#8FE07A` |
-| `#14351F` | **Deep Leaf** | Label color *on* green fills. Never on a light background. | unchanged, intentionally |
-| `#E4F5DA` | **Mint** | Active nav pill, badge icon tiles, success chips, progress track | `rgba(108,194,74,0.18)` |
-| `#FBF7EC` | **Cream** | Page background, modal body, toast | `#12181A` |
-| `#F3F0E4` | **Deep Cream** | Footer background | `#0D1213` |
-| `#ffffff` | **White** | Cards, inputs, modal headers | `#1B2426` |
-| `#F2C94C` | **Gold** | XP / trophy / ticket / lock icons, level-up chrome, "UNLOCKED" chip | unchanged |
-| `#4A3900` | **Gold ink** | Label on gold fills | unchanged |
-| `#B8860B` | **Dark gold** | Level-up headline only | unchanged |
-| `#E4574B` | **Alert Red** | "Sold Out" chip only | unchanged |
-| `#CFF2E0` | **Seafoam** | One decorative hero blob | unchanged |
-| `#14282e` | **Teal pressed** | Hover/shelf for the dark solid button | unchanged |
-
-Supporting one-offs: `#2D525D`, `#142B32`, `#A8E090`, `#064e3b`, `#043629`,
-`#F3F0E4`, `#FEF3C7`, `#92400E` — decorative gradients and a couple of
-game-adjacent accents. Don't grow this list without a reason.
-
-### 2.2 Semantic assignments
-
-- **Primary action** — Club Green fill, Deep Leaf label, Leaf shelf shadow.
-- **Secondary action** — white fill, ink label, `border-[#1F3A42]/15`.
-- **Tertiary / dismiss** — no fill, Slate label, underline or hover-ink.
-- **High-emphasis dark action** — Deep Teal fill, white label, `#14282e` shelf.
-  Used sparingly (the "Got it" confirm, the official-document link).
-- **Success** — Forest text on Mint, or a Club Green check icon.
-- **Warning / scarcity** — Gold fill with Gold-ink label (`< 5 spots left`).
-- **Error** — Alert Red for the Sold Out chip; Tailwind `red-500/600` with
-  `red-50` / `red-200` for form errors. (Two reds coexist; form errors are the
-  Tailwind one.)
-- **Reward** — Gold, always. XP, levels, badges, trophies, tickets.
-
-### 2.3 Backgrounds and depth
-
-Page is Cream with a **dot pattern** (`.bg-dot-pattern`, 20px grid of
-`rgba(76,154,58,0.10)` dots). A `.bg-grid-pattern` also exists
-(30px, `rgba(31,58,66,0.05)` lines) for panels. Cards sit on top as **white**.
-The footer drops to Deep Cream. Modals reverse it: **white header, Cream body**.
-
-Depth ladder, lightest to heaviest: cream page → white card → ink-tinted border
-→ soft ambient shadow → hard green shelf (interactive only) → `shadow-2xl`
-(modals and toasts only).
-
-### 2.4 Borders
-
-Borders are structural here, not hairlines. **`border-2` is the default** —
-`border` (1px) appears essentially only inside the always-dark games.
-
-Alpha ladder on Deep Teal, in order of how often it's used:
-
-| Token | Use |
-|---|---|
-| `/8` | Card borders, section dividers, modal header rule |
-| `/10` | Header/footer rules, panel borders, dashed dividers |
-| `/12` | **Form inputs**, dashed empty-state borders |
-| `/15` | Secondary button borders, card hover state |
-| `/20` | Profile chip hover |
-| `/5` | Image-to-body seams inside cards |
-
-Hover convention: bump the border one rung (`/8` → `/15`) and/or wash the
-surface with `hover:bg-[#1F3A42]/5`.
-
-### 2.5 Dark mode — read this before adding a color
-
-Dark mode is implemented in `src/index.css` as `:root.dark` overrides
-(`!important`) on the site's hardcoded `bg-[#hex]` / `text-[#hex]` classes. The
-rules are **enumerated one hex at a time**.
-
-> **A new `text-[#hex]` that isn't in that list renders identically in both
-> themes** — which usually means dark text on a dark background.
-
-So: reuse `text-[#1F3A42]` / `text-[#4B6169]` / `text-[#9AA6A6]` /
-`text-[#2E7D46]` and `bg-[#FBF7EC]` / `bg-white` / `bg-[#E4F5DA]` /
-`bg-[#F3F0E4]`, or add the override alongside the new color. `text-[#14351F]`
-is deliberately *not* flipped — it's the dark label on green buttons.
-
-Two known live consequences:
-
-- **`text-[#4C9A3A]` has no override.** It's the header's "Science Club"
-  subtitle, the "Virtual Lab" eyebrow, the dashboard's scientist title, and the
-  Read Entry cue. On the dark card (`#1B2426`) it measures **4.51:1** — passes
-  AA for normal text, but it's the weakest brand color in dark mode. Prefer
-  `text-[#2E7D46]` (→ `#8FE07A`, 9.88:1) for anything that must be legible.
-- **`dark:` utilities don't follow the toggle.** This is Tailwind v4 with no
-  `@custom-variant dark` declared, so `dark:*` compiles to
-  `@media (prefers-color-scheme: dark)` while the `.dark` class overrides
-  follow the button. There are ~70 `dark:` utilities in the codebase
-  (`LabLogAnnouncements`, `CuratedResources` category chips). A visitor on a
-  light OS who toggles dark gets the `.dark` overrides but *not* those. New
-  work should use the enumerated-override mechanism, not `dark:`.
-
-### 2.6 Measured contrast
-
-Computed on the actual pairs the site renders (WCAG 2.1):
-
-| Pair | Ratio | |
+| Variable | Hex | Role here |
 |---|---|---|
-| `#1F3A42` on `#ffffff` | 12.05 | ✅ |
-| `#1F3A42` on `#FBF7EC` | 11.26 | ✅ |
-| `#4B6169` on `#ffffff` | 6.54 | ✅ |
-| `#4B6169` on `#FBF7EC` | 6.11 | ✅ |
-| `#14351F` on `#6CC24A` (button label) | 6.06 | ✅ |
-| `#2E7D46` on `#ffffff` | 5.07 | ✅ |
-| `#4A3900` on `#F2C94C` | 7.05 | ✅ |
-| `#2E7D46` on `#E4F5DA` (success chip) | 4.44 | ⚠️ AA normal text only at ≥14px bold / passes large |
-| `#4C9A3A` on `#ffffff` | 3.51 | ⚠️ **large/bold text only** |
-| `#ffffff` on `#E4574B` (Sold Out) | 3.64 | ⚠️ large/bold only — it *is* bold 10px, so treat as decorative-with-redundant-label |
-| `#9AA6A6` on `#ffffff` | 2.51 | ❌ decorative / non-essential text only |
-| Dark: `#E7EDE9` on `#1B2426` | 13.33 | ✅ |
-| Dark: `#93A6A0` on `#1B2426` | 6.18 | ✅ |
-| Dark: `#8FE07A` on `#1B2426` | 9.88 | ✅ |
-| Dark: `#67807A` on `#1B2426` | 3.73 | ⚠️ fine print only |
+| `--tr-deep-teal` | `#1F3A42` | Primary text (`--text-main`), header/close-button hover text |
+| `--tr-slate` | `#4B6169` | Secondary text (`--text-muted`), stat names, sidebar meta |
+| `--tr-faint` | `#9AA6A6` | Placeholders, empty-state copy, fine print |
+| `--tr-club-green` | `#6CC24A` | Primary button fill, player chat bubble, focus ring, HP bar (healthy) |
+| `--tr-leaf` | `#4C9A3A` | Green button "shelf" shadow, header subtitle (light mode), dot-pattern tint |
+| `--tr-forest` | `#2E7D46` | Link color, narrator/game chat bubble text, item-count badge text |
+| `--tr-deep-leaf` | `#14351F` | Label color on green fills (buttons, chat bubble, choice badge) |
+| `--tr-mint` | `#E4F5DA` | Header brand-badge fill, outline drawer, item-count badge fill, HP track |
+| `--tr-cream` | `#FBF7EC` | Page background (`--bg-page`) |
+| `--tr-deep-cream` | `#F3F0E4` | *Defined, currently unused in this repo's CSS* |
+| `--tr-white` | `#ffffff` | Cards (`--bg-card`), modal headers |
+| `--tr-gold` | `#F2C94C` | Stat-value pill fill, item-qty badge, HP bar (low-mid) |
+| `--tr-gold-ink` | `#4A3900` | Item-qty badge text |
+| `--tr-dark-gold` | `#B8860B` | Stat-value text |
+| `--tr-alert-red` | `#E4574B` | HP bar (critical), dice failure text |
+| `--tr-teal-pressed` | `#14282e` | Dark "shelf" shadow (lab-item hover) |
 
-Rule of thumb: **`#9AA6A6` never carries information a visitor needs.** It's
-for timestamps and hints that are also expressed elsewhere.
+Semantic aliases layered on top, redefined per theme (§2.2):
+`--bg-page`, `--bg-card`, `--bg-subtle`, `--text-main`, `--text-muted`,
+`--border-color`, `--border-input`, `--border-card`, plus the shadow tokens
+`--shadow-card`, `--shadow-shelf-green`, `--shadow-shelf-sm`,
+`--shadow-shelf-dark`, `--shadow-modal`.
+
+**Rule:** reach for a `var(--tr-*)` or a semantic alias before writing a raw
+hex. `#0d0d12` (and its siblings `#0a0a10`, `rgba(255,255,255,0.1)` borders)
+are the one deliberate exception — the always-dark lab bench, see §10.
+
+### 2.2 Dark mode — simpler than the main site's, read this once
+
+Dark mode here is a single block, `:root.dark { ... }` (`style.css`
+L50–64), that **redefines the semantic CSS custom properties** —
+`--bg-page`, `--text-main`, `--tr-forest`, etc. — to their dark-mode
+values. Everywhere else in the CSS reads `var(--text-main)`,
+`var(--bg-card)`, and so on, so **dark mode support is automatic**: a rule
+written with the variables just works in both themes with no separate
+override to remember.
+
+This is the opposite failure mode from the main site's guide (which warns
+"a new hardcoded hex needs its own `.dark` override or it silently breaks
+dark mode") — here, the risk runs the other way: **hardcoding a literal hex
+color in a new rule silently opts it out of theming.** Use the variable
+that already exists for the role you need (`--text-main` / `--text-muted` /
+`--tr-faint` for text; `--bg-page` / `--bg-card` / `--bg-subtle` for
+surfaces; `--border-color` / `--border-input` / `--border-card` for
+borders) before reaching for a hex.
+
+Theme state lives in `localStorage` under `tr_sc_theme` — the same key
+name the main site uses — toggled via `useTheme.ts` and a `.dark` class on
+`<html>`. `index.html` has an inline pre-render script (before any CSS
+loads) that reads that key and applies the class immediately, to avoid a
+light-mode flash on load. If you touch theme init, keep that inline script
+in sync with `useTheme.ts`'s own logic (matching `prefers-color-scheme` as
+the fallback when nothing is saved yet).
+
+### 2.3 Borders
+
+Only three alpha rungs are defined as variables, all on Deep Teal / white
+depending on theme:
+
+| Token | Alpha (light) | Use |
+|---|---|---|
+| `--border-card` | `/8` | Card, modal, and lab-panel borders |
+| `--border-color` | `/10` | Header rule, dividers, generic borders |
+| `--border-input` | `/12` | The chat `.input-wrapper` border |
+
+A couple of one-off washes exist inline rather than as variables:
+`rgba(31,58,66,0.05)` (theme-toggle hover), `rgba(31,58,66,0.2)`
+(scrollbar thumb). Don't invent new one-off alphas without checking
+whether one of the three tokens already fits.
+
+`border-2` (2px) is the norm here too, matching the main site — see
+`.lab-item`, `.chat-card`, `.modal-card`, `.hp-pill`, etc. The lab bench
+(§10) is the one place borders drop to 1px, deliberately.
 
 ---
 
 ## 3. Typography
 
-Two Google fonts, loaded at the top of `src/index.css`.
+Same two brand display/body fonts as the main site, loaded via the same
+Google Fonts `@import` at the top of `style.css` (also duplicated as a
+`<link>` in `index.html`'s `<head>` for faster first paint):
 
 ```css
 --font-sans:    "Nunito", ui-sans-serif, system-ui, sans-serif;   /* body */
 --font-display: "Baloo 2", sans-serif;                            /* headings, buttons */
---font-mono:    "Nunito", ui-monospace, SFMono-Regular, monospace;
+--font-mono:    "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 ```
 
-- **Baloo 2** (500/600/700/800) — `font-display`. Rounded, chunky, friendly.
-  Every heading, every button label, every chip. Almost always `font-bold`.
-- **Nunito** (400/600/700/800/900) — `font-sans`. Body copy, form labels, meta
-  rows, nav items.
+**Difference from the main site:** `--font-mono` here is a *real*
+monospace face (JetBrains Mono is loaded and listed first). The main site's
+guide calls out a known quirk where its `--font-mono` lists Nunito first,
+so nothing there is actually monospaced — that quirk does **not** exist in
+this repo. `font-family: var(--font-mono)` is used for the chat input
+(`input#response`), reaction/pH/temp readouts, measurement values, and the
+periodic-table modal's atomic-mass fine print (`.el-mass`) — places where a
+true fixed-width face matters for tabular numbers.
 
-> **Quirk worth knowing:** `--font-mono` lists **Nunito first**, so the ~93
-> `font-mono` utilities inside `src/components/games/` render in Nunito, not a
-> monospaced face. Numbers in the games therefore don't tabular-align. That's
-> the current, shipped behavior — don't "fix" it casually, since the game
-> layouts were tuned against how they actually look.
+- **Baloo 2** — headings, buttons, badges, HP/stat text, readout labels.
+  Weights in use: 700/800.
+- **Nunito** — body copy, chat bubble prose, item descriptions, form
+  labels. Weights in use: 400/700.
 
 ### 3.1 Scale as used
 
-The site leans small and dense, with a few big display moments.
+No Tailwind scale here — sizes are literal `rem` values in `style.css`.
+Roughly, largest to smallest:
 
-| Token | Typical use |
+| Size | Typical use |
 |---|---|
-| `text-4xl sm:text-5xl lg:text-6xl` | Hero headline and the About page H1 (`leading-[1.05]`, `tracking-tight`) |
-| `text-3xl` / `text-2xl sm:text-3xl` | Page and section headings |
-| `text-2xl` / `text-xl` | Sub-section headings, level-up headline |
-| `text-lg` | Card group headings, modal titles, mission-card names |
-| `text-base` | Lead paragraphs, footer/newsletter headings |
-| `text-sm` | Standard body, primary button labels, form inputs |
-| `text-xs` | The workhorse — card body, badge descriptions, FAQ answers, footer links |
-| `text-[13px]` / `text-[12px]` | Nav items; event card description and meta rows |
-| `text-[11px]` | Form labels, timestamps, fine print, small buttons |
-| `text-[10px]` / `text-[9px]` | Chips, "UNLOCKED", field taglines |
+| `1.4rem` | Modal close `×` |
+| `1.2rem` / `1.15rem` | Modal titles, header wordmark |
+| `1.05rem` / `1.02rem` | Story prose, dice result |
+| `0.95rem` / `0.92rem` | Chat bubble text, choice buttons |
+| `0.85rem` / `0.82rem` | Primary/secondary buttons |
+| `0.8rem` / `0.78rem` | Sidebar/lab subtitles, dice detail, readouts |
+| `0.75rem` / `0.72rem` | HP text, item counts, stat chips, measure labels |
+| `0.65rem` | Element card fine print (atomic number, mass) |
 
-`text-xs` and `text-[11px]` together account for most text on the site. That's
-intentional density — but it's why the muted colors must stay high-contrast.
+Nothing here matches the main site's dense `text-[10px]`/`text-[9px]`
+territory — this app doesn't have that much chrome packed into small
+spaces.
 
-### 3.2 Weight, tracking, leading
+### 3.2 Casing
 
-- Headings: `font-display font-bold`, `tracking-tight`, `leading-tight` or
-  `leading-snug`.
-- Body: `leading-relaxed` (the default for any paragraph).
-- Nav items and form labels: `font-sans font-extrabold` — small text earns its
-  presence through weight, not size.
-- Footer column headings: `font-display font-bold text-xs uppercase
-  tracking-widest`. That's the only place uppercase-tracked type is used on the
-  site.
-- `font-semibold` appears 3 times total; prefer `font-bold` / `font-extrabold`.
-
-### 3.3 Casing
-
-- Headings and buttons: **Title Case** — "Upcoming Events", "Join the Club!",
-  "Browse Upcoming Events", "Count Us In!".
-- Body, taglines, helper text: **sentence case**.
-- Chips/labels: Title Case, except the deliberate all-caps `UNLOCKED`.
-- Never ALL CAPS for emphasis in prose.
+Same convention as the main brand: **Title Case** for buttons and headings
+("Toggle Virtual Chemistry Lab Simulator", "Periodic Table"), **sentence
+case** for body copy and helper text. No ALL CAPS except where a value is
+inherently one (element symbols).
 
 ---
 
 ## 4. Layout & spacing
 
-### 4.1 The container
+Nothing here resembles the main site's marketing-page container system —
+this is a fixed-viewport app shell, not a scrolling page.
 
-Every top-level section uses the same one:
+- `.app-main-layout` is `height: 100vh`, `overflow: hidden` — the whole app
+  fits the viewport with no page scroll; individual panels
+  (`.chat-history`, `.inventory-items-list`) scroll internally instead.
+- `.main-container-wrapper` caps content at `max-width: 1280px`, centered,
+  with responsive padding (`16px 20px 24px` → `20px 32px 32px` at `640px`).
+- `.main-content-row` is a single column by default; opening the lab adds
+  `.split-screen`, which becomes a two-column `1fr 1fr` grid at `1024px+`
+  (`src/App.tsx` toggles the class via `isLabVisible`). Below that
+  breakpoint the lab and chat stack instead of splitting.
 
-```jsx
-<section className="py-10 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto ...">
-```
+### 4.1 Radii
 
-`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8` appears in the header, hero, footer,
-events, gallery, lab, resources, dashboard, and announcements. Anything new
-matches it exactly — no bespoke widths.
-
-Vertical rhythm: `py-10` for a section; `space-y-8` between blocks inside one;
-`space-y-14` / `space-y-16` between major stacked topics (Announcements, About);
-`mb-8` under a section heading before its grid.
-
-### 4.2 Grids
-
-| Content | Grid |
-|---|---|
-| Event cards, lab log cards | `grid-cols-1 md:grid-cols-3` (events use `lg:grid-cols-3`), `gap-6` |
-| Announcements, badges, reservations | `grid-cols-1 md:grid-cols-2`, `gap-4` |
-| Game tabs | `sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4`, `gap-3` |
-| Footer | `grid-cols-1 md:grid-cols-4`, `gap-8` |
-| Dashboard | `lg:grid-cols-12` split 4 / 8 |
-| About mission cards | `md:grid-cols-3`, `gap-6` |
-
-Mobile is always a single column. Breakpoints used: `sm`, `md`, `lg`, `xl`.
-
-### 4.3 Radii
-
-Very round. The ladder, by frequency:
+Same "very round" philosophy as the brand, same signature number:
 
 | Radius | Use |
 |---|---|
-| `rounded-full` | **Every button**, every chip/pill, avatars, progress bars, scrollbar thumb |
-| `rounded-xl` | Form inputs, small inner panels, comment rows |
-| `rounded-2xl` | Badge cards, announcement cards, game tabs, icon tiles, game panels |
-| `rounded-[28px]` | **The signature card radius** — event cards, dashboard panels, About cards, modals |
-| `rounded-[24px]` | Newsletter panel, signup modal, confirm-email inner callout |
-| `rounded-[32px]` | The confirm-email modal (largest, most emphatic) |
-| `rounded-lg` / `rounded-md` | Small utility hit-areas (menu toggle, thumbnails) |
+| `9999px` (pill) | Every button, chip, badge, HP/measure bar track |
+| `28px` | **Signature card radius** — `.chat-card`, `.inventory-sidebar`, `.lab-host-card`, `.modal-card` |
+| `20px` | Chat bubbles, `.btn-choice`, outline drawer |
+| `16px` | `.lab-table` bench, `.toolbox`, `.inventory-card`, `#reaction-info-container` |
+| `4px` | Chat bubble "tail" corner (bottom-right on player, top-left on narrator) |
 
-Pick `rounded-[28px]` for any new content card. Buttons are *never* anything
-but `rounded-full`.
+### 4.2 Shadows
 
-### 4.4 Shadows
+Two families, matching the main site's vocabulary:
 
-Two families, plus modal lift.
-
-- **Hard shelf (interactive):** `shadow-[0_3px_0_#4C9A3A]` for small/medium
-  buttons, `shadow-[0_4px_0_#4C9A3A]` for large ones. The dark variant is
-  `shadow-[0_4px_0_#14282e]`. This is the site's most recognizable detail —
-  a flat, toy-like offset with no blur. Disabled buttons drop it
-  (`disabled:shadow-none`).
-- **Soft ambient (resting surfaces):**
-  `shadow-[0_8px_24px_rgba(31,58,66,0.06)]` on event cards and dashboard
-  panels, `0.05` on About cards. Plus `shadow-sm` / `shadow-md` on lighter
-  elements.
-- **Lift:** `shadow-2xl` on modals and the signup toast. Nothing else.
-
-Never combine a shelf and an ambient shadow on the same element.
+- **Hard shelf (interactive):** `var(--shadow-shelf-sm)` /
+  `var(--shadow-shelf-green)` (`0 3px 0` / `0 4px 0 #4C9A3A`) on primary
+  buttons and `.lab-item`; `var(--shadow-shelf-dark)` (`#14282e`) on
+  `.lab-item:hover`. Disabled/pressed states drop it (`.btn-brand-primary
+  :active { box-shadow: none }`).
+- **Soft ambient:** `var(--shadow-card)` (`0 8px 24px rgba(31,58,66,0.06)`,
+  `0.3` alpha in dark mode) on cards. `var(--shadow-modal)` for the modal
+  lift only.
 
 ---
 
 ## 5. Component recipes
 
-Copy these rather than improvising. Classes below are the ones actually shipped.
+Real classes from `style.css`, not JSX utility strings — copy the class,
+not a Tailwind stack.
 
-### Primary button
-
-```jsx
-className="px-6 py-3 rounded-full font-display font-bold text-sm
-           transition-all duration-300 hover:scale-[1.02] active:scale-95
-           cursor-pointer bg-[#6CC24A] text-[#14351F]
-           shadow-[0_4px_0_#4C9A3A]"
-```
-
-Small variant: `px-4 py-2 text-xs` + `shadow-[0_3px_0_#4C9A3A]`.
-Full-width in forms and cards: `w-full py-3` / `w-full py-2.5`.
-Disabled: `disabled:opacity-30 disabled:cursor-not-allowed disabled:shadow-none`
-(or `disabled:opacity-60 disabled:cursor-wait` while submitting).
-
-### Secondary button
-
-```jsx
-className="px-6 py-3 rounded-full font-display font-bold text-sm transition-all
-           cursor-pointer bg-white hover:bg-[#1F3A42]/5 text-[#1F3A42]
-           border-2 border-[#1F3A42]/15"
-```
-
-### Dark button (rare, high emphasis)
-
-```jsx
-className="px-10 py-4 rounded-full font-display font-bold
-           bg-[#1F3A42] text-white shadow-[0_4px_0_#14282e]
-           hover:scale-[1.02] active:scale-95 cursor-pointer"
-```
-
-### Nav pill
-
-```jsx
-// active
-"px-3.5 py-2 rounded-full text-[13px] font-sans font-extrabold border-2
- bg-[#E4F5DA] text-[#2E7D46] border-transparent"
-// idle
-"... text-[#4B6169] border-transparent hover:bg-[#1F3A42]/5"
-```
-
-Note the `border-2 border-transparent` on both states — it reserves the space so
-nothing shifts when the active style lands.
-
-### Content card
-
-```jsx
-className="rounded-[28px] border-2 border-[#1F3A42]/8 bg-white
-           hover:border-[#1F3A42]/15 transition-all duration-300
-           shadow-[0_8px_24px_rgba(31,58,66,0.06)]"
-```
-
-With a cover image: `overflow-hidden`, image block `h-44` with
-`border-b-2 border-[#1F3A42]/5`, image gets
-`object-cover transition-transform duration-500 hover:scale-105`. Body is `p-6`
-(or `p-5`) with `space-y-4`, and an internal meta block separated by
-`pt-3.5 border-t-2 border-[#1F3A42]/8`.
-
-### Status chip
-
-```jsx
-"px-2.5 py-1 rounded-full text-[10px] font-display font-bold"
-```
-
-Fill by meaning: `bg-[#6CC24A] text-[#14351F]` (good/plenty),
-`bg-[#F2C94C] text-[#4A3900]` (scarce), `bg-[#E4574B] text-white` (gone),
-`bg-[#E4F5DA] text-[#2E7D46]` (success/category), `bg-[#1F3A42] text-white`
-(neutral category on an image).
-
-### Form input
-
-```jsx
-className="w-full p-2.5 rounded-xl text-sm border-2 border-[#1F3A42]/12
-           bg-white text-[#1F3A42] placeholder:text-[#9AA6A6] focus:outline-none"
-```
-
-Label above it: `text-[11px] font-extrabold text-[#4B6169]`, wrapper
-`space-y-1` / `space-y-1.5`. `focus:outline-none` is safe here **only because**
-`src/index.css` sets a global `outline: 2px solid #6CC24A; outline-offset: 1px`
-on `input:focus, select:focus, textarea:focus`. Don't remove that rule, and
-don't add `focus:outline-none` to non-input elements.
-
-Placeholders are friendly and concrete: `e.g. Timothy`,
-`e.g. Turtle Rock Elementary`, `parent@example.com`, `e.g. Alex Chen`.
-
-### Modal
-
-```jsx
-// scrim
-"fixed inset-0 z-50 overflow-y-auto bg-[#1F3A42]/45 backdrop-blur-sm
- flex items-center justify-center p-4"
-// panel
-"w-full max-w-md rounded-[28px] overflow-hidden shadow-2xl bg-[#FBF7EC]
- flex flex-col justify-between max-h-[90vh] animate-fade-in"
-```
-
-Scrim alpha: `/45` for forms, `/50`–`/60` for celebratory or long-read modals
-(`backdrop-blur-md` on the lab-log reader). Header strip is `p-5 bg-white
-border-b-2 border-[#1F3A42]/8` with a title + one-line subtitle on the left and
-a round `X` close button on the right (`p-1.5 rounded-full
-hover:bg-[#1F3A42]/5 text-[#4B6169] hover:text-[#1F3A42]`).
-
-Behavior conventions: Escape closes; click-outside closes (guard with
-`e.target === e.currentTarget` or `stopPropagation` on the panel); set
-`role="dialog"` and `aria-modal="true"` with a label; lock `body` overflow for
-full-screen readers.
-
-### Toast
-
-Bottom-right, `fixed bottom-6 right-6 z-50 max-w-sm rounded-2xl border-2 px-4
-py-3.5 shadow-2xl animate-fade-in bg-[#FBF7EC]`, border `#6CC24A]/50` on
-success or `red-400/50` on failure, bold `text-xs` headline + `text-[11px]`
-detail + a "Dismiss" button. Auto-clears after **5s**.
-
-### Empty state
-
-Centered in a card with a **dashed** border
-(`border-2 border-dashed border-[#1F3A42]/12 rounded-[28px] bg-white`,
-`py-12`): a `#9AA6A6` lucide icon, a bold short line, one encouraging sentence,
-then a primary button. Copy pattern: state the fact, then point somewhere.
-*"No sign-ups yet" → "Spots fill up fast! Explore upcoming events." → [Browse
-Upcoming Events]*.
-
-### Progress bar
-
-`w-full bg-[#E4F5DA] h-3 rounded-full overflow-hidden` with an inner
-`h-full rounded-full bg-[#6CC24A] transition-all duration-500`.
-
-### Avatar
-
-Header/mobile: `rounded-full bg-[#6CC24A] text-white font-display font-bold`,
-first initial uppercased. Dashboard: `w-16 h-16 rounded-2xl bg-[#1F3A42]
-text-white text-3xl` — the one place the avatar is a squircle, not a circle.
+- **Primary button** — `.btn-brand-primary` / `.btn-send`: pill, Club
+  Green fill, Deep Leaf text, `--shadow-shelf-sm`, `translateY(-1px)
+  scale(1.02)` on hover, shadow drops on `:active`.
+- **Secondary button** — `.btn-brand-secondary`: pill, `--bg-card` fill,
+  `--text-main`, `border-2 var(--border-color)`; hover/`.active` swaps to
+  Mint fill + Forest text.
+- **Choice button** (MCQ options) — `.btn-choice`: left-aligned, `--bg-page`
+  fill, hover moves to Mint with a Club Green border and a small lift.
+  Numbered options get a `.choice-badge` — a small green pill with the
+  option number in Deep Leaf.
+- **Chat bubble** — `.chat-bubble` + one of `.player` / `.narrator`/`.game`
+  / `.roll`. Player bubbles are right-aligned Club Green; narrator/game
+  bubbles are left-aligned Mint (dark mode: `rgba(108,194,74,0.12)` fill,
+  `#E7EDE9` text); roll results are centered, dashed-bordered, on the page
+  background.
+- **Card** — `.chat-card` / `.inventory-sidebar` / `.lab-host-card`: 28px
+  radius, `--bg-card`, `--border-card`, `--shadow-card`.
+- **Modal** — `.modal-backdrop` (Deep Teal 50% + blur) → `.modal-card`
+  (28px radius, `--bg-page`, `--shadow-modal`) → `.modal-header` (`--bg-card`
+  strip with title + `.btn-close`). Add `.wide` to `.modal-card` for the
+  800px variant (periodic table).
+- **Pill readout** — `#ph-display` / `#temp-display` /
+  `#reaction-name-display`: `--bg-subtle` fill, `font-mono`, hidden via
+  `:empty` when there's nothing to show yet — don't conditionally render
+  these in JSX, let CSS hide the empty ones so layout doesn't jump.
 
 ---
 
 ## 6. Motion
 
-Restrained and quick. `motion` is a dependency but is barely used; nearly
-everything is a CSS transition.
+Even more restrained than the main site — no `motion`/Framer dependency at
+all here, everything is a CSS `transition` or `@keyframes`.
 
-- **Durations:** `duration-200` (nav), `duration-300` (default for buttons and
-  card hovers), `duration-500` (image zoom, progress fill, logo hover).
-- **Press feedback:** `hover:scale-[1.02] active:scale-95` on primary buttons;
-  `hover:scale-105` on smaller CTAs and card images; `hover:scale-[1.01]` on
-  wide in-card buttons. Scale up a hair, scale down decisively.
-- **Entrances:** `.animate-fade-in` — 0.25s, opacity 0→1 with a 4px rise. Used
-  on every modal, the mobile drawer, the toast, and FAQ answers.
-- **Ambient:** `.lava-bubble` (8s infinite rise) exists for decorative bubbles.
-- **Spinners:** `<Loader2 className="animate-spin" />` from lucide, paired with
-  a changed label ("Signing up…").
+- **Durations:** `0.2s` (buttons, borders), `0.3s`–`0.4s` (HP fill, lab
+  panel background/border).
+- **Press feedback:** `translateY(-1px) scale(1.02)` on hover,
+  `translateY(1px) scale(0.96)` + shadow-drop on `:active` — same "toy
+  button" shelf feel as the main brand.
+- **Entrances:** `fadeIn` keyframe (opacity 0→1, 4px rise, 0.2–0.25s) on
+  chat bubbles and modals.
+- **Ambient:** `rise-bubble` (reaction bubbles drifting up the flask),
+  `cloud-drift` (gas visuals), `glass-glow` (pulsing drop-shadow on the
+  active flask image while a reaction is running).
 
-Don't add bounce, spring, parallax, or anything that moves on scroll.
+Don't add bounce/spring easing or scroll-linked animation — same rule as
+the parent brand.
 
 ---
 
 ## 7. Iconography
 
-**lucide-react**, exclusively. No emoji in UI chrome (the one exception is the
-`✔` inside "You're signed up ✔" and the `→` / `↗` arrows in text links).
+**No icon library** — this repo has no `lucide-react` or any icon package
+(check `package.json`; only `react`/`react-dom` are dependencies). Every
+icon in the UI is a **plain emoji character**, inline in JSX. This is the
+opposite of the main site's "no emoji in UI chrome" rule — here emoji *are*
+the icon system, and that's intentional for a game-flavored product aimed
+at players, not a rule this app is breaking.
 
-Sizes: `w-3.5 h-3.5` inline with small text, `w-4 h-4` in buttons and meta,
-`w-5 h-5` for section headings and modal closes, `w-6 h-6` in icon tiles,
-`w-8`–`w-10` in empty states, `w-16`/`w-20` for confirmation moments. Default
-stroke; `strokeWidth={1.5}` only for the oversized confirm-email icon.
+Stable emoji → meaning pairings in use today (`Header.tsx`,
+`ChatContainer.tsx`):
 
-Stable icon → meaning pairings (keep these consistent):
-
-| Icon | Means |
+| Emoji | Means |
 |---|---|
-| `Calendar` | Events / dates |
-| `Clock` | Time / timestamps |
-| `MapPin` | Location |
-| `Ticket` | Sign-ups |
-| `Trophy` | Level |
-| `Award` | Achievements |
-| `Star` | XP |
-| `ShieldCheck` | Membership |
-| `FlaskConical` | Games / chemistry |
-| `BookOpen` | Announcements |
-| `BookMarked` | Resources |
-| `ImageIcon` | Gallery |
-| `HelpCircle` | About / FAQ |
-| `Lock` | Guest limitation |
-| `CheckCircle` | Success |
-| `ShieldAlert` / `AlertCircle` / `AlertTriangle` | Errors and warnings |
-| `Moon` / `Sun` | Theme toggle |
+| 🧪 | Lab / chemistry (header badge, "Lab" toggle button, lab-open chat notice) |
+| ❤️ | HP |
+| 🎒 | Inventory |
+| ⚛️ | Periodic table |
+| 📜 | Story outline |
+| 🔄 | Restart |
+| ☀️ / 🌙 | Theme toggle (light / dark) |
 
-Icon tiles: `p-3 rounded-2xl bg-[#E4F5DA] text-[#2E7D46]` (or `w-12 h-12
-rounded-2xl` centered). Locked/inactive: `bg-[#1F3A42]/5 text-[#9AA6A6]`.
-
-Each of the eleven minigames owns a badge icon — `Orbit`, `FlaskConical`,
-`Bot`, `Eye`, `Zap`, `Activity`, `Dna`, `Leaf`, `Telescope`, `Factory`,
-`ScrollText`. If a game is added, its icon must match between
-`VirtualLab.tsx`'s `GAMES` and `Dashboard.tsx`'s `badgeCatalog`.
+Keep new UI affordances consistent with this table rather than introducing
+a second icon language. If a future feature genuinely needs crisper icons
+(e.g. small inline glyphs that must scale precisely), that's a real
+decision to make deliberately — don't reach for `lucide-react` piecemeal
+without adding it as a dependency and deciding whether it replaces emoji
+site-wide or coexists.
 
 ---
 
 ## 8. Imagery
 
-Event and lab-log photos come from the Google Sheet, so the site can't control
-their crop — which is why every image slot is fixed-height with `object-cover`
-(`h-44` cards, `h-60` modal header) and every `<img>` carries
-`referrerPolicy="no-referrer"`.
+Very different role from the main site's event/lab-log photography. Images
+here (`public/images/`, referenced from `data.json` narrative node text as
+relative `images/...` paths) are **teaching diagrams and reference
+figures** for the chemistry content — NMR spectra, molecule structures, a
+periodic table, atom-shell diagrams — not photos of people. `courtyard.jpg`
+is the closest thing to a "scene" image (used for narrative atmosphere).
 
-Over-image text sits on a gradient scrim: `bg-gradient-to-t from-black/60
-via-black/10 to-transparent`. Chips over images use solid fills, never tints.
-
-Photos should show **kids doing things** — hands, materials, mid-experiment —
-not posed group shots or stock lab glassware.
+No fixed-aspect cropping system exists for these — they're inline content
+images sized by whatever the narrative markup/CSS around them specifies,
+not cards with a forced `object-cover` slot like the main site's event
+photos. If you add a new reference image, drop it in `public/images/` and
+point to it as `images/<file>` from `data.json`, matching the existing
+paths.
 
 ---
 
 ## 9. Voice & tone
 
-**Warm, plain, and specific.** We're a volunteer club talking to families, not
-a brand talking to a market.
+Same principles as the parent brand — still **warm, plain, and specific**
+— with examples drawn from this app's actual copy instead of the main
+site's events/newsletter copy.
 
-### Principles
+1. **Say the real thing.** `"Please enter a valid positive number."`,
+   `"Beaker full"` (`useLabEngine.ts`) — plain failure messages, no
+   euphemism.
+2. **Respect the science.** Reaction names render as real chemical
+   equations (`\(\ce{HCl + NaOH -> NaCl + H2O}\)` via MathJax/`mhchem`),
+   not simplified paraphrases — see `reactionEngine.ts`'s equation
+   generation.
+3. **Encourage without hype.** Same "no amazing/revolutionary/unleash"
+   rule as the parent brand.
+4. **Second person / short.** Prompts speak directly to the player
+   ("How much {itemName} do you want to add?").
+5. **One exclamation point at a time** — reserved for genuine progress
+   (`"🧪 Laboratory split screen opened."`), not for routine copy.
 
-1. **Say the real thing.** "Meetings take place at UCI's Paul Merage School of
-   Business (Room SB2-117) every Saturday from 7:00 to 8:30 PM." Not "a
-   convenient local venue."
-2. **Respect the science.** Game copy names the actual field — "Punnett
-   squares, test crosses, and epistasis"; "any topology you build, including a
-   Wheatstone bridge." We tell children the true words for things.
-3. **Encourage without hype.** "Levels get genuinely harder." "Curiosity is
-   welcome here." Never "amazing", "revolutionary", "unleash", "supercharge".
-4. **Be honest about limits.** "We only record the student's name and school so
-   mentors know who to expect." "You won't receive anything from us until you
-   do." "Events you've signed up for from this device."
-5. **One exclamation point at a time.** They're reserved for genuine good news —
-   "You're signed up!", "Welcome aboard!", "Count Us In!". Never two in a row,
-   never in an error message.
-6. **Second person.** "You're on the list", "Grab a spot before they fill up."
-7. **Short.** Card body copy is one or two sentences. Helper text is one.
-
-### Established phrases — reuse, don't reinvent
+### Established phrases in this app — reuse, don't reinvent
 
 | Situation | Say |
 |---|---|
-| Membership CTA | "Join" / "Join the Club" / "Count Us In!" |
-| Event CTA | "Sign Up for This Event" |
-| Sold out | "No Spots Remaining" / "Sold Out" |
-| Signup confirmed | "You're signed up!" — "*Name* is booked in for *Event*." |
-| Join confirmed | "Welcome aboard!" |
-| Return login | "Welcome back, *Name*!" |
-| Newsletter success | "You're on the list!" / "You're already on the list!" |
-| Level up | "Scientist Level Up!" → "Keep exploring!" |
-| Level-up dismiss | "Continue experimenting!" |
-| Nothing to show | "Check back soon —" + what's coming |
-| Generic failure | "Something went wrong. Please try again." |
-| Scarcity nudge | "Grab a spot before they fill up!" / "Spots fill up fast!" |
+| Lab opened | `"🧪 Laboratory split screen opened. Type "lab" again to hide."` |
+| Lab closed | `"🧪 Laboratory workspace closed."` |
+| Beaker at capacity | `"Beaker full"` |
+| Bad amount entered | `"Please enter a valid positive number."` |
+| Amount prompt | `"How much {itemName} do you want to add? (in {unit})"` |
+| Help fallback | `"Type options or numeric answers to progress through the story."` |
 
 ### Terminology
 
-- The UI says **Events**. The code calls them `Mission`s — that's an internal
-  legacy name from the template. **Never let "mission" appear in visitor-facing
-  copy.**
-- **Sign up** (verb) / **sign-up** (noun). Not "register", not "RSVP", not
-  "reserve" in UI copy.
-- **Guardian** on form labels ("Guardian Name", "Guardian Email"); "parent" is
-  fine in prose and in the `parent@example.com` placeholder.
-- **Coaches** and **mentors** are the middle/high-school students who teach.
-- **Minigames** or **games**, hosted in the **Virtual Lab**.
-- **Announcements** and **Lab Log** are distinct: announcements are short
-  notices; lab log entries are illustrated write-ups with authors and comments.
-- **Discovery XP**, **Level**, **badges**. Scientist titles ladder by badge
-  count: *Rookie Researcher* → *Field Scientist* → *Senior Researcher* →
-  *Principal Investigator*.
+- **Lab** = the flask/reagent simulator (`LabContainer`), not a physical
+  room reference like the main site's meeting-location copy.
+- **Reagent**, **flask**, **beaker**, **reaction** — real chemistry terms,
+  used precisely (see the reaction-engine documentation in this repo's
+  `CLAUDE.md` if you're touching that system).
+- The narrative content format calls a scene a **node**; that's an
+  internal/code term (`NarrativeNode`) — same "don't leak the internal
+  name into player-facing copy" instinct as the main site's `Mission`/
+  `Events` distinction, though nothing here currently risks leaking it
+  since nodes aren't named in-UI.
 
 ### Punctuation
 
-Em dashes for asides, **with spaces around them** — like this — which is the
-house style throughout the site. Real ellipses `…` in
-loading states ("Signing up…", "Loading the latest schedule…"). Curly
-apostrophes in prose. Serial comma. En dash for ranges ("7–8:30 PM").
-
-### Don't
-
-- No fake urgency or countdowns beyond the true spots-left number.
-- No guilt in the newsletter or join flows.
-- No jargon aimed at parents ("holistic STEM enrichment pathway").
-- No talking down: no "Wow!", no "super fun", no baby talk.
-- No claims about outcomes we can't back ("gets your child into a top college").
+Same house style as the parent brand: em dashes with spaces for asides,
+real ellipses `…`, curly apostrophes, serial comma.
 
 ---
 
-## 10. Email
+## 10. The lab bench is a deliberate exception
 
-`newsletter/*.html` are hand-written table-based emails and follow a
-**deliberately different technical style** — email clients can't run the site's
-CSS.
+Directly analogous to the main site's "minigames don't follow the light
+brand" rule (§11 there) — and this repo's own CSS already says so
+explicitly, in a comment at the top of the lab-workspace section
+(`style.css` L827). There's only one such surface here, not eleven: the
+flask/beaker bench inside `LabContainer`.
 
-- **Type:** Georgia/Times serif for the H1, Arial/Helvetica for everything
-  else. Baloo 2 and Nunito are *not* used — no webfonts in email.
-- **Layout:** `role="presentation"` tables, 540px fixed width,
-  `border-radius:16px` card on a `#FBF7EC` body.
-- **Color:** the brand palette carries over — `#1F3A42` header bar and
-  headings, `#6CC24A` button with `#14351F` label at `border-radius:999px`,
-  `#4B6169` body, `#4C9A3A` step eyebrows. Email-only additions: `#3D5259`
-  body text, `#FFF4D9` / `#E8B84B` / `#9A7318` / `#5C4A1F` for the caution
-  card, `#8FA0A6` / `#5C7078` / `#EAF0F1` in the footer. These have no
-  dark-mode counterparts and don't need any — email has no theme toggle.
-- **Structure:** preheader div → teal header bar → H1 → body → callout →
-  button → practical details → address + unsubscribe.
-- **Voice:** same as the site, slightly more direct about logistics. The
-  confirm email puts the *spam-folder* step **above** the confirm button on
-  purpose — that ordering is a deliverability decision, not a layout
-  preference. Don't reorder it.
-- Every campaign ends with the physical address and `{{unsubscribe_link}}`.
+- **Host card** (`.lab-host-card`) — normal brand light shell: 28px
+  radius, `--bg-card`, `--border-card`, theme-aware.
+- **Bench** (`.lab-table`) — **always** `#0d0d12`, `1px` white-alpha
+  border (not the site's usual `2px`), `16px` radius. Does not respond to
+  the theme toggle, on purpose — it reads as lab equipment, not page
+  content. Beaker/flask PNGs are inverted (`filter: invert(1)
+  brightness(2)`) to render as light line art against that dark surface.
+- **Toolbox row** (`.toolbox`) and **readouts**
+  (`#ph-display`/`#temp-display`/`#reaction-name-display`) sit *outside*
+  the dark bench and *do* respond to the theme toggle — only the bench
+  itself is fixed-dark.
+- **Accent color while a reaction runs:** the active-flask glow
+  (`glass-glow` keyframe) uses Club Green at low/high alpha — same accent
+  family as the rest of the brand, just applied as a glow instead of a
+  fill.
 
----
-
-## 11. The minigames are a deliberate exception
-
-`src/components/games/` does **not** follow the light brand. All eleven games
-render as always-dark instrument panels, on purpose — they read as lab
-equipment rather than page content.
-
-- **Surfaces:** `bg-[#0d0d12]` panels (also `#0a0a10`, `#070911`) with
-  `border border-white/10` — note **1px** borders here, not the site's 2px.
-- **Radius:** `rounded-2xl` throughout, not `rounded-[28px]`.
-- **Text:** `text-zinc-200/300/400/500` instead of the teal/slate ink.
-- **Semantic accents:** `emerald` = correct/go, `amber` = highlight/selected,
-  `sky` = information/secondary, `red` = error/hazard.
-- **Type:** `font-mono` (which resolves to Nunito, see §3) for readouts and
-  numbers; `font-display` for game headings.
-
-The site chrome *around* the games — the section heading, tab grid, and the
-`rounded-[28px]` white host panel in `VirtualLab.tsx` — **is** normal brand
-style. Only the interior is dark.
-
-**Known unfinished work:** `src/index.css` contains `.game-molecule`,
-`.game-robot`, and `.game-adventure` scoped rules meant to flip those three
-between dark and light chrome with the site theme. Nothing applies those
-wrapper classes, so the rules never fire and those games stay dark like the
-rest. That's a gap, not a regression — leave it alone unless you're finishing
-the feature.
+If you extend the lab UI, keep this split: anything sitting *on* the dark
+bench stays dark-only; anything in the card chrome around it should read
+`var(--text-main)`/`var(--bg-card)` and theme normally.
 
 ---
 
-## 12. Accessibility
+## 11. Accessibility
 
-- Interactive elements are real `<button>`s and carry `cursor-pointer`
-  explicitly (Tailwind v4 doesn't set it by default).
-- Icon-only buttons need `aria-label` **and** `title` (see the theme toggle).
-- Modals: `role="dialog"`, `aria-modal="true"`, `aria-labelledby` or
-  `aria-label`, Escape to close, focus the first input on open.
-- Inputs get a real `<label>` (or `aria-label` where the label is visual
-  context, as in the newsletter box), plus `autoComplete` where it applies
-  (`name`, `email`, `organization`).
-- Never remove the global green focus outline.
-- Don't encode meaning in color alone — the Sold Out chip says "Sold Out", the
-  success chip says "Signed up", the unlocked badge says "UNLOCKED".
-- Decorative images take `alt=""`; the logo and content images take real alt
-  text.
+- Interactive elements are real `<button>`s (`Header.tsx`, modals) — keep
+  it that way rather than clickable `<div>`s.
+- Modals (`InventoryModal`, `PeriodicTableModal`) carry `role="dialog"`
+  `aria-modal="true"` on the backdrop and `aria-label="Close"` on the close
+  button — match this pattern for any new modal.
+- The theme toggle sets both `aria-label` and `title` describing the
+  *target* state ("Switch to dark mode" while light) — keep that phrasing
+  convention for any new toggle.
+- Never remove the global focus outline (`input:focus, select:focus,
+  textarea:focus, button:focus-visible` in `style.css` L110) — it's the
+  only visible focus indicator in the app.
+- `window.alert`/`window.prompt` are used for the lab's add-reagent flow
+  (`useLabEngine.ts`) — these are real, guarded behind `typeof window !==
+  'undefined'` checks so the pure engine functions stay testable; don't
+  swap them for a custom modal without preserving that guard, since the
+  reaction engine is exercised standalone outside a browser (see
+  `CLAUDE.md`).
 
 ---
 
-## 13. Checklist for anything new
+## 12. Checklist for anything new
 
-1. Wrapped in `max-w-7xl mx-auto px-4 sm:px-6 lg:px-8` with `py-10`.
-2. Heading is `font-display font-bold tracking-tight`; body is
-   `font-sans leading-relaxed`.
-3. Every color is from §2.1, **and** every new `text-[#hex]` / `bg-[#hex]` is
-   in the `:root.dark` list in `src/index.css` (or is one of the intentional
-   exceptions).
-4. Cards: `rounded-[28px] border-2 border-[#1F3A42]/8 bg-white`. Buttons:
-   `rounded-full` with the green shelf shadow.
-5. Icons are lucide, at a size from §7, reusing the established meanings.
-6. Copy is sentence case, second person, one sentence where one will do, and
-   uses the established phrases.
-7. Guests can see it. Only XP, badges, and levels are member-gated.
-8. Checked in **both** themes and at 375px wide.
-9. `npm run lint` (`tsc --noEmit`) and `npm run build` both pass.
+1. Reuse a `var(--tr-*)` / semantic alias (§2.1–2.2) before writing a raw
+   hex — and remember hardcoding a hex is what breaks dark mode *here*,
+   not the reverse.
+2. Buttons: pill radius, `--shadow-shelf-*`. Cards: `28px` radius,
+   `--border-card`, `--shadow-card` (§4).
+3. New icons are emoji, matching the table in §7 — don't introduce
+   `lucide-react` or another icon font without a deliberate decision.
+4. Copy is sentence case (Title Case for buttons/headings), second person,
+   short, and matches the plain, honest tone in §9.
+5. No Tailwind classes — this repo doesn't have the dependency; write a
+   real class in `style.css` instead (see the known gap in §1).
+6. Checked in both themes (the lab bench stays dark in both, on purpose —
+   §10).
+7. `npm run build` (`tsc && vite build`) passes — there's no separate lint
+   script and no test suite in this repo (see `CLAUDE.md`).
