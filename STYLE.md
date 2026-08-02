@@ -425,8 +425,13 @@ physical bench, dimmer workshop lighting in dark mode, never flat black.
   logic. The burner flame ignites (`.flask-active .burner-flame`) off the
   same `flaskActive` prop that already drives the flask's glow, so it lights
   up exactly when a reaction is running.
-- **Beaker tray** (`.beakers-container`) has an inset dark mat behind the
-  row of beakers so they read as sitting on a surface, not floating.
+- **Reagent shelf** (`.lab-shelf`, wrapping `.beakers-container`) sits above
+  the flask rather than beside it — `.lab-table` is a column layout now: the
+  shelf (a wood plank with two metal `.lab-shelf-bracket` supports) holds
+  the row of reagent beakers up top, and the reaction flask sits on the
+  counter below, same as a real bench shelves reagents above the working
+  surface. `.beakers-container` itself keeps its inset dark mat so the
+  beakers read as sitting on a tray, not floating.
 - **Safety pegboard** (`.lab-pegboard`) is a small row of emoji (🥽 🧤 🧯)
   in the back corner of the bench, low-opacity — decorative flavor using the
   same emoji-icon system as the rest of the app (§7), not a new icon
