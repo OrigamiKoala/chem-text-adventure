@@ -281,6 +281,53 @@ export const LabContainer: React.FC<LabContainerProps> = ({
           <span>🧯</span>
         </div>
 
+        <div className="lab-shelf">
+          <span className="lab-shelf-bracket left" aria-hidden="true" />
+          <span className="lab-shelf-bracket right" aria-hidden="true" />
+          <div className="beakers-container">
+            {beakers.map(b => (
+              <div
+                key={b.idx}
+                className="lab-item beaker"
+                onClick={() => onAddLiquid(b.idx)}
+                title={`Add ${b.label} to flask`}
+              >
+                <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center', height: 120, width: '100%' }}>
+                  {b.type === 'solid' && (
+                    <div className="lab-item solid-block" style={{ backgroundColor: b.color }} />
+                  )}
+                  {(b.type === 'gas' || b.type === 'trapped_gas') && (
+                    <CloudSvg
+                      color={b.color}
+                      style={{ position: 'absolute', bottom: '50%', left: '-10%', width: '120%', height: 140, zIndex: 3, opacity: 0.9, pointerEvents: 'none' }}
+                    />
+                  )}
+                  {b.type !== 'solid' && b.type !== 'gas' && b.type !== 'trapped_gas' && (
+                    <>
+                      {b.color && (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            bottom: '15%',
+                            left: '15%',
+                            width: '70%',
+                            height: '50%',
+                            backgroundColor: b.color,
+                            zIndex: 1,
+                            borderRadius: '0 0 10% 10%',
+                          }}
+                        />
+                      )}
+                      <img src="/images/beaker.png" alt={b.label} style={{ position: 'relative', zIndex: 2 }} />
+                    </>
+                  )}
+                </div>
+                <div className="beaker-label" dangerouslySetInnerHTML={{ __html: b.label }} />
+              </div>
+            ))}
+          </div>
+        </div>
+
         <div className={`lab-item flask ${flaskActive ? 'flask-active' : ''}`}>
           <div className="flask-rig">
             {/* Decorative ring stand — not part of reaction rendering */}
@@ -387,49 +434,6 @@ export const LabContainer: React.FC<LabContainerProps> = ({
               {hasContents ? `pH: ${currentPH.toFixed(1)}` : 'pH: n/a'}
             </div>
           )}
-        </div>
-
-        <div className="beakers-container">
-          {beakers.map(b => (
-            <div
-              key={b.idx}
-              className="lab-item beaker"
-              onClick={() => onAddLiquid(b.idx)}
-              title={`Add ${b.label} to flask`}
-            >
-              <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center', height: 120, width: '100%' }}>
-                {b.type === 'solid' && (
-                  <div className="lab-item solid-block" style={{ backgroundColor: b.color }} />
-                )}
-                {(b.type === 'gas' || b.type === 'trapped_gas') && (
-                  <CloudSvg
-                    color={b.color}
-                    style={{ position: 'absolute', bottom: '50%', left: '-10%', width: '120%', height: 140, zIndex: 3, opacity: 0.9, pointerEvents: 'none' }}
-                  />
-                )}
-                {b.type !== 'solid' && b.type !== 'gas' && b.type !== 'trapped_gas' && (
-                  <>
-                    {b.color && (
-                      <div
-                        style={{
-                          position: 'absolute',
-                          bottom: '15%',
-                          left: '15%',
-                          width: '70%',
-                          height: '50%',
-                          backgroundColor: b.color,
-                          zIndex: 1,
-                          borderRadius: '0 0 10% 10%',
-                        }}
-                      />
-                    )}
-                    <img src="/images/beaker.png" alt={b.label} style={{ position: 'relative', zIndex: 2 }} />
-                  </>
-                )}
-              </div>
-              <div className="beaker-label" dangerouslySetInnerHTML={{ __html: b.label }} />
-            </div>
-          ))}
         </div>
       </div>
 
