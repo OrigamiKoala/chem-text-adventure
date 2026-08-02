@@ -1340,8 +1340,9 @@ input#response::placeholder {
 }
 
 /* ── Dark mode overrides for lab surfaces ── */
-/* The bench (.lab-table) reuses --lab-wood-*/--lab-metal/--lab-ink, which are
-   redefined above under :root.dark — same wood bench, dimmer light (§10). */
+/* The bench (.lab-table) reuses the --lab-wood, --lab-metal, and --lab-ink
+   variables, which are redefined above under :root.dark — same wood bench,
+   dimmer light (§10). */
 :root.dark .toolbox {
   background: rgba(255, 255, 255, 0.04);
 }
