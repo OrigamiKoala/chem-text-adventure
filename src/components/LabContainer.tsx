@@ -275,8 +275,33 @@ export const LabContainer: React.FC<LabContainerProps> = ({
     <section className="lab-host-card" ref={rootRef}>
 
       <div className="lab-table">
+        <div className="lab-pegboard" aria-hidden="true">
+          <span>🥽</span>
+          <span>🧤</span>
+          <span>🧯</span>
+        </div>
+
         <div className={`lab-item flask ${flaskActive ? 'flask-active' : ''}`}>
-          <div style={{ position: 'relative', display: 'inline-block' }}>
+          <div className="flask-rig">
+            {/* Decorative ring stand — not part of reaction rendering */}
+            <svg
+              className="ring-stand"
+              viewBox="0 0 140 260"
+              style={{ left: -20, bottom: -8, width: 140, height: 260 }}
+              aria-hidden="true"
+            >
+              <rect x="4" y="244" width="42" height="12" rx="3" style={{ fill: 'var(--lab-metal-dark)' }} />
+              <rect x="20" y="14" width="8" height="236" rx="2" style={{ fill: 'var(--lab-metal)' }} />
+              <rect x="24" y="88" width="50" height="8" rx="3" style={{ fill: 'var(--lab-metal)' }} />
+              <circle cx="24" cy="92" r="6" style={{ fill: 'var(--lab-metal-dark)' }} />
+              <ellipse cx="96" cy="92" rx="30" ry="9" style={{ fill: 'none', stroke: 'var(--lab-metal)', strokeWidth: 5 }} />
+            </svg>
+            {/* Decorative Bunsen burner — flame ignites while flaskActive, purely visual */}
+            <div className="bunsen-burner" aria-hidden="true">
+              <div className="burner-flame" />
+              <div className="burner-base" />
+            </div>
+            <div style={{ position: 'relative', display: 'inline-block', zIndex: 1 }}>
             {/* Solid layer */}
             <div
               style={{
@@ -349,6 +374,7 @@ export const LabContainer: React.FC<LabContainerProps> = ({
               />
             </div>
             <img src="/images/flask.png" alt="Erlenmeyer Flask" style={{ position: 'relative', zIndex: 3 }} />
+            </div>
           </div>
 
           {showTemp && (

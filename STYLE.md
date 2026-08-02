@@ -83,8 +83,11 @@ Semantic aliases layered on top, redefined per theme (§2.2):
 `--shadow-shelf-dark`, `--shadow-modal`.
 
 **Rule:** reach for a `var(--tr-*)` or a semantic alias before writing a raw
-hex. `#0d0d12` (and its siblings `#0a0a10`, `rgba(255,255,255,0.1)` borders)
-are the one deliberate exception — the always-dark lab bench, see §10.
+hex. The lab bench (§10) is styled with its own small set of variables
+(`--lab-wood-*`, `--lab-metal*`, `--lab-ink`, `--lab-shadow`, defined
+alongside the brand palette in `:root` / `:root.dark`) rather than the brand
+tokens above, since a wood workbench isn't a brand surface — but it's still
+variables, still redefined per theme, never a bare hex.
 
 ### 2.2 Dark mode — simpler than the main site's, read this once
 
@@ -386,33 +389,68 @@ real ellipses `…`, curly apostrophes, serial comma.
 
 ---
 
-## 10. The lab bench is a deliberate exception
+## 10. The lab bench is a themed physical surface, not a brand card
 
-Directly analogous to the main site's "minigames don't follow the light
-brand" rule (§11 there) — and this repo's own CSS already says so
-explicitly, in a comment at the top of the lab-workspace section
-(`style.css` L827). There's only one such surface here, not eleven: the
-flask/beaker bench inside `LabContainer`.
+The flask/beaker bench inside `LabContainer` (`style.css`, "SECTION 11: Lab
+Workspace") is styled to read as an actual piece of lab furniture — a
+honey-oak butcher-block workbench with a brushed-metal edge guard, a ring
+stand, and a Bunsen burner around the flask — rather than a brand-colored
+card. It used to be hardcoded to `#0d0d12` in both themes; that's gone. A
+flat, textureless black read as broken chrome rather than intentional
+equipment, and it never actually changed with the theme toggle, so it's now
+built from its own small variable set (`--lab-wood-1/2/3`, `--lab-wood-edge`,
+`--lab-metal`, `--lab-metal-dark`, `--lab-ink`, `--lab-shadow`) defined
+alongside the brand palette in `:root` and redefined in `:root.dark` — same
+physical bench, dimmer workshop lighting in dark mode, never flat black.
 
 - **Host card** (`.lab-host-card`) — normal brand light shell: 28px
-  radius, `--bg-card`, `--border-card`, theme-aware.
-- **Bench** (`.lab-table`) — **always** `#0d0d12`, `1px` white-alpha
-  border (not the site's usual `2px`), `16px` radius. Does not respond to
-  the theme toggle, on purpose — it reads as lab equipment, not page
-  content. Beaker/flask PNGs are inverted (`filter: invert(1)
-  brightness(2)`) to render as light line art against that dark surface.
+  radius, `--bg-card`, `--border-card`, theme-aware. Unchanged.
+- **Bench** (`.lab-table`) — a `repeating-linear-gradient` wood-grain
+  texture between `--lab-wood-1/2/3`, a `--lab-wood-edge` border, a
+  brushed-metal strip (`--lab-metal` → `--lab-metal-dark`) along the front
+  lip, and inset shadows for depth. `16px` radius, matching the old shape.
+  Fully theme-aware now — both the wood tones and the metal tones swap in
+  `:root.dark`.
+- **Glassware tint:** flask/beaker PNGs are dark-outline line art. In light
+  mode they render as-is (`opacity: 0.8`, a soft contact-shadow
+  `drop-shadow`) since dark outlines read fine on the honey-oak wood. In
+  dark mode (`:root.dark .lab-item.beaker img, :root.dark .lab-item.flask
+  img`) they're inverted with a warm sepia tint (`invert(1) brightness(1.9)
+  sepia(0.35)`) so they still read as light glassware against the dim wood
+  — cream, not the old pure white.
+- **Ring stand & Bunsen burner** (`.flask-rig`, `.ring-stand`,
+  `.bunsen-burner`, `.burner-flame`, `.burner-base` in `LabContainer.tsx` /
+  `style.css`) are purely decorative additions around the flask — metal-toned
+  SVG/CSS shapes using `--lab-metal*`, not part of the reaction-rendering
+  logic. The burner flame ignites (`.flask-active .burner-flame`) off the
+  same `flaskActive` prop that already drives the flask's glow, so it lights
+  up exactly when a reaction is running.
+- **Beaker tray** (`.beakers-container`) has an inset dark mat behind the
+  row of beakers so they read as sitting on a surface, not floating.
+- **Safety pegboard** (`.lab-pegboard`) is a small row of emoji (🥽 🧤 🧯)
+  in the back corner of the bench, low-opacity — decorative flavor using the
+  same emoji-icon system as the rest of the app (§7), not a new icon
+  language.
 - **Toolbox row** (`.toolbox`) and **readouts**
   (`#ph-display`/`#temp-display`/`#reaction-name-display`) sit *outside*
-  the dark bench and *do* respond to the theme toggle — only the bench
-  itself is fixed-dark.
+  the bench and theme normally — unchanged.
 - **Accent color while a reaction runs:** the active-flask glow
-  (`glass-glow` keyframe) uses Club Green at low/high alpha — same accent
-  family as the rest of the brand, just applied as a glow instead of a
-  fill.
+  (`glass-glow` / `glass-glow-dark` keyframes) uses Club Green at low/high
+  alpha — same accent family as the rest of the brand, just applied as a
+  glow instead of a fill.
 
-If you extend the lab UI, keep this split: anything sitting *on* the dark
-bench stays dark-only; anything in the card chrome around it should read
-`var(--text-main)`/`var(--bg-card)` and theme normally.
+**What did not change:** the reaction-rendering logic — the liquid-layer
+stacking, gas cloud/bubble generation, solid-block clip path, and all
+chemistry-data-driven fill colors in `LabContainer.tsx` — is untouched. Only
+the bench's own chrome (wood, metal, glass tint, decorative equipment) was
+reworked; the flask/beaker/gas/liquid/solid graphics and their data-driven
+colors are the same ones as before, just recolored and given real furniture
+to sit on.
+
+If you extend the lab UI, keep this split: the chemistry visuals inside the
+flask stay driven by `visualStack`/item data, never by hand; anything
+decorative you add to the bench itself should pull from the `--lab-*`
+variables so it stays in sync between themes.
 
 ---
 
@@ -451,7 +489,8 @@ bench stays dark-only; anything in the card chrome around it should read
    short, and matches the plain, honest tone in §9.
 5. No Tailwind classes — this repo doesn't have the dependency; write a
    real class in `style.css` instead.
-6. Checked in both themes (the lab bench stays dark in both, on purpose —
+6. Checked in both themes — the lab bench is now theme-aware too (same wood
+   workbench, dimmer in dark mode via `--lab-*` vars, never flat black —
    §10).
 7. `npm run build` (`tsc && vite build`) passes — there's no separate lint
    script and no test suite in this repo (see `CLAUDE.md`).
