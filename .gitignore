@@ -9,7 +9,6 @@
 .debug_formula_clean.js
 .debug_keys.js
 .Gemini_generated
-CLAUDE.md
 .claude/
 node_modules/
 dist/
