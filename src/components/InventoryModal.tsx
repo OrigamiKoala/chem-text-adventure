@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { InventoryMap, ItemData } from '../types/game';
 import { findItem, stripHtml } from '../engine/textParser';
 
@@ -17,22 +17,33 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({
   itemsData,
   onUseItem,
 }) => {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const itemKeys = Object.keys(inventory);
 
   return (
-    <div className="modal-backdrop mobile-only" onClick={onClose}>
+    <div className="modal-backdrop" onClick={onClose} role="dialog" aria-modal="true">
       <div className="modal-card" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
-          <h3>🎒 Inventory</h3>
-          <button type="button" className="btn-close" onClick={onClose}>
+          <div>
+            <h3>🎒 Inventory</h3>
+            <span className="modal-subtitle">{itemKeys.length} items total</span>
+          </div>
+          <button type="button" className="btn-close" onClick={onClose} aria-label="Close">
             &times;
           </button>
         </div>
-        <div className="inventory-items-list">
+        <div className="inventory-items-list" style={{ padding: '20px' }}>
           {itemKeys.length === 0 ? (
-            <p className="empty-inventory-msg">Your inventory is empty.</p>
+            <p className="empty-inventory-msg">Your inventory is currently empty.</p>
           ) : (
             itemKeys.map(itemId => {
               const count = inventory[itemId];
@@ -48,6 +59,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({
                     if (onUseItem) onUseItem(itemId);
                     onClose();
                   }}
+                  title={`Use ${name}`}
                 >
                   <div className="inventory-card-header">
                     <span className="item-title">{name}</span>

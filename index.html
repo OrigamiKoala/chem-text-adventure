@@ -7,8 +7,17 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+  <script>
+    (function () {
+      try {
+        var theme = localStorage.getItem('tr_sc_theme');
+        var isDark = theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if (isDark) document.documentElement.classList.add('dark');
+      } catch (e) { }
+    })();
+  </script>
   <script>
     window.MathJax = {
       loader: { load: ['[tex]/mhchem'] },
@@ -16,11 +25,10 @@
     };
   </script>
   <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-  <title>Choose Your Own Adventure - Chemistry</title>
+  <title>Chemistry Text Adventure</title>
 </head>
 
 <body>
-  <base target="_blank">
   <div id="root"></div>
   <script type="module" src="/src/main.tsx"></script>
 </body>

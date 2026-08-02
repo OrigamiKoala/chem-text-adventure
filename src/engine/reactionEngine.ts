@@ -93,6 +93,35 @@ export const getItemAttributes = (id: string | number, itemsData: ItemData[], la
   return null;
 };
 
+const inferTypeFromId = (id: string): string => {
+  const lower = id.toLowerCase();
+  if (['n2', 'h2', 'nh3', 'hcl_gas', 'o2', 'co2', 'ch4', 'cl2'].includes(lower) || lower.includes('gas')) {
+    return 'gas';
+  }
+  if (['powder1', 'powder2', 'fe', 'nh4cl_powder', 'nacl', 'powder'].includes(lower) || lower.includes('powder') || lower.includes('solid')) {
+    return 'solid';
+  }
+  return 'liquid';
+};
+
+const inferColorFromId = (id: string): string => {
+  const lower = id.toLowerCase();
+  if (lower === 'n2') return 'rgba(147, 197, 253, 0.7)';
+  if (lower === 'h2') return 'rgba(220, 235, 255, 0.7)';
+  if (lower === 'nh3') return 'rgba(167, 243, 208, 0.75)';
+  if (lower === 'hcl_gas') return 'rgba(252, 165, 165, 0.75)';
+  if (lower === 'powder1') return 'rgba(244, 244, 245, 0.9)';
+  if (lower === 'powder2') return 'rgba(200, 200, 210, 0.9)';
+  if (lower === 'fe') return 'rgba(217, 119, 6, 0.85)';
+  if (lower === 'nh4cl_powder') return 'rgba(224, 231, 255, 0.9)';
+  if (lower === 'nacl') return 'rgba(168, 85, 247, 0.5)';
+  if (lower === 'water') return 'rgba(56, 189, 248, 0.6)';
+  if (lower === 'hcl') return 'rgba(239, 68, 68, 0.6)';
+  if (lower === 'naoh') return 'rgba(59, 130, 246, 0.6)';
+  if (lower === 'agno3') return 'rgba(234, 179, 8, 0.6)';
+  return 'rgba(100, 180, 255, 0.4)';
+};
+
 /**
  * Compute Flask state (pH, liquid layers, solid layer, gas layer) from mixed inputs
  */
@@ -128,9 +157,9 @@ export const computeFlaskState = (
 
   uniqueIds.forEach(id => {
     const attr = getItemAttributes(id, itemsData, labData);
-    const itemDef = itemsData.find(i => i.id === id);
-    const color = attr?.color || itemDef?.color || 'rgba(100, 180, 255, 0.4)';
-    const type = attr?.type || itemDef?.type || 'liquid';
+    const itemDef = itemsData.find(i => i.id === id || i.name === id);
+    const color = attr?.color || itemDef?.color || inferColorFromId(id);
+    const type = attr?.type || itemDef?.type || inferTypeFromId(id);
 
     if (type === 'solid') {
       state.solid = {
@@ -143,7 +172,7 @@ export const computeFlaskState = (
         type: type,
         color: color,
         isProductGas: true,
-        bubbleColor: 'rgba(255, 255, 255, 0.6)',
+        bubbleColor: 'rgba(255, 255, 255, 0.7)',
       };
     } else {
       liquidLayers.push({
@@ -160,3 +189,4 @@ export const computeFlaskState = (
   state.liquids = liquidLayers;
   return state;
 };
+

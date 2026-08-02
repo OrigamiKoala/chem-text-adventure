@@ -10,29 +10,86 @@ import {
   LabFlaskState,
 } from '../types/game';
 import { generateStatsTo72, executeRoll } from '../engine/diceEngine';
-import { cleanTeX, checkNumericAnswer, findItem, safeTypeset } from '../engine/textParser';
+import {
+  cleanTeX,
+  checkNumericAnswer,
+  findItem,
+  safeTypeset,
+  parseDivChunks,
+  processTextScripts,
+  extractOptionsAndCleanText,
+  parseAndExecuteRoll,
+} from '../engine/textParser';
 import { computeFlaskState } from '../engine/reactionEngine';
 import rawData from '../../data.json';
+
+const SAVE_KEY = 'chem_adventure_save_v2';
+
+interface SavedGameState {
+  currentId: string;
+  historyStack: string[];
+  playerHP: number;
+  playerStats: PlayerStats;
+  inventory: InventoryMap;
+  chatLog: ChatMessage[];
+  flaskContents: string[];
+  currentLab?: string;
+}
+
+const loadSavedGameState = (): SavedGameState | null => {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed.currentId === 'string') {
+      return parsed as SavedGameState;
+    }
+  } catch (err) {
+    console.warn('Failed to load saved game state:', err);
+  }
+  return null;
+};
 
 export const useGameEngine = () => {
   const gameData = (rawData as unknown) as FullGameData;
 
-  const [currentId, setCurrentId] = useState<string>('initial');
-  const [historyStack, setHistoryStack] = useState<string[]>([]);
-  const [playerHP, setPlayerHP] = useState<number>(100);
+  const savedState = useRef<SavedGameState | null>(loadSavedGameState());
+
+  const [currentId, setCurrentId] = useState<string>(
+    () => savedState.current?.currentId || 'initial'
+  );
+  const [historyStack, setHistoryStack] = useState<string[]>(
+    () => savedState.current?.historyStack || []
+  );
+  const [playerHP, setPlayerHP] = useState<number>(
+    () => savedState.current?.playerHP ?? 100
+  );
   const [maxHP] = useState<number>(100);
   const [hpLossRate, setHpLossRate] = useState<number>(0);
-  const [playerStats, setPlayerStats] = useState<PlayerStats>(generateStatsTo72());
-  const [inventory, setInventory] = useState<InventoryMap>({});
+  const [playerStats, setPlayerStats] = useState<PlayerStats>(
+    () => savedState.current?.playerStats || generateStatsTo72()
+  );
+  const [inventory, setInventory] = useState<InventoryMap>(
+    () => savedState.current?.inventory || {}
+  );
   const [itemsData] = useState<ItemData[]>(gameData.items || []);
   const [helpText, setHelpText] = useState<string>('');
 
-  const [chatLog, setChatLog] = useState<ChatMessage[]>([]);
+  const [chatLog, setChatLog] = useState<ChatMessage[]>(
+    () => savedState.current?.chatLog || []
+  );
   const [activeRoll, setActiveRoll] = useState<RollResult | null>(null);
 
-  const [flaskContents, setFlaskContents] = useState<string[]>([]);
+  const [currentLab, setCurrentLab] = useState<string>(
+    () => savedState.current?.currentLab || 'default'
+  );
+
+  const [flaskContents, setFlaskContents] = useState<string[]>(
+    () => savedState.current?.flaskContents || []
+  );
   const [labFlaskState, setLabFlaskState] = useState<LabFlaskState>(
-    computeFlaskState([], gameData.items || [])
+    computeFlaskState(savedState.current?.flaskContents || [], gameData.items || [])
   );
 
   const [isInventoryModalOpen, setIsInventoryModalOpen] = useState<boolean>(false);
@@ -40,6 +97,25 @@ export const useGameEngine = () => {
   const [periodicTableVersion, setPeriodicTableVersion] = useState<number>(1);
   const [isOutlineOpen, setIsOutlineOpen] = useState<boolean>(false);
   const [isLabVisible, setIsLabVisible] = useState<boolean>(false);
+
+  // Auto-save game progress to localStorage
+  useEffect(() => {
+    try {
+      const stateToSave: SavedGameState = {
+        currentId,
+        historyStack,
+        playerHP,
+        playerStats,
+        inventory,
+        chatLog,
+        flaskContents,
+        currentLab,
+      };
+      localStorage.setItem(SAVE_KEY, JSON.stringify(stateToSave));
+    } catch (err) {
+      console.warn('Failed to save game state:', err);
+    }
+  }, [currentId, historyStack, playerHP, playerStats, inventory, chatLog, flaskContents, currentLab]);
 
   // Preload help text
   useEffect(() => {
@@ -69,7 +145,7 @@ export const useGameEngine = () => {
   // HP Change helper
   const changeHP = useCallback((amount: number) => {
     setPlayerHP(prev => {
-      const nextHP = Math.min(maxHP, prev + amount);
+      const nextHP = Math.min(maxHP, Math.max(0, prev + amount));
       return nextHP;
     });
   }, [maxHP]);
@@ -93,6 +169,17 @@ export const useGameEngine = () => {
       return {
         ...prev,
         [itemId]: current - qty,
+      };
+    });
+  }, []);
+
+  const modifyStat = useCallback((statName: keyof PlayerStats, amountOrVal: number, isRelative = true) => {
+    setPlayerStats(prev => {
+      const currentVal = prev[statName] || 10;
+      const newVal = isRelative ? Math.max(1, currentVal + amountOrVal) : Math.max(1, amountOrVal);
+      return {
+        ...prev,
+        [statName]: newVal,
       };
     });
   }, []);
@@ -132,6 +219,70 @@ export const useGameEngine = () => {
     },
     [playerStats]
   );
+
+  const lastProcessedIdRef = useRef<string | null>(null);
+
+  // Process embedded <script> tags and append narration messages to chat log when currentNode changes
+  useEffect(() => {
+    if (!currentNode?.text) return;
+
+    const { cleanText: textNoOptions } = extractOptionsAndCleanText(currentNode);
+    const { cleanText } = processTextScripts(textNoOptions, {
+      changeHP,
+      setHP: (hp: number) => setPlayerHP(Math.min(maxHP, Math.max(0, hp))),
+      setHPLossRate: (rate: number) => setHpLossRate(rate),
+      modifyStat: (statName: string, val: number, isRelative: boolean) => {
+        const s = statName.toUpperCase() as keyof PlayerStats;
+        modifyStat(s, val, isRelative);
+      },
+      pickup: (item: string) => addItemToInventory(item, 1),
+      removeInventory: (item: string, qty?: string | number) =>
+        removeItemFromInventory(item, qty === 'all' ? 999 : Number(qty) || 1),
+      setLabVisible: (visible: boolean) => setIsLabVisible(visible),
+      setLab: (labName: string) => {
+        if (labName) setCurrentLab(labName);
+        setIsLabVisible(true);
+      },
+      roll: (diceType: string, statName?: string, dc?: number, advantage?: boolean) => {
+        rollDice(diceType, statName as keyof PlayerStats, dc, advantage);
+      },
+    });
+
+    if (lastProcessedIdRef.current !== currentId) {
+      lastProcessedIdRef.current = currentId;
+
+      const chunks = parseDivChunks(cleanText);
+      const newMessages: ChatMessage[] = chunks.map((chunk, idx) => ({
+        id: `narration-${currentId}-${idx}-${Date.now()}`,
+        sender: 'game',
+        text: chunk,
+        timestamp: Date.now() + idx,
+        nodeId: currentId,
+      }));
+
+      setChatLog(prev => [...prev, ...newMessages]);
+
+      // If this is a roll node, execute roll automatically
+      if (currentNode.roll || currentNode.type === 'roll') {
+        const rollStr = currentNode.roll || 'roll("1d20")';
+        const res = parseAndExecuteRoll(rollStr, (diceType, statName, dc, advantage) =>
+          rollDice(diceType, statName as keyof PlayerStats, dc, advantage)
+        );
+
+        if (res) {
+          const targetNext = (res.passed !== false)
+            ? currentNode.success || currentNode.next
+            : currentNode.fail || currentNode.next;
+
+          if (targetNext) {
+            setTimeout(() => {
+              jumpTo(targetNext);
+            }, 1200);
+          }
+        }
+      }
+    }
+  }, [currentId, currentNode, changeHP, addItemToInventory, removeItemFromInventory, modifyStat, maxHP, rollDice, jumpTo]);
 
   // Flask / Lab simulation operations
   const addLiquidToFlask = useCallback(
@@ -224,13 +375,29 @@ export const useGameEngine = () => {
         return;
       }
 
+      // Reset / Restart command
+      if (lower === 'restart' || lower === 'reset') {
+        restartGame();
+        return;
+      }
+
       if (!currentNode) return;
 
       let nextNodeId: string | null = currentNode.next || null;
 
       // MCQ options matching
       if (currentNode.type === 'mcq') {
-        if (input === '1' || lower === currentNode.op1?.toLowerCase()) {
+        const { choices } = extractOptionsAndCleanText(currentNode);
+        const matchChoice = choices.find(
+          c =>
+            input === String(c.num) ||
+            lower === c.text.toLowerCase() ||
+            (c.targetNodeId && lower === c.targetNodeId.toLowerCase())
+        );
+
+        if (matchChoice) {
+          nextNodeId = matchChoice.targetNodeId || currentNode.next || null;
+        } else if (input === '1' || lower === currentNode.op1?.toLowerCase()) {
           nextNodeId = currentNode.op1 || currentNode.next || null;
         } else if (input === '2' || lower === currentNode.op2?.toLowerCase()) {
           nextNodeId = currentNode.op2 || currentNode.next || null;
@@ -257,6 +424,20 @@ export const useGameEngine = () => {
         }
       }
 
+      // Roll node check
+      if (currentNode.type === 'roll' || currentNode.roll) {
+        const rollStr = currentNode.roll || 'roll("1d20")';
+        const res = parseAndExecuteRoll(rollStr, (diceType, statName, dc, advantage) =>
+          rollDice(diceType, statName as keyof PlayerStats, dc, advantage)
+        );
+
+        if (res) {
+          nextNodeId = res.passed !== false
+            ? currentNode.success || currentNode.next || null
+            : currentNode.fail || currentNode.next || null;
+        }
+      }
+
       if (nextNodeId && gameData.narrative_nodes.some(n => n.id === nextNodeId)) {
         jumpTo(nextNodeId);
       } else if (currentNode.next && gameData.narrative_nodes.some(n => n.id === currentNode.next)) {
@@ -265,6 +446,20 @@ export const useGameEngine = () => {
     },
     [currentNode, gameData.narrative_nodes, helpText, jumpTo]
   );
+
+  const restartGame = useCallback(() => {
+    try {
+      localStorage.removeItem(SAVE_KEY);
+    } catch (err) {}
+    lastProcessedIdRef.current = null;
+    setCurrentId('initial');
+    setHistoryStack([]);
+    setPlayerHP(100);
+    setPlayerStats(generateStatsTo72());
+    setInventory({});
+    setChatLog([]);
+    setFlaskContents([]);
+  }, []);
 
   return {
     gameData,
@@ -285,6 +480,8 @@ export const useGameEngine = () => {
     periodicTableVersion,
     isOutlineOpen,
     isLabVisible,
+    currentLab,
+    setCurrentLab,
     changeHP,
     addItemToInventory,
     removeItemFromInventory,
@@ -296,6 +493,7 @@ export const useGameEngine = () => {
     heatFlask,
     coolFlask,
     handleInput,
+    restartGame,
     setIsInventoryModalOpen,
     setIsPeriodicTableOpen,
     setPeriodicTableVersion,

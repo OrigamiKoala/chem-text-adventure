@@ -1,13 +1,14 @@
 import React from 'react';
 import { useGameEngine } from './hooks/useGameEngine';
+import { useTheme } from './hooks/useTheme';
 import { Header } from './components/Header';
-import { InventorySidebar } from './components/InventorySidebar';
 import { InventoryModal } from './components/InventoryModal';
 import { ChatContainer } from './components/ChatContainer';
 import { LabContainer } from './components/LabContainer';
 import { PeriodicTableModal } from './components/PeriodicTableModal';
 
 export const App: React.FC = () => {
+  const { theme, toggleTheme } = useTheme();
   const {
     gameData,
     currentNode,
@@ -24,6 +25,7 @@ export const App: React.FC = () => {
     periodicTableVersion,
     isOutlineOpen,
     isLabVisible,
+    currentLab,
     jumpTo,
     addLiquidToFlask,
     resetFlask,
@@ -31,6 +33,7 @@ export const App: React.FC = () => {
     heatFlask,
     coolFlask,
     handleInput,
+    restartGame,
     setIsInventoryModalOpen,
     setIsPeriodicTableOpen,
     setPeriodicTableVersion,
@@ -40,8 +43,12 @@ export const App: React.FC = () => {
 
   const outlineItems = gameData.active_narrative_outline || [];
 
+  const handleUseItem = (itemId: string) => {
+    handleInput(`use ${itemId}`);
+  };
+
   return (
-    <div className="app-main-layout">
+    <div className="app-main-layout bg-dot-pattern">
       {/* Top Bar Header */}
       <Header
         playerHP={playerHP}
@@ -52,39 +59,44 @@ export const App: React.FC = () => {
         onTogglePeriodicTable={() => setIsPeriodicTableOpen(prev => !prev)}
         onToggleOutline={() => setIsOutlineOpen(prev => !prev)}
         onToggleLab={() => setIsLabVisible(prev => !prev)}
+        onRestartGame={restartGame}
+        theme={theme}
+        onToggleTheme={toggleTheme}
       />
 
       {/* Main Content Area - Single Column or Split Screen */}
-      <div className={`main-content-row ${isLabVisible ? 'split-screen' : ''}`}>
-        {/* Left Column: Desktop Inventory Sidebar & Chat View */}
-        <div className="left-panel">
-          <InventorySidebar inventory={inventory} itemsData={itemsData} />
-          <ChatContainer
-            currentNode={currentNode}
-            chatLog={chatLog}
-            outlineItems={outlineItems}
-            isOutlineOpen={isOutlineOpen}
-            onJumpTo={jumpTo}
-            onSubmitInput={handleInput}
-          />
-        </div>
-
-        {/* Right Column: Lab Interactive Workspace (Shown only when 'lab' is typed or toggled) */}
-        {isLabVisible && (
-          <div className="right-panel">
-            <LabContainer
-              flaskState={labFlaskState}
-              contents={flaskContents}
-              itemsData={itemsData}
-              onAddLiquid={addLiquidToFlask}
-              onReset={resetFlask}
-              onMix={mixFlask}
-              onHeat={heatFlask}
-              onCool={coolFlask}
+      <main className="main-container-wrapper">
+        <div className={`main-content-row ${isLabVisible ? 'split-screen' : ''}`}>
+          {/* Left Column: Story Chat View */}
+          <div className="left-panel">
+            <ChatContainer
+              currentNode={currentNode}
+              chatLog={chatLog}
+              outlineItems={outlineItems}
+              isOutlineOpen={isOutlineOpen}
+              onJumpTo={jumpTo}
+              onSubmitInput={handleInput}
             />
           </div>
-        )}
-      </div>
+
+          {/* Right Column: Lab Interactive Workspace (Shown when lab is toggled or 'lab' typed) */}
+          {isLabVisible && (
+            <div className="right-panel">
+              <LabContainer
+                flaskState={labFlaskState}
+                contents={flaskContents}
+                itemsData={itemsData}
+                currentLab={currentLab}
+                onAddLiquid={addLiquidToFlask}
+                onReset={resetFlask}
+                onMix={mixFlask}
+                onHeat={heatFlask}
+                onCool={coolFlask}
+              />
+            </div>
+          )}
+        </div>
+      </main>
 
       {/* Mobile Inventory Overlay Modal */}
       <InventoryModal
@@ -92,6 +104,7 @@ export const App: React.FC = () => {
         onClose={() => setIsInventoryModalOpen(false)}
         inventory={inventory}
         itemsData={itemsData}
+        onUseItem={handleUseItem}
       />
 
       {/* Periodic Table Modal */}
