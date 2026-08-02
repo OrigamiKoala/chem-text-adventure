@@ -294,7 +294,7 @@ export const LabContainer: React.FC<LabContainerProps> = ({
               >
                 <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center', height: 120, width: '100%' }}>
                   {b.type === 'solid' && (
-                    <div className="lab-item solid-block" style={{ backgroundColor: b.color }} />
+                    <div className="solid-block" style={{ backgroundColor: b.color }} />
                   )}
                   {(b.type === 'gas' || b.type === 'trapped_gas') && (
                     <CloudSvg
@@ -358,11 +358,12 @@ export const LabContainer: React.FC<LabContainerProps> = ({
               <div className="burner-base" />
             </div>
             <div style={{ position: 'relative', display: 'inline-block', zIndex: 1 }}>
-            {/* Solid layer */}
+            {/* Solid layer — sits on the flask's glass floor (measured at ~0.4–2%
+                up from the image's bottom edge, below which is only drop-shadow). */}
             <div
               style={{
                 position: 'absolute',
-                bottom: '14.5%',
+                bottom: '2%',
                 left: solidItem ? '25%' : 0,
                 width: solidItem ? '50%' : 0,
                 height: solidItem ? '15%' : 0,
@@ -400,9 +401,11 @@ export const LabContainer: React.FC<LabContainerProps> = ({
                 </div>
               )}
             </div>
-            {/* Liquid layer — clip-path traced directly from flask.png's own outline
+            {/* Liquid layer — clip-path traced from flask.png's own outline
                 (measured, not eyeballed) so the fill hugs the true glass silhouette
-                and reaches the actual bottom of the flask, not just an inset box. */}
+                and reaches the actual bottom of the flask. The bottom curve is
+                traced to the glass floor (99.6%, inset ~0.5% inside the drawn
+                line) — the region below is drop-shadow, not glass. */}
             <div
               ref={liquidWrapperRef}
               style={{
@@ -414,10 +417,10 @@ export const LabContainer: React.FC<LabContainerProps> = ({
                 zIndex: 2,
                 clipPath: `polygon(
                   29.3% 0%, 34% 8%, 34.6% 36%, 29.7% 44%, 23.6% 52.1%, 17.3% 60.1%,
-                  11.4% 67.9%, 5.3% 75.9%, 0.6% 84%, 0% 88.1%, 0.4% 92%, 2.6% 96.1%,
-                  11.2% 100%,
-                  88.2% 100%,
-                  97.1% 96.1%, 99.4% 92%, 99.8% 88.1%, 98.8% 84%, 93.5% 75.9%,
+                  11.4% 67.9%, 5.3% 75.9%, 0.6% 84%, 0% 88.1%, 0.4% 92%,
+                  3.1% 95.5%, 4.6% 96.9%, 6% 97.9%, 8.2% 98.8%, 10.1% 99.4%, 11.5% 99.6%,
+                  88.5% 99.6%, 89.9% 99.4%, 91.8% 98.8%, 94% 97.9%, 95.4% 96.9%, 96.9% 95.5%,
+                  99.6% 92%, 99.8% 88.1%, 98.8% 84%, 93.5% 75.9%,
                   87.4% 67.9%, 81.5% 60.1%, 75.6% 52.1%, 69.5% 44%, 64.6% 36%, 64.4% 8%, 69% 0%
                 )`,
                 opacity: 0,

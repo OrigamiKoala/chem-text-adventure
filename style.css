@@ -1275,7 +1275,9 @@ input#response::placeholder {
   height: 38px;
   clip-path: polygon(5% 100%, 12% 78%, 22% 62%, 35% 48%, 50% 42%, 65% 48%, 78% 62%, 88% 78%, 95% 100%);
   border-radius: 0 0 4px 4px;
-  margin-bottom: 6px;
+  /* Beaker image sits 8px above the slot bottom (.lab-item img margin-bottom),
+     so 8px sets the mound's base flush with the glass floor. */
+  margin-bottom: 8px;
   filter: brightness(1.1) drop-shadow(0 4px 4px var(--lab-shadow));
 }
 
