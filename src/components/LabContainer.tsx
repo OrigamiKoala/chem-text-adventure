@@ -305,16 +305,25 @@ export const LabContainer: React.FC<LabContainerProps> = ({
                   {b.type !== 'solid' && b.type !== 'gas' && b.type !== 'trapped_gas' && (
                     <>
                       {b.color && (
+                        // Box matches beaker.png's own rendered box within this 120px
+                        // slot (image is 90.6x110 centered, 8px margin-bottom), and the
+                        // clip-path is traced from the PNG's outline so the fill hugs
+                        // the true beaker silhouette — straight cylindrical sides, then
+                        // the rounded base — and reaches the actual bottom of the glass.
                         <div
                           style={{
                             position: 'absolute',
-                            bottom: '15%',
-                            left: '15%',
-                            width: '70%',
-                            height: '50%',
+                            bottom: '6.7%',
+                            left: '12.2%',
+                            width: '75.6%',
+                            height: '91.7%',
                             backgroundColor: b.color,
                             zIndex: 1,
-                            borderRadius: '0 0 10% 10%',
+                            clipPath: `polygon(
+                              2.8% 50%, 96.9% 50%,
+                              96.9% 88.1%, 95.3% 92%, 87.4% 96.1%, 58.5% 100%,
+                              40.5% 100%, 12.1% 96.1%, 4.5% 92%, 2.8% 88.1%
+                            )`,
                           }}
                         />
                       )}
@@ -391,24 +400,25 @@ export const LabContainer: React.FC<LabContainerProps> = ({
                 </div>
               )}
             </div>
-            {/* Liquid layer */}
+            {/* Liquid layer — clip-path traced directly from flask.png's own outline
+                (measured, not eyeballed) so the fill hugs the true glass silhouette
+                and reaches the actual bottom of the flask, not just an inset box. */}
             <div
               ref={liquidWrapperRef}
               style={{
                 position: 'absolute',
-                bottom: '14.5%',
-                left: '13%',
-                width: '74%',
-                height: '82.5%',
+                bottom: '0%',
+                left: '0%',
+                width: '100%',
+                height: '100%',
                 zIndex: 2,
                 clipPath: `polygon(
-                  44% 0%, 56% 0%,
-                  56% 20%, 56.5% 25%, 58% 30%, 61% 35%, 61% 40%, 51% 45%,
-                  100% 95%,
-                  99.8% 97.5%, 99% 99%, 97% 99.8%, 91% 100%, 85% 100%,
-                  15% 100%, 9% 100%, 3% 99.8%, 1% 99%, 0.2% 97.5%, 0% 95%,
-                  47% 45%,
-                  39% 40%, 39% 35%, 42% 30%, 43.5% 25%, 44% 20%
+                  29.3% 0%, 34% 8%, 34.6% 36%, 29.7% 44%, 23.6% 52.1%, 17.3% 60.1%,
+                  11.4% 67.9%, 5.3% 75.9%, 0.6% 84%, 0% 88.1%, 0.4% 92%, 2.6% 96.1%,
+                  11.2% 100%,
+                  88.2% 100%,
+                  97.1% 96.1%, 99.4% 92%, 99.8% 88.1%, 98.8% 84%, 93.5% 75.9%,
+                  87.4% 67.9%, 81.5% 60.1%, 75.6% 52.1%, 69.5% 44%, 64.6% 36%, 64.4% 8%, 69% 0%
                 )`,
                 opacity: 0,
                 overflow: 'hidden',

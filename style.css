@@ -1196,6 +1196,10 @@ input#response::placeholder {
 
 .lab-item.flask img {
   max-height: 220px;
+  /* No trailing margin: the liquid layer's box is sized to match this
+     image's rendered box exactly (see LabContainer.tsx), so any margin
+     here would throw off the fill-to-the-bottom alignment. */
+  margin-bottom: 0;
 }
 
 /* Glassware line art: dark outline reads directly on the honey-oak bench in
