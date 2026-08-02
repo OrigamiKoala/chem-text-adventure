@@ -201,7 +201,7 @@ export const LabContainer: React.FC<LabContainerProps> = ({
               try {
                 const parsed = typeof attrStr === 'string' ? JSON.parse(attrStr) : attrStr;
                 if (parsed.type) type = parsed.type;
-              } catch (e) {}
+              } catch (e) { }
             }
             break;
           }
@@ -276,7 +276,7 @@ export const LabContainer: React.FC<LabContainerProps> = ({
       <div className="lab-header-strip">
         <div>
           <h3 className="lab-title">
-            <span>🧪</span> {labData?.labid || 'Lab'}
+            <span>🧪</span> Lab
           </h3>
         </div>
         <div className="lab-close-btn" onClick={onClose} title="Close Lab">
