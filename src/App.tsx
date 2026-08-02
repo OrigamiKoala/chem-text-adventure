@@ -18,20 +18,22 @@ export const App: React.FC = () => {
     inventory,
     itemsData,
     chatLog,
-    flaskContents,
-    labFlaskState,
+    visualStack,
+    currentPH,
+    currentTemperature,
+    currentReactionName,
+    flaskActive,
+    currentLabData,
     isInventoryModalOpen,
     isPeriodicTableOpen,
     periodicTableVersion,
     isOutlineOpen,
     isLabVisible,
-    currentLab,
     jumpTo,
-    addLiquidToFlask,
+    useItem,
+    addLiquid,
     resetFlask,
-    mixFlask,
-    heatFlask,
-    coolFlask,
+    addFlaskToInventory,
     handleInput,
     restartGame,
     setIsInventoryModalOpen,
@@ -42,10 +44,6 @@ export const App: React.FC = () => {
   } = useGameEngine();
 
   const outlineItems = gameData.active_narrative_outline || [];
-
-  const handleUseItem = (itemId: string) => {
-    handleInput(`use ${itemId}`);
-  };
 
   return (
     <div className="app-main-layout bg-dot-pattern">
@@ -83,15 +81,17 @@ export const App: React.FC = () => {
           {isLabVisible && (
             <div className="right-panel">
               <LabContainer
-                flaskState={labFlaskState}
-                contents={flaskContents}
+                visualStack={visualStack}
+                currentPH={currentPH}
+                currentTemperature={currentTemperature}
+                currentReactionName={currentReactionName}
+                flaskActive={flaskActive}
                 itemsData={itemsData}
-                currentLab={currentLab}
-                onAddLiquid={addLiquidToFlask}
+                labData={currentLabData}
+                onAddLiquid={addLiquid}
                 onReset={resetFlask}
-                onMix={mixFlask}
-                onHeat={heatFlask}
-                onCool={coolFlask}
+                onAddToInventory={addFlaskToInventory}
+                onClose={() => setIsLabVisible(false)}
               />
             </div>
           )}
@@ -104,7 +104,7 @@ export const App: React.FC = () => {
         onClose={() => setIsInventoryModalOpen(false)}
         inventory={inventory}
         itemsData={itemsData}
-        onUseItem={handleUseItem}
+        onUseItem={useItem}
       />
 
       {/* Periodic Table Modal */}

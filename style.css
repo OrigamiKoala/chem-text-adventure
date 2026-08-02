@@ -845,6 +845,23 @@ input#response::placeholder {
   letter-spacing: -0.01em;
 }
 
+.lab-close-btn {
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
+  text-align: center;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  border-radius: 9999px;
+  transition: color 0.2s, background 0.2s;
+}
+
+.lab-close-btn:hover {
+  color: var(--text-main);
+  background: var(--bg-subtle);
+}
+
 .lab-subtitle {
   font-family: var(--font-sans);
   font-size: 0.78rem;
@@ -1037,6 +1054,16 @@ input#response::placeholder {
   letter-spacing: 0.01em;
 }
 
+/* Solid precipitate block rendered inside a beaker slot */
+.solid-block {
+  width: 76px;
+  height: 38px;
+  clip-path: polygon(5% 100%, 12% 78%, 22% 62%, 35% 48%, 50% 42%, 65% 48%, 78% 62%, 88% 78%, 95% 100%);
+  border-radius: 0 0 4px 4px;
+  margin-bottom: 6px;
+  filter: brightness(1.1);
+}
+
 /* ── Bubble animation ── */
 @keyframes rise-bubble {
   0%   { transform: translateY(0) scale(1); opacity: 0.7; }
@@ -1093,6 +1120,45 @@ input#response::placeholder {
   margin-bottom: 10px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+}
+
+/* Per-reagent measurement bar row */
+.measure-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(90px, 1.6fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.measure-row .measure-label {
+  margin-bottom: 0;
+  text-transform: none;
+  letter-spacing: normal;
+  font-size: 0.8rem;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.measure-bar-bg {
+  height: 8px;
+  background: var(--bg-subtle, rgba(31, 58, 66, 0.08));
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.measure-bar-fill {
+  height: 100%;
+  border-radius: 9999px;
+  width: 0%;
+}
+
+.measure-value {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  white-space: nowrap;
 }
 
 /* ── Dark mode overrides for lab light surfaces ── */
