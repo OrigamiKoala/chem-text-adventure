@@ -358,12 +358,12 @@ export const LabContainer: React.FC<LabContainerProps> = ({
               <div className="burner-base" />
             </div>
             <div style={{ position: 'relative', display: 'inline-block', zIndex: 1 }}>
-            {/* Solid layer — sits on the flask's glass floor (measured at ~0.4–2%
-                up from the image's bottom edge, below which is only drop-shadow). */}
+            {/* Solid layer — rests on the flask's glass floor (the drawn floor
+                line sits at ~0.4-1.2% up from the image's bottom edge). */}
             <div
               style={{
                 position: 'absolute',
-                bottom: '2%',
+                bottom: '1%',
                 left: solidItem ? '25%' : 0,
                 width: solidItem ? '50%' : 0,
                 height: solidItem ? '15%' : 0,

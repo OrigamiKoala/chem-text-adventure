@@ -1196,6 +1196,11 @@ input#response::placeholder {
 
 .lab-item.flask img {
   max-height: 220px;
+  /* display: block — without it the inline image's baseline leaves ~4-5px of
+     line-box descender space below the flask, making the wrapper taller than
+     the image. Every bottom-anchored layer (liquid, solid) then renders that
+     far below the true glass floor. */
+  display: block;
   /* No trailing margin: the liquid layer's box is sized to match this
      image's rendered box exactly (see LabContainer.tsx), so any margin
      here would throw off the fill-to-the-bottom alignment. */
